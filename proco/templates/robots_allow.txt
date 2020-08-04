@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: http{% if settings.USE_HTTPS %}s{% endif %}://{{ request.site.domain }}/sitemap.xml
