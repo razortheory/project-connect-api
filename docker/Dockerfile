@@ -1,4 +1,4 @@
-FROM python:3-stretch
+FROM python:3.8-buster
 
 # Install dependencies
 RUN apt-get update
@@ -12,13 +12,17 @@ RUN apt-get install -y --no-install-recommends \
 RUN apt-get install -y --no-install-recommends \
     git-core
 RUN apt-get install -y --no-install-recommends \
-    python3-dev \
-    python-software-properties \
-    python-setuptools
-RUN apt-get install -y --no-install-recommends \
     postgresql-client \
     libpq-dev \
     python-psycopg2
+RUN apt-get install -y --no-install-recommends \
+    python-gdal \
+    gdal-bin \
+    libgdal-dev \
+    libgdal20 \
+    libxml2-dev \
+    libxslt-dev \
+    xmlsec1
 
 RUN pip install --upgrade \
     setuptools \
@@ -37,3 +41,5 @@ RUN pip install -r /pip/${REQUIREMENTS_FILE}
 ADD . /code/
 
 WORKDIR /code/
+
+EXPOSE 8000

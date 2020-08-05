@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  db:
+    image: mdillon/postgis
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: proco
+
+  proco_api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        REQUIREMENTS_FILE: "dev.txt"
+    image: rttest/project-connect-api:dev
+    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8084:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: "config.settings.dev"
+      DATABASE_URL: postgis://test:test@db/proco
+    depends_on:
+      - db
+    env_file:
+      - ../config/settings/.env
