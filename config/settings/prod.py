@@ -49,33 +49,22 @@ if USE_HTTPS:
 # Storage configurations
 # --------------------------------------------------------------------------
 
-AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
-AWS_AUTO_CREATE_BUCKET = True
+AZURE_ACCOUNT_NAME = env('AZURE_ACCOUNT_NAME')  # noqa: F405
+AZURE_ACCOUNT_KEY = env('AZURE_ACCOUNT_KEY')  # noqa: F405
+AZURE_CONTAINER = env('AZURE_CONTAINER')  # noqa: F405
+AZURE_SSL = True
+AZURE_URL_EXPIRATION_SECS = None
 
-
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_SECURE_URLS = USE_HTTPS
-
-
-if USE_CLOUDFRONT:
-    AWS_S3_CUSTOM_DOMAIN = env('AWS_S3_CUSTOM_DOMAIN')
+if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY and AZURE_CONTAINER:
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 else:
-    AWS_S3_CUSTOM_DOMAIN = '{0}.s3.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
-
-STATIC_URL = 'http{0}://{1}/static/'.format('s' if USE_HTTPS else '', AWS_S3_CUSTOM_DOMAIN)
-MEDIA_URL = 'http{0}://{1}/media/'.format('s' if USE_HTTPS else '', AWS_S3_CUSTOM_DOMAIN)
-
-DEFAULT_FILE_STORAGE = 'config.settings.s3utils.MediaRootS3BotoStorage'
-STATICFILES_STORAGE = 'config.settings.s3utils.StaticRootS3BotoStorage'
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 # Compressor & Cloudfront settings
 # --------------------------------------------------------------------------
-
-if USE_CLOUDFRONT or USE_COMPRESSOR:
-    AWS_HEADERS = {'Cache-Control': str('public, max-age=604800')}
 
 if USE_COMPRESSOR:
     INSTALLED_APPS += ('compressor',)

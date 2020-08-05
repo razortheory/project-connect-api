@@ -4,5 +4,6 @@ gunicorn
 futures
 
 django-storages
+django-storages[azure]
 django-compressor
 boto3
