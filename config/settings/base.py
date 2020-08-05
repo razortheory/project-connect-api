@@ -40,6 +40,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_secure_token',
     'fcm_django',
+    'phonenumber_field',
+    'mptt',
 ]
 
 LOCAL_APPS = [
@@ -47,6 +49,9 @@ LOCAL_APPS = [
     'proco.taskapp',
     'proco.custom_auth',
     'proco.fcm',
+    'proco.schools',
+    'proco.locations',
+    'proco.connecion_statistics',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -203,3 +208,14 @@ FCM_DJANGO_SETTINGS = {
     # devices to which notifications cannot be sent, are deleted upon receiving error response from FCM
     'DELETE_INACTIVE_DEVICES': True,
 }
+
+# Phone settings
+# --------------
+PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
+
+
+# Files / photos
+# ---------------
+
+IMAGES_PATH = 'images'
+IMAGES_PATH_PHOTOS = 'photos'

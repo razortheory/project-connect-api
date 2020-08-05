@@ -18,3 +18,9 @@ git+https://github.com/razortheory/drf-secure-token
 django-fsm
 django-fsm-admin
 fcm-django>=0.3.2
+
+django-model-utils
+
+django-timezone-field
+django-phonenumber-field
+django-mptt
