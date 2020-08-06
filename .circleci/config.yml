@@ -25,10 +25,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        key: proco-backend-image
+          key: proco-backend-image
       - run:
-        name: Load built image
-        command: docker load -i backend.image
+          name: Load built image
+          command: docker load -i backend.image
       - run:
           name: Building the image
           command: docker build -f docker/Dockerfile . -t rttest/project-connect-api:prod
