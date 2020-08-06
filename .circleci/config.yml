@@ -8,8 +8,32 @@ jobs:
           name: Run Tests
           command: docker-compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit
 
+  build_and_upload:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Building the image
+          command: docker-compose -f docker/docker-compose.yml build
+      - run:
+          name: Pushing to Docker Hub
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker-compose -f docker/docker-compose.yml push backend
+      - run:
+          name: trigger redeploy
+          command: |
+            curl example.com
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - test
+      - build_and_upload:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
