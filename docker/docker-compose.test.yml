@@ -11,6 +11,7 @@ services:
 
   backend:
     container_name: proco_test_backend
+    image: proco_backend
     build:
       context: ..
       dockerfile: docker/Dockerfile

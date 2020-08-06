@@ -23,7 +23,7 @@ jobs:
       - uses: satackey/action-docker-layer-caching@v0.0.5
 
       - name: Build docker image
-        run: docker build -f docker/Dockerfile . -t rttest/project-connect-api:prod
+        run: docker build -f docker/Dockerfile . -t proco_backend
 
       - name: Run tests
         run: docker-compose -f docker/docker-compose.test.yml up --abort-on-container-exit
@@ -32,6 +32,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+          docker tag proco_backend rttest/project-connect-api:prod
           docker push rttest/project-connect-api:prod
 
       - name: Trigger redeploy
