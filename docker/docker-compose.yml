@@ -4,7 +4,7 @@ services:
   backend:
     container_name: proco_prod_backend
     image: rttest/project-connect-api:prod
-    command: bash -c "pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "pipenv run python manage.py migrate && pipenv run python manage.py collectstatic && pipenv run python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     environment:
