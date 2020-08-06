@@ -21,7 +21,7 @@ jobs:
           name: Pushing to Docker Hub
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker-compose -f docker/docker-compose.yml push backend
+            docker push rttest/project-connect-api:prod
       - run:
           name: trigger redeploy
           command: |
