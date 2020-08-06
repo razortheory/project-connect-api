@@ -1,9 +1,9 @@
-version: 1
-update_configs:
-  - package_manager: "python"
+version: 2
+updates:
+  - package-ecosystem: "pip"
     directory: "/"
-    update_schedule: "daily"
-    ignored_updates:
-      - match:
-          dependency_name: "Django"
-          version_requirement: ">=3"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: "Django"
+        versions: ">=3"
