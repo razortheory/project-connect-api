@@ -1,0 +1,49 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+django-debug-toolbar = "*"
+isort = "*"
+flake8 = "*"
+dlint = "*"
+flake8-bandit = "*"
+flake8-blind-except = "*"
+flake8-broken-line = "*"
+flake8-bugbear = "*"
+flake8-comprehensions = "*"
+flake8-eradicate = "*"
+flake8-string-format = "*"
+flake8-commas = "*"
+flake8-quotes = "*"
+flake8-logging-format = "*"
+mccabe = "*"
+pep8-naming = "*"
+pycodestyle = "*"
+flake8-rst-docstrings = "*"
+flake8-pep3101 = "*"
+flake8-mutable = "*"
+
+[packages]
+django-environ = "*"
+psycopg2 = "*"
+celery = "*"
+ipython = "*"
+django-templated-email = "*"
+sentry-sdk = "*"
+newrelic = "*"
+djangorestframework = ">=3.10"
+drf-secure-token = {git = "https://github.com/razortheory/drf-secure-token"}
+django-fsm = "*"
+django-fsm-admin = "*"
+fcm-django = ">=0.3.2"
+gunicorn = "*"
+futures = "*"
+django-storages = {version = "*", extras = ["azure"]}
+django-compressor = "*"
+boto3 = "*"
+Django = ">=2.2,<3"
+
+[requires]
+python_version = "3.8"
