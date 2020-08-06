@@ -3,9 +3,6 @@ version: '3'
 services:
   backend:
     container_name: proco_prod_backend
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
     image: rttest/project-connect-api:prod
     command: bash -c "pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
     environment:
