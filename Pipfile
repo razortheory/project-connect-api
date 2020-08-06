@@ -43,7 +43,7 @@ futures = "*"
 django-storages = {version = "*", extras = ["azure"]}
 django-compressor = "*"
 boto3 = "*"
-Django = ">=2.2,<3"
+Django = ">=2.2,<4"
 django-model-utils = "*"
 django-timezone-field = "*"
 django-mptt = "*"
