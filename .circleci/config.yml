@@ -8,17 +8,17 @@ jobs:
           key: proco-backend-image
       - run:
           name: Load image if available
-          command: /bin/bash -c "[ -f backend.image ] && docker load -i backend.image || true"
+          command: /bin/bash -c "[ -f /tmp/backend.image ] && docker load -i /tmp/backend.image || true"
       - run:
           name: Run Tests
           command: docker-compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit
       - run:
           name: Save image
-          command: docker save rttest/project-connect-api:prod -o backend.image
+          command: docker save rttest/project-connect-api:prod -o /tmp/backend.image
       - save_cache:
           key: proco-backend-image
           paths:
-            - backend.image
+            - /tmp/backend.image
 
   build_and_upload:
     machine: true
@@ -28,7 +28,7 @@ jobs:
           key: proco-backend-image
       - run:
           name: Load built image
-          command: docker load -i backend.image
+          command: docker load -i /tmp/backend.image
       - run:
           name: Building the image
           command: docker build -f docker/Dockerfile . -t rttest/project-connect-api:prod
