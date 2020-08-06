@@ -11,7 +11,6 @@ services:
 
   backend:
     container_name: proco_test_backend
-    image: rttest/project-connect-api:prod
     build:
       context: ..
       dockerfile: docker/Dockerfile
