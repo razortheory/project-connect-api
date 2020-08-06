@@ -14,7 +14,7 @@ jobs:
           command: docker-compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit
       - run:
           name: Save image
-          command: docker-compose -f docker/docker-compose.test.yml save backend -o backend.image
+          command: docker save rttest/project-connect-api:prod -o backend.image
       - save_cache:
           key: proco-backend-image
           paths:
