@@ -24,3 +24,5 @@ django-model-utils
 django-timezone-field
 django-phonenumber-field
 django-mptt
+
+Pillow

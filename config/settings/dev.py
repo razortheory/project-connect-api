@@ -19,7 +19,7 @@ MANAGERS = ADMINS
 # --------------------------------------------------------------------------
 
 DATABASES = {
-    'default': env.db(default='postgres://localhost/proco'),
+    'default': env.db(default='postgis://localhost/proco'),
 }
 
 

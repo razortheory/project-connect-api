@@ -40,7 +40,6 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_secure_token',
     'fcm_django',
-    'phonenumber_field',
     'mptt',
 ]
 
@@ -51,7 +50,7 @@ LOCAL_APPS = [
     'proco.fcm',
     'proco.schools',
     'proco.locations',
-    'proco.connecion_statistics',
+    'proco.connection_statistics',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -214,8 +213,7 @@ FCM_DJANGO_SETTINGS = {
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 
-# Files / photos
+# Images
 # ---------------
 
 IMAGES_PATH = 'images'
-IMAGES_PATH_PHOTOS = 'photos'

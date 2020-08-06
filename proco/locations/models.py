@@ -1,19 +1,20 @@
 from django.contrib.gis.db.models import MultiPolygonField
+from django.contrib.gis.db.models.functions import Union
 from django.db import models
 from django.utils.translation import ugettext as _
 
 from model_utils.models import TimeStampedModel
 from mptt.models import MPTTModel, TreeForeignKey
 
-from proco.locations.utils import get_random_filename
+from proco.locations.utils import get_random_name_image
 
 
 class Country(TimeStampedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=32)
 
-    flag = models.ImageField(verbose_name=_('Country flag'), upload_to=get_random_filename)
-    map_preview = models.ImageField(upload_to=get_random_filename, null=True, blank=True, default=None)
+    flag = models.ImageField(verbose_name=_('Country flag'), upload_to=get_random_name_image)
+    map_preview = models.ImageField(upload_to=get_random_name_image, null=True, blank=True, default=None)
 
     description = models.TextField(max_length=1000, null=True, blank=True)
     data_source = models.TextField(max_length=500, null=True, blank=True)
@@ -49,8 +50,12 @@ class Location(TimeStampedModel, MPTTModel):
 
     def save(self, *args, **kwargs):
         if self.geometry:
-            self.geometry_simplified = self.geometry.simplify(tolerance=0.001)
-            self.country.geometry = self.geometry.boundary
+            self.geometry_simplified = self.geometry.simplify(tolerance=0.05)
+            union_geometry = Union(
+                *Location.objects.filter(
+                    parent__isnull=True, country=self.country,
+                ).values_list('geometry_simplified', flat=True))
+            self.country.geometry = union_geometry.boundary
             self.country.save(update_fields=('geometry',))
 
         super().save(*args, **kwargs)
