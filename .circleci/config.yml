@@ -25,7 +25,7 @@ jobs:
       - run:
           name: trigger redeploy
           command: |
-            curl example.com
+            curl ${DEPLOY_URL}?$key={DEPLOY_API_KEY}
 
 workflows:
   version: 2
