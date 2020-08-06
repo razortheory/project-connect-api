@@ -5,7 +5,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: proco-backend-image
+          key: proco-backend-image-{{ checksum "docker/Dockerfile" }}
       - run:
           name: Load image if available
           command: /bin/bash -c "[ -f /tmp/backend.image ] && docker load -i /tmp/backend.image || true"
@@ -16,7 +16,8 @@ jobs:
           name: Save image
           command: docker save rttest/project-connect-api:prod -o /tmp/backend.image
       - save_cache:
-          key: proco-backend-image
+          key: proco-backend-image-{{ checksum "docker/Dockerfile" }}
+          force: yes
           paths:
             - /tmp/backend.image
 
@@ -25,7 +26,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: proco-backend-image
+          key: proco-backend-image-{{ checksum "docker/Dockerfile" }}
       - run:
           name: Load built image
           command: docker load -i /tmp/backend.image
