@@ -34,7 +34,7 @@ django-templated-email = "*"
 sentry-sdk = "*"
 newrelic = "*"
 djangorestframework = ">=3.10"
-drf-secure-token = {git = "https://github.com/razortheory/drf-secure-token"}
+drf-secure-token = "*"
 django-fsm = "*"
 django-fsm-admin = "*"
 fcm-django = ">=0.3.2"
