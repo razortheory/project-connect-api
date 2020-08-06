@@ -1,8 +1,0 @@
--r common.txt
-
-gunicorn
-futures
-
-django-storages
-django-compressor
-boto3

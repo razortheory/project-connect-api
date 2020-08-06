@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  db:
+    container_name: proco_dev_db
+    image: mdillon/postgis
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: proco
+
+  backend:
+    container_name: proco_dev_backend
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: rttest/project-connect-api:dev
+    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: "config.settings.dev"
+      DATABASE_URL: postgis://test:test@db/proco
+    depends_on:
+      - db
+    volumes:
+      - "..:/code"
