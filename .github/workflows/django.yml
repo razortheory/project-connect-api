@@ -26,7 +26,7 @@ jobs:
         run: docker build -f docker/Dockerfile . -t rttest/project-connect-api:prod
 
       - name: Run tests
-        run: docker-compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit
+        run: docker-compose -f docker/docker-compose.test.yml up --abort-on-container-exit
 
       - name: Push to Docker Hub
         if: github.ref == 'refs/heads/master'
