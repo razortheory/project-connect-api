@@ -2,15 +2,12 @@ version: '3'
 
 services:
   backend:
+    container_name: proco_prod_backend
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      args:
-        REQUIREMENTS_FILE: "prod.txt"
     image: rttest/project-connect-api:prod
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    ports:
-      - "8084:8000"
+    command: bash -c "pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
     environment:
       DJANGO_SETTINGS_MODULE: "config.settings.prod"
     env_file:

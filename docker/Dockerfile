@@ -27,19 +27,22 @@ RUN apt-get install -y --no-install-recommends \
 RUN pip install --upgrade \
     setuptools \
     pip \
-    wheel
+    wheel \
+    pipenv
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH /code
-ENV VIRTUAL_ENV /usr/local
 
-ARG REQUIREMENTS_FILE
-
-ADD requirements /pip
-RUN pip install -r /pip/${REQUIREMENTS_FILE}
-
-ADD . /code/
+ADD Pipfile /code/Pipfile
+ADD Pipfile.lock /code/Pipfile.lock
 
 WORKDIR /code/
+
+ # todo: try to figure out how we can test using dev packages and exclude them from prod build at the same time...
+RUN pipenv install --ignore-pipfile --dev
+
+ADD . /code/
+# cleanup env files if any
+RUN find . -type f -name '.env' -delete
 
 EXPOSE 8000

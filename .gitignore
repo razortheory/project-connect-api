@@ -77,4 +77,4 @@ celerybeat-schedule
 
 # Env config file
 env.config
-config/settings/.env
+.env
