@@ -57,11 +57,6 @@ if CELERY_ENABLED:
     CELERY_TASK_ALWAYS_EAGER = True
 
 
-# New Relic configurations
-# --------------------------------------------------------------------------
-
-NEWRELIC_DJANGO_ACTIVE = False
-
 # Sentry config
 # -------------
 
