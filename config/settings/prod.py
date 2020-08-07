@@ -98,13 +98,6 @@ SERVER_EMAIL_SIGNATURE = env('SERVER_EMAIL_SIGNATURE', default='proco'.capitaliz
 DEFAULT_FROM_EMAIL = SERVER_EMAIL = SERVER_EMAIL_SIGNATURE + ' <{0}>'.format(env('SERVER_EMAIL'))
 
 
-# Google analytics settings
-# --------------------------------------------------------------------------
-
-GOOGLE_ANALYTICS_PROPERTY_ID = env('GA_PROPERTY_ID', default='')
-GA_ENABLED = bool(GOOGLE_ANALYTICS_PROPERTY_ID)
-
-
 if CELERY_ENABLED:
     # Celery configurations
     # http://docs.celeryproject.org/en/latest/configuration.html
@@ -124,12 +117,6 @@ if CELERY_ENABLED:
     )
 
 
-# New Relic configurations
-# --------------------------------------------------------------------------
-
-# Enable/disable run newrelic python agent with django application.
-NEWRELIC_DJANGO_ACTIVE = env.bool('NEWRELIC_DJANGO_ACTIVE')
-
 # Sentry config
 # -------------
 
@@ -141,9 +128,3 @@ if SENTRY_ENABLED:
         SENTRY_DSN,
         integrations=[DjangoIntegration(), CeleryIntegration()],
     )
-
-
-# FCM Push Notifications configuration
-# ------------------------------------
-
-FCM_DJANGO_SETTINGS['FCM_SERVER_KEY'] = env('FCM_SERVER_KEY', default=None)

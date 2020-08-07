@@ -7,7 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('admin/', include('proco.custom_auth.urls')),
     path('api/', include([
-        path('fcm/', include('proco.fcm.api_urls')),
         path('custom-auth/', include('proco.custom_auth.api_urls')),
     ])),
 ]

@@ -39,15 +39,12 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_secure_token',
-    'fcm_django',
     'mptt',
 ]
 
 LOCAL_APPS = [
     'proco.mailing',
-    'proco.taskapp',
     'proco.custom_auth',
-    'proco.fcm',
     'proco.schools',
     'proco.locations',
     'proco.connection_statistics',
@@ -100,7 +97,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'proco.context_processors.google_analytics',
             ],
             'loaders': [
                 'django.template.loaders.filesystem.Loader',
@@ -195,22 +191,6 @@ if CELERY_ENABLED:
 
 TEMPLATED_EMAIL_TEMPLATE_DIR = 'email'
 TEMPLATED_EMAIL_FILE_EXTENSION = 'html'
-
-
-# FCM Push Notifications configuration
-# ------------------------------------
-
-FCM_DJANGO_SETTINGS = {
-    'FCM_SERVER_KEY': None,
-    # true if you want to have only one active device per registered user at a time
-    'ONE_DEVICE_PER_USER': False,
-    # devices to which notifications cannot be sent, are deleted upon receiving error response from FCM
-    'DELETE_INACTIVE_DEVICES': True,
-}
-
-# Phone settings
-# --------------
-PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 
 # Images
