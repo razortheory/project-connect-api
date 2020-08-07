@@ -13,13 +13,52 @@ services:
     container_name: proco_dev_backend
     build:
       context: ..
-      dockerfile: docker/Dockerfile
-    image: rttest/project-connect-api:dev
+      dockerfile: docker/Dockerfile-dev
     command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: "config.settings.dev"
+      DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
+      CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
     depends_on:
       - db
+      - rabbitmq
     volumes:
       - "..:/code"
+
+  rabbitmq:
+    image: rabbitmq:alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+
+  celery_beat:
+    container_name: proco_dev_beat
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-dev
+    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run celery beat --app=proco.taskapp --loglevel=INFO"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DATABASE_URL: postgis://test:test@db/proco
+      CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
+    volumes:
+      - "..:/code"
+    depends_on:
+      - db
+      - rabbitmq
+
+  celery_worker:
+    container_name: proco_dev_celeryd
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-dev
+    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run celery worker --app=proco.taskapp --loglevel=INFO --time-limit=300 --concurrency=2 --soft-time-limit=60"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DATABASE_URL: postgis://test:test@db/proco
+      CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
+    volumes:
+      - "..:/code"
+    depends_on:
+      - db
+      - rabbitmq

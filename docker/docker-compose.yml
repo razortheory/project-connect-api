@@ -1,13 +1,50 @@
 version: '3'
 
 services:
+  rabbitmq:
+    image: rabbitmq:alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    volumes:
+      - "./rabbitmq:/var/lib/rabbitmq"
+
   backend:
     container_name: proco_prod_backend
     image: rttest/project-connect-api:prod
-    command: bash -c "pipenv run python manage.py migrate && pipenv run python manage.py collectstatic && pipenv run python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "pipenv run python manage.py migrate --noinput && pipenv run python manage.py collectstatic --noinput && pipenv run python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     environment:
       DJANGO_SETTINGS_MODULE: "config.settings.prod"
+    depends_on:
+      - rabbitmq
     env_file:
-      - ../config/settings/.env
+      - .env
+
+  celery_beat:
+    container_name: proco_prod_beat
+    image: rttest/project-connect-api:prod
+    command: pipenv run celery beat --app=proco.taskapp --logfile=/logs/celerybeat.log --loglevel=INFO
+    environment:
+      DJANGO_SETTINGS_MODULE: "config.settings.prod"
+    env_file:
+      - .env
+    volumes:
+      - './logs:/logs'
+      - './celery:/celery'
+    depends_on:
+      - rabbitmq
+
+  celery_worker:
+    container_name: proco_prod_celeryd
+    image: rttest/project-connect-api:prod
+    command: pipenv run celery worker --app=proco.taskapp --logfile=/logs/celeryd.log --loglevel=INFO --time-limit=300 --concurrency=2 --soft-time-limit=60
+    environment:
+      DJANGO_SETTINGS_MODULE: "config.settings.prod"
+    env_file:
+      - .env
+    volumes:
+      - './logs:/logs'
+    depends_on:
+      - rabbitmq
