@@ -5,10 +5,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('admin/', include('proco.custom_auth.urls')),
-    path('api/', include([
-        path('custom-auth/', include('proco.custom_auth.api_urls')),
-    ])),
 ]
 
 
