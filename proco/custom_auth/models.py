@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.contrib.sites.models import Site
 from django.core import validators
 from django.db import models
@@ -7,6 +7,10 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from templated_email import send_templated_mail
+
+
+class ApplicationUserManager(UserManager):
+    pass
 
 
 class ApplicationUser(AbstractBaseUser, PermissionsMixin):
@@ -42,6 +46,8 @@ class ApplicationUser(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    objects = ApplicationUserManager()
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
