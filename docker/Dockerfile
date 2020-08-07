@@ -34,11 +34,6 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH /code
 
 RUN mkdir /code
-RUN mkdir /celery
-# celerybeat storage
-RUN ln -s /celery/celerybeat-schedule.db /code/celerybeat-schedule.db
-RUN ln -s /celery/celerybeat-schedule /code/celerybeat-schedule
-RUN ln -s /celery/celerybeat.pid /code/celerybeat.pid
 
 ADD Pipfile /code/Pipfile
 ADD Pipfile.lock /code/Pipfile.lock
