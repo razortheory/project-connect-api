@@ -34,12 +34,14 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'django.contrib.gis',
 ]
 
 THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_secure_token',
     'mptt',
+    'crispy_forms',
 ]
 
 LOCAL_APPS = [
@@ -197,3 +199,8 @@ TEMPLATED_EMAIL_FILE_EXTENSION = 'html'
 # ---------------
 
 IMAGES_PATH = 'images'
+
+
+# Crispy forms
+# ---------------
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

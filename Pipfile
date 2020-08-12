@@ -47,6 +47,7 @@ django-model-utils = "*"
 django-timezone-field = "*"
 django-mptt = "*"
 pillow = "*"
+django-crispy-forms = "*"
 
 [requires]
 python_version = "3.8"

@@ -80,3 +80,4 @@ celerybeat.pid
 # Env config file
 env.config
 .env
+/media/
