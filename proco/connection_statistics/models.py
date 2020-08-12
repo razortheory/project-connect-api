@@ -44,6 +44,7 @@ class CountryWeeklyStatus(models.Model):
 
     class Meta:
         verbose_name = _('Country Weekly Status')
+        verbose_name_plural = _('Country Weekly Statuses')
         ordering = ('id',)
 
     def __str__(self):
@@ -81,6 +82,7 @@ class SchoolWeeklyStatus(models.Model):
 
     class Meta:
         verbose_name = _('School Weekly Status')
+        verbose_name_plural = _('School Weekly Statuses')
         ordering = ('id',)
 
     def __str__(self):
@@ -95,6 +97,7 @@ class CountryDailyStatus(ConnectivityStatistics, models.Model):
 
     class Meta:
         verbose_name = _('Country Daily Status')
+        verbose_name_plural = _('Country Daily Statuses')
         ordering = ('id',)
 
     def __str__(self):
@@ -109,6 +112,7 @@ class SchoolDailyStatus(ConnectivityStatistics, models.Model):
 
     class Meta:
         verbose_name = _('School Daily Status')
+        verbose_name_plural = _('School Daily Statuses')
         ordering = ('id',)
 
     def __str__(self):
@@ -120,6 +124,7 @@ class RealTimeConnectivity(ConnectivityStatistics, TimeStampedModel):
 
     class Meta:
         verbose_name = _('Country Weekly Status')
+        verbose_name_plural = _('Country Weekly Statuses')
         ordering = ('id',)
 
     def __str__(self):
