@@ -17,7 +17,7 @@ services:
       dockerfile: docker/Dockerfile
     command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run /code/scripts/runtests.sh"
     environment:
-      DATABASE_URL: postgres://test:test@db/test
+      DATABASE_URL: postgis://test:test@db/test
       DJANGO_SETTINGS_MODULE: config.settings.dev
     depends_on:
       - db

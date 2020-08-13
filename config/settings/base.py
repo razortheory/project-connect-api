@@ -34,10 +34,12 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'django.contrib.gis',
 ]
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'rest_framework_gis',
     'drf_secure_token',
     'mptt',
 ]
