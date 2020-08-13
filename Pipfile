@@ -47,6 +47,8 @@ django-model-utils = "*"
 django-timezone-field = "*"
 django-mptt = "*"
 pillow = "*"
+djangorestframework-gis = "*"
+factory-boy = "*"
 
 [requires]
 python_version = "3.8"
