@@ -80,4 +80,5 @@ celerybeat.pid
 # Env config file
 env.config
 .env
+/config/settings/custom.py
 /media/

@@ -10,7 +10,7 @@ from proco.utils.utils import get_current_week, get_current_weekday, get_current
 
 
 class ConnectivityStatistics(models.Model):
-    connectivity_speed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, default=None)
+    connectivity_speed = models.FloatField(blank=True, null=True, default=None)
     connectivity_latency = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
 
     class Meta:
@@ -38,7 +38,7 @@ class CountryWeeklyStatus(models.Model):
     schools_connectivity_no = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connectivity_moderate = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connectivity_good = models.PositiveIntegerField(blank=True, null=True, default=None)
-    connectivity_speed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, default=None)
+    connectivity_speed = models.FloatField(blank=True, null=True, default=None)
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
     avg_distance_school = models.FloatField(blank=True, null=True, default=None)
 
@@ -51,17 +51,6 @@ class CountryWeeklyStatus(models.Model):
 
 
 class SchoolWeeklyStatus(models.Model):
-    CONNECTIVITY_STATUS_TYPES = Choices(
-        ('unknown', _('Unknown')),
-        ('no', _('No')),
-        ('2g', _('2G')),
-        ('3g', _('3G')),
-        ('4g', _('4G')),
-        ('fiber', _('Fiber')),
-        ('cable', _('Cable')),
-        ('dsl', _('DSL')),
-    )
-
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
@@ -73,11 +62,11 @@ class SchoolWeeklyStatus(models.Model):
     electricity_availability = models.BooleanField(default=False)
     computer_lab = models.BooleanField(default=False)
     num_computers = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
-    connectivity_status = models.CharField(max_length=64, choices=CONNECTIVITY_STATUS_TYPES,
-                                           default=CONNECTIVITY_STATUS_TYPES.unknown)
-    connectivity_speed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, default=None)
+    connectivity = models.BooleanField(default=False)
+    connectivity_status = models.CharField(max_length=64, default='unknown')
+    connectivity_speed = models.FloatField(blank=True, null=True, default=None)
     connectivity_latency = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
-    connectivity_availability = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=None)
+    connectivity_availability = models.FloatField(blank=True, null=True, default=None)
 
     class Meta:
         verbose_name = _('School Weekly Status')

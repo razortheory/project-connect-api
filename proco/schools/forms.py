@@ -1,6 +1,7 @@
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, ButtonHolder, Layout, Field
 from django import forms
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import ButtonHolder, Field, Layout, Submit
 
 from proco.locations.models import Country
 
@@ -19,6 +20,6 @@ class ImportSchoolsCSVForm(forms.Form):
             Field('country'),
             Field('csv_file'),
             ButtonHolder(
-                Submit('submit', 'Submit', css_class='button')
-            )
+                Submit('submit', 'Submit', css_class='button'),
+            ),
         )
