@@ -5,13 +5,18 @@ from django.urls import path
 from proco.schools.forms import ImportSchoolsCSVForm
 from proco.schools.models import FileImport, School
 from proco.schools.tasks import process_loaded_file
+from proco.utils.admin import CountryNameDisplayAdminMixin, LocationNameDisplayAdminMixin
 
 
 @admin.register(School)
-class SchoolAdmin(admin.ModelAdmin):
+class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, admin.ModelAdmin):
+    list_display = ('name', 'get_country_name', 'get_location_name', 'address', 'postal_code',
+                    'education_level', 'environment', 'school_type')
+    list_select_related = ('country', 'location')
+    list_filter = ('education_level', 'environment', 'school_type')
+    search_fields = ('name', 'country__name', 'location__name')
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
-    search_fields = ('name',)
 
     def get_urls(self):
         urls = super().get_urls()
