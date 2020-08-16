@@ -11,6 +11,7 @@ from proco.schools.tasks import process_loaded_file
 class SchoolAdmin(admin.ModelAdmin):
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
+    search_fields = ('name',)
 
     def get_urls(self):
         urls = super().get_urls()

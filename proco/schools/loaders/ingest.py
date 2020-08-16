@@ -1,17 +1,22 @@
 from datetime import date
 from typing import Dict, Iterable, List
 
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.schools.loaders import csv as csv_loader
+from proco.schools.loaders import xls as xls_loader
 from proco.schools.models import School
 
 
 def load_data(uploaded_file):
     if uploaded_file.name.endswith('.csv'):
         loader = csv_loader
+    elif uploaded_file.name.endswith('.xls'):
+        loader = xls_loader
+    elif uploaded_file.name.endswith('.xlsx'):
+        loader = xls_loader
     else:
         raise NotImplementedError
 
@@ -56,7 +61,7 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             school_data['admin_4_name'] = data['admin4']
 
         school_data['name'] = data['name']
-        school_data['geopoint'] = GEOSGeometry('POINT({1} {0})'.format(data['lat'], data['lon']))
+        school_data['geopoint'] = Point(x=data['lon'], y=data['lat'])
 
         # static data
         if 'educ_level' in data:

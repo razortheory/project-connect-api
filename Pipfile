@@ -50,6 +50,7 @@ pillow = "*"
 djangorestframework-gis = "*"
 factory-boy = "*"
 django-crispy-forms = "*"
+xlrd = "*"
 
 [requires]
 python_version = "3.8"
