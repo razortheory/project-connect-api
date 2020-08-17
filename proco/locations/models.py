@@ -22,6 +22,8 @@ class Country(TimeStampedModel):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = _('Country')
+        verbose_name_plural = _('Countries')
 
     def __str__(self):
         return f'{self.name}'
