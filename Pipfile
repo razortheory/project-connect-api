@@ -49,6 +49,7 @@ django-mptt = "*"
 pillow = "*"
 djangorestframework-gis = "*"
 factory-boy = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.8"

@@ -1,5 +1,4 @@
 from django.contrib.gis.db.models import MultiPolygonField
-from django.contrib.gis.db.models.functions import Union
 from django.db import models
 from django.utils.translation import ugettext as _
 
@@ -51,11 +50,5 @@ class Location(TimeStampedModel, MPTTModel):
     def save(self, *args, **kwargs):
         if self.geometry:
             self.geometry_simplified = self.geometry.simplify(tolerance=0.05)
-            union_geometry = Union(
-                *Location.objects.filter(
-                    parent__isnull=True, country=self.country,
-                ).values_list('geometry_simplified', flat=True))
-            self.country.geometry = union_geometry.boundary
-            self.country.save(update_fields=('geometry',))
 
         super().save(*args, **kwargs)
