@@ -8,6 +8,6 @@ class CountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = (
             'id', 'name', 'code', 'flag',
-            'map_preview', 'description', 'data_source', 'geometry',
+            'map_preview', 'description', 'data_source', 'geometry_simplified',
         )
         read_only_fields = fields
