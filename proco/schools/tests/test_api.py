@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from rest_framework import status
 
+from proco.connection_statistics.tests.factories import SchoolWeeklyStatusFactory
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
 from proco.utils.tests import TestAPIViewSetMixin
@@ -16,6 +17,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.country = CountryFactory()
         cls.school_one = SchoolFactory(country=cls.country, location__country=cls.country)
         cls.school_two = SchoolFactory(country=cls.country, location__country=cls.country)
+        SchoolWeeklyStatusFactory(school=cls.school_one)
 
     def test_schools_list(self):
         response = self.forced_auth_req(
@@ -40,3 +42,4 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.school_one.id)
+        self.assertIn('statistics', response.data)

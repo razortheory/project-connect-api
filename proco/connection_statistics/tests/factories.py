@@ -2,8 +2,9 @@ from factory import SubFactory
 from factory import django as django_factory
 from factory import fuzzy
 
-from proco.connection_statistics.models import CountryWeeklyStatus
+from proco.connection_statistics.models import CountryWeeklyStatus, SchoolWeeklyStatus
 from proco.locations.tests.factories import CountryFactory
+from proco.schools.tests.factories import SchoolFactory
 
 
 class CountryWeeklyStatusFactory(django_factory.DjangoModelFactory):
@@ -21,3 +22,17 @@ class CountryWeeklyStatusFactory(django_factory.DjangoModelFactory):
 
     class Meta:
         model = CountryWeeklyStatus
+
+
+class SchoolWeeklyStatusFactory(django_factory.DjangoModelFactory):
+    school = SubFactory(SchoolFactory)
+    year = fuzzy.FuzzyInteger(1900, 2200)
+    week = fuzzy.FuzzyInteger(1, 53)
+
+    connectivity_status = fuzzy.FuzzyChoice(dict(SchoolWeeklyStatus.CONNECTIVITY_STATUS_TYPES).keys())
+    connectivity_speed = fuzzy.FuzzyFloat(0.0, 100.0)
+    connectivity_latency = fuzzy.FuzzyInteger(1, 100)
+    connectivity_availability = fuzzy.FuzzyFloat(0.0, 100.0)
+
+    class Meta:
+        model = SchoolWeeklyStatus

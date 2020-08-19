@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from proco.connection_statistics.serializers import SchoolWeeklyStatusSerializer
 from proco.locations.serializers import LocationSerializer
 from proco.schools.models import School
 
@@ -19,8 +20,12 @@ class ListSchoolSerializer(BaseSchoolSerializer):
 
 class SchoolSerializer(BaseSchoolSerializer):
     location = LocationSerializer()
+    statistics = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'location', 'gps_confidence', 'address', 'postal_code',
+            'location', 'statistics', 'gps_confidence', 'address', 'postal_code',
         )
+
+    def get_statistics(self, instance):
+        return SchoolWeeklyStatusSerializer(instance.weekly_status.first()).data

@@ -10,7 +10,7 @@ class CountryViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Country.objects.all()
+    queryset = Country.objects.all().prefetch_related('weekly_status')
     serializer_class = CountrySerializer
     filter_backends = (
         OrderingFilter,
