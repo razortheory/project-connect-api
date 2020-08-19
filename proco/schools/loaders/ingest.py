@@ -61,7 +61,12 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             school_data['admin_4_name'] = data['admin4']
 
         school_data['name'] = data['name']
-        school_data['geopoint'] = Point(x=data['lon'], y=data['lat'])
+
+        try:
+            school_data['geopoint'] = Point(x=data['lon'], y=data['lat'])
+        except TypeError:
+            errors.append(_('Row {0}: Bad data provided for geopoint').format(i))
+            continue
 
         # static data
         if 'educ_level' in data:
