@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.gis.db.models import PointField
 from django.shortcuts import redirect, render
 from django.urls import path
+
 from mapbox_location_field.admin import MapAdmin
 from mapbox_location_field.widgets import MapAdminInput
 
