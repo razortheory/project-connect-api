@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = [
     'drf_secure_token',
     'mptt',
     'crispy_forms',
+    'mapbox_location_field',
 ]
 
 LOCAL_APPS = [

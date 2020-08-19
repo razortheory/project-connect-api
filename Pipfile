@@ -51,6 +51,7 @@ djangorestframework-gis = "*"
 factory-boy = "*"
 django-crispy-forms = "*"
 xlrd = "*"
+django-mapbox-location-field = "*"
 
 [requires]
 python_version = "3.8"
