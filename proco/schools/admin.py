@@ -1,7 +1,8 @@
 from django.contrib import admin, messages
 from django.contrib.gis.db.models import PointField
 from django.shortcuts import redirect, render
-from django.urls import path
+from django.urls import path, reverse
+from django.utils.safestring import mark_safe
 
 from mapbox_location_field.admin import MapAdmin
 from mapbox_location_field.widgets import MapAdminInput
@@ -24,6 +25,7 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
     search_fields = ('name', 'country__name', 'location__name')
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
+    readonly_fields = ('get_weekly_stats_url',)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -48,6 +50,12 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
                 return redirect('admin:schools_fileimport_change', imported_file.id)
 
         return render(request, 'admin/schools/import_csv.html', {'form': form})
+
+    def get_weekly_stats_url(self, obj):
+        stats_url = reverse('admin:connection_statistics_schoolweeklystatus_changelist')
+        return mark_safe(f'<a href="{stats_url}?school={obj.id}" target="_blank">Here</a>')  # noqa: S703,S308
+
+    get_weekly_stats_url.short_description = 'Weekly Stats'
 
 
 @admin.register(FileImport)
