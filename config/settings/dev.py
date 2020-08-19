@@ -66,4 +66,4 @@ SENTRY_ENABLED = False
 # Mapbox
 # --------------
 
-MAPBOX_KEY = env('MAPBOX_KEY', default='')
+MAPBOX_KEY = env('MAPBOX_KEY', default='pk.eyJ1IjoiaXZhbnJ0IiwiYSI6ImNrZGlwN3B6ejA3M3QycnAzZHR4NWxnMXIifQ.wXvdCl_qPQ55hb8Bgkeb5A')

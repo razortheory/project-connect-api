@@ -1,13 +1,12 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from mapbox_location_field.spatial.admin import SpatialMapAdmin
 
 from proco.locations.models import Country, Location
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
 @admin.register(Country)
-class CountryAdmin(SpatialMapAdmin):
+class CountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'flag_preview', 'location_preview')
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
@@ -26,7 +25,7 @@ class CountryAdmin(SpatialMapAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(CountryNameDisplayAdminMixin, SpatialMapAdmin):
+class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'get_country_name')
     list_select_related = ('country', 'parent')
     search_fields = ('name', 'country__name')
