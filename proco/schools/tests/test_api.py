@@ -39,3 +39,4 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             user=None,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.school_one.id)

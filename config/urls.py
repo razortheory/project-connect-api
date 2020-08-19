@@ -7,7 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include([
         path('locations/', include('proco.locations.api_urls')),
-        path('schools/', include('proco.schools.api_urls')),
+        path('locations/', include('proco.schools.api_urls')),
     ])),
 ]
 

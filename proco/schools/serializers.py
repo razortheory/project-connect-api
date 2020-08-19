@@ -1,17 +1,26 @@
 from rest_framework import serializers
 
-from proco.locations.serializers import CountrySerializer, LocationSerializer
+from proco.locations.serializers import LocationSerializer
 from proco.schools.models import School
 
 
-class SchoolSerializer(serializers.ModelSerializer):
-    country = CountrySerializer()
-    location = LocationSerializer()
-
+class BaseSchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
         fields = (
-            'id', 'name', 'country', 'location', 'timezone', 'geopoint', 'gps_confidence',
-            'altitude', 'address', 'postal_code', 'email', 'education_level', 'environment', 'school_type',
+            'id', 'name', 'geopoint',
         )
         read_only_fields = fields
+
+
+class ListSchoolSerializer(BaseSchoolSerializer):
+    pass
+
+
+class SchoolSerializer(BaseSchoolSerializer):
+    location = LocationSerializer()
+
+    class Meta(BaseSchoolSerializer.Meta):
+        fields = BaseSchoolSerializer.Meta.fields + (
+            'location', 'gps_confidence', 'address', 'postal_code',
+        )

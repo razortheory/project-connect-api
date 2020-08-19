@@ -2,7 +2,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
 
 from proco.locations.models import Country
-from proco.locations.serializers import CountrySerializer
+from proco.locations.serializers import CountrySerializer, DetailCountrySerializer, ListCountrySerializer
 
 
 class CountryViewSet(
@@ -17,3 +17,10 @@ class CountryViewSet(
     )
     ordering = ('name',)
     ordering_fields = ('name',)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            serializer_class = ListCountrySerializer
+        else:
+            serializer_class = DetailCountrySerializer
+        return serializer_class
