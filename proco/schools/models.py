@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.gis.db.models import PointField
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -7,41 +8,53 @@ from model_utils.models import TimeStampedModel
 from timezone_field import TimeZoneField
 
 from proco.locations.models import Country, Location
+from proco.schools.utils import get_imported_file_path
 
 
 class School(TimeStampedModel):
-    EDUCATION_LEVEL_TYPES = Choices(
-        ('preschool', _('Early childhood education')),
-        ('primary', _('Primary education')),
-        ('secondary', _('Secondary education')),
-    )
-    ENVIRONMENT_TYPES = Choices(
-        ('urban', _('Urban')),
-        ('semi_rural', _('Semi-rural')),
-        ('rural', _('Rural')),
-    )
-    SCHOOL_TYPES = Choices(
-        ('private', _('Private')),
-        ('government', _('Government')),
-        ('religious', _('Religious')),
-    )
+    external_id = models.CharField(max_length=50, blank=True, db_index=True)
     name = models.CharField(max_length=255)
+
     country = models.ForeignKey(Country, related_name='schools', on_delete=models.CASCADE)
-    location = models.ForeignKey(Location, related_name='schools', on_delete=models.CASCADE)
-    timezone = TimeZoneField()
+    location = models.ForeignKey(Location, null=True, blank=True, related_name='schools', on_delete=models.CASCADE)
+    admin_1_name = models.CharField(max_length=100, blank=True)
+    admin_2_name = models.CharField(max_length=100, blank=True)
+    admin_3_name = models.CharField(max_length=100, blank=True)
+    admin_4_name = models.CharField(max_length=100, blank=True)
     geopoint = PointField(verbose_name=_('Point'), null=True, blank=True)
-    gps_confidence = models.DecimalField(max_digits=5, decimal_places=5)  # max_digits, decimal_places?
-    altitude = models.PositiveIntegerField()
-    address = models.CharField(max_length=255)
-    postal_code = models.CharField(max_length=128)
+
+    timezone = TimeZoneField(blank=True, null=True)
+    gps_confidence = models.FloatField(null=True, blank=True)
+    altitude = models.PositiveIntegerField(blank=True, null=True)
+    address = models.CharField(blank=True, max_length=255)
+    postal_code = models.CharField(blank=True, max_length=128)
     email = models.EmailField(max_length=128, null=True, blank=True, default=None)
-    education_level = models.CharField(max_length=64, choices=EDUCATION_LEVEL_TYPES,
-                                       default=EDUCATION_LEVEL_TYPES.preschool)
-    environment = models.CharField(max_length=64, choices=ENVIRONMENT_TYPES, default=ENVIRONMENT_TYPES.urban)
-    school_type = models.CharField(max_length=64, choices=SCHOOL_TYPES, default=SCHOOL_TYPES.private)
+    education_level = models.CharField(blank=True, max_length=64)
+    environment = models.CharField(blank=True, max_length=64)
+    school_type = models.CharField(blank=True, max_length=64)
 
     class Meta:
         ordering = ('id',)
 
     def __str__(self):
         return f'{self.country} - {self.name}'
+
+
+class FileImport(TimeStampedModel):
+    STATUSES = Choices(
+        ('pending', _('Pending')),
+        ('started', _('Started')),
+        ('completed', _('Completed')),
+        ('failed', _('Failed')),
+    )
+
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded_file = models.FileField(upload_to=get_imported_file_path)
+    status = models.CharField(max_length=10, choices=STATUSES, default=STATUSES.pending)
+    errors = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.uploaded_file.name
+
+    class Meta:
+        ordering = ('id',)
