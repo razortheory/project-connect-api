@@ -16,7 +16,7 @@ class CountryNameDisplayAdminMixin(object):
 
 class LocationNameDisplayAdminMixin(object):
     def get_location_name(self, obj):
-        return obj.location.name
+        return obj.location.name if obj.location else ''
 
     get_location_name.short_description = 'Location Name'
     get_location_name.admin_order_field = 'location__name'

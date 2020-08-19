@@ -51,6 +51,8 @@ djangorestframework-gis = "*"
 factory-boy = "*"
 django-filter = "*"
 drf-nested-routers = "*"
+django-crispy-forms = "*"
+xlrd = "*"
 
 [requires]
 python_version = "3.8"

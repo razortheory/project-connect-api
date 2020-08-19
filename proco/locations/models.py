@@ -8,7 +8,21 @@ from mptt.models import MPTTModel, TreeForeignKey
 from proco.locations.utils import get_random_name_image
 
 
-class Country(TimeStampedModel):
+class GeometryMixin(models.Model):
+    geometry = MultiPolygonField(verbose_name=_('Country border geometry'), null=True, blank=True)
+    geometry_simplified = MultiPolygonField(verbose_name=_('Simplified Geometry'), null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.geometry:
+            self.geometry_simplified = self.geometry.simplify(tolerance=0.05)
+
+        super().save(*args, **kwargs)
+
+
+class Country(GeometryMixin, TimeStampedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=32)
 
@@ -17,8 +31,6 @@ class Country(TimeStampedModel):
 
     description = models.TextField(max_length=1000, null=True, blank=True)
     data_source = models.TextField(max_length=500, null=True, blank=True)
-
-    geometry = MultiPolygonField(verbose_name=_('Country border geometry'), null=True, blank=True)
 
     class Meta:
         ordering = ('name',)
@@ -29,7 +41,7 @@ class Country(TimeStampedModel):
         return f'{self.name}'
 
 
-class Location(TimeStampedModel, MPTTModel):
+class Location(GeometryMixin, TimeStampedModel, MPTTModel):
     name = models.CharField(max_length=255)
     country = models.ForeignKey(Country, related_name='country_location', on_delete=models.CASCADE)
     parent = TreeForeignKey(
@@ -40,17 +52,9 @@ class Location(TimeStampedModel, MPTTModel):
         db_index=True,
         on_delete=models.CASCADE,
     )
-    geometry = MultiPolygonField(verbose_name=_('Geometry'))
-    geometry_simplified = MultiPolygonField(verbose_name=_('Simplified Geometry'), null=True, blank=True)
 
     class Meta:
         ordering = ('id',)
 
     def __str__(self):
         return f'{self.name} - {self.country}'
-
-    def save(self, *args, **kwargs):
-        if self.geometry:
-            self.geometry_simplified = self.geometry.simplify(tolerance=0.05)
-
-        super().save(*args, **kwargs)

@@ -42,6 +42,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_gis',
     'drf_secure_token',
     'mptt',
+    'crispy_forms',
 ]
 
 LOCAL_APPS = [
@@ -199,3 +200,8 @@ TEMPLATED_EMAIL_FILE_EXTENSION = 'html'
 # ---------------
 
 IMAGES_PATH = 'images'
+
+
+# Crispy forms
+# ---------------
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
