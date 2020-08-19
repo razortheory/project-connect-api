@@ -52,6 +52,17 @@ class CountryWeeklyStatus(models.Model):
 
 
 class SchoolWeeklyStatus(models.Model):
+    CONNECTIVITY_STATUS_TYPES = Choices(
+        ('unknown', _('Unknown')),
+        ('no', _('No')),
+        ('2g', _('2G')),
+        ('3g', _('3G')),
+        ('4g', _('4G')),
+        ('fiber', _('Fiber')),
+        ('cable', _('Cable')),
+        ('dsl', _('DSL')),
+    )
+
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
