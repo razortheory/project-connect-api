@@ -1,4 +1,7 @@
 from django.test import TestCase
+from django.urls import reverse
+
+from rest_framework import status
 
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
@@ -15,18 +18,24 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.school_two = SchoolFactory(country=cls.country, location__country=cls.country)
 
     def test_schools_list(self):
-        self._test_list(
-            user=None, expected_objects=[self.school_one, self.school_two],
+        response = self.forced_auth_req(
+            'get',
+            reverse('schools:schools-list', args=[self.country.id]),
+            user=None,
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorization_user(self):
+        response = self.forced_auth_req(
+            'get',
+            reverse('schools:schools-list', args=[self.country.id]),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_schools_detail(self):
-        self._test_retrieve(
-            user=None, instance=self.school_one,
+        response = self.forced_auth_req(
+            'get',
+            reverse('schools:schools-detail', args=[self.country.id, self.school_one.id]),
+            user=None,
         )
-
-    def test_schools_list_filtered_by_country(self):
-        SchoolFactory()
-        self._test_list(
-            user=None, expected_objects=[self.school_one, self.school_two],
-            data={'country': self.country.id},
-        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -5,7 +5,7 @@ from rest_framework import routers
 from proco.schools import api
 
 router = routers.SimpleRouter()
-router.register(r'schools', api.SchoolsViewSet, basename='schools')
+router.register(r'country//(?P<country_id>[0-9]+)/schools', api.SchoolsViewSet, basename='schools')
 
 
 app_name = 'schools'

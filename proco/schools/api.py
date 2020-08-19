@@ -16,4 +16,6 @@ class SchoolsViewSet(
     filter_backends = (
         DjangoFilterBackend,
     )
-    filterset_fields = ('country', 'location')
+
+    def get_queryset(self):
+        return self.queryset.filter(country_id=self.kwargs['country_id'])
