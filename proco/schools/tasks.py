@@ -1,3 +1,5 @@
+import traceback
+
 from django.db import transaction
 
 from proco.locations.models import Country
@@ -40,5 +42,6 @@ def process_loaded_file(country_pk: int, pk: int):
         imported_file.save()
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
+        imported_file.errors = traceback.format_exc()
         imported_file.save()
         raise
