@@ -7,7 +7,7 @@ from proco.utils.admin import CountryNameDisplayAdminMixin
 
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'flag_preview',)
+    list_display = ('name', 'code', 'flag_preview')
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
 
