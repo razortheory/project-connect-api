@@ -123,8 +123,8 @@ class RealTimeConnectivity(ConnectivityStatistics, TimeStampedModel):
     school = models.ForeignKey(School, related_name='realtime_status', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Country Weekly Status')
-        verbose_name_plural = _('Country Weekly Statuses')
+        verbose_name = _('Real Time Connectivity')
+        verbose_name_plural = _('Real Time Connectivities')
         ordering = ('id',)
 
     def __str__(self):
