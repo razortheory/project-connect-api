@@ -1,6 +1,10 @@
 from django.contrib import admin, messages
+from django.contrib.gis.db.models import PointField
 from django.shortcuts import redirect, render
 from django.urls import path
+
+from mapbox_location_field.admin import MapAdmin
+from mapbox_location_field.widgets import MapAdminInput
 
 from proco.schools.forms import ImportSchoolsCSVForm
 from proco.schools.models import FileImport, School
@@ -9,7 +13,10 @@ from proco.utils.admin import CountryNameDisplayAdminMixin, LocationNameDisplayA
 
 
 @admin.register(School)
-class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, admin.ModelAdmin):
+class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, MapAdmin):
+    formfield_overrides = {
+        PointField: {'widget': MapAdminInput},
+    }
     list_display = ('name', 'get_country_name', 'get_location_name', 'address', 'postal_code',
                     'education_level', 'environment', 'school_type')
     list_select_related = ('country', 'location')

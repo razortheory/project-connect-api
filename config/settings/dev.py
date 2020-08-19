@@ -61,3 +61,9 @@ if CELERY_ENABLED:
 # -------------
 
 SENTRY_ENABLED = False
+
+
+# Mapbox
+# --------------
+
+MAPBOX_KEY = env('MAPBOX_KEY', default='')

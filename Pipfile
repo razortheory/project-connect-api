@@ -53,6 +53,7 @@ django-filter = "*"
 drf-nested-routers = "*"
 django-crispy-forms = "*"
 xlrd = "*"
+django-mapbox-location-field = "*"
 
 [requires]
 python_version = "3.8"

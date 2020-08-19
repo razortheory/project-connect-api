@@ -128,3 +128,9 @@ if SENTRY_ENABLED:
         SENTRY_DSN,
         integrations=[DjangoIntegration(), CeleryIntegration()],
     )
+
+
+# Mapbox
+# --------------
+
+MAPBOX_KEY = env('MAPBOX_KEY', default='')
