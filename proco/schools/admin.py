@@ -20,7 +20,7 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
     list_display = ('name', 'get_country_name', 'get_location_name', 'address', 'postal_code',
                     'education_level', 'environment', 'school_type')
     list_select_related = ('country', 'location')
-    list_filter = ('education_level', 'environment', 'school_type')
+    list_filter = ('country', 'education_level', 'environment', 'school_type')
     search_fields = ('name', 'country__name', 'location__name')
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
