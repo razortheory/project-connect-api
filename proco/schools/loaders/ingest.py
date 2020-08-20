@@ -37,7 +37,7 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         missing_fields = required_fields.difference(set(data.keys()))
         if missing_fields:
             errors.append(
-                _('Row {0}: Missing data for required column(s) {1}').format(row_index, ', '.join(missing_fields))
+                _('Row {0}: Missing data for required column(s) {1}').format(row_index, ', '.join(missing_fields)),
             )
             continue
 
