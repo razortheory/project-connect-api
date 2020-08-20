@@ -13,6 +13,6 @@ def to_multipolygon(geos_geom):
 @receiver([post_save, post_delete], sender=Location)
 def recount_country_geometry(instance, created=False, **kwargs):
     qs = Location.objects.filter(parent__isnull=True, country=instance.country)
-    union_geometry = qs.aggregate(geometry=Union('geometry_simplified'))['geometry']
+    union_geometry = qs.aggregate(geometry=Union('geometry'))['geometry']
     instance.country.geometry = to_multipolygon(union_geometry)
-    instance.country.save(update_fields=('geometry',))
+    instance.country.save()
