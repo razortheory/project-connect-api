@@ -17,7 +17,7 @@ class GeometryMixin(models.Model):
 
     def save(self, *args, **kwargs):
         if self.geometry:
-            self.geometry_simplified = self.geometry.simplify(tolerance=0.05)
+            self.geometry_simplified = self.geometry.simplify(tolerance=0.03)
 
         super().save(*args, **kwargs)
 
