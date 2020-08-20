@@ -31,6 +31,7 @@ class SchoolWeeklyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('school__name', 'year', 'week')
     ordering = ('-id',)
     readonly_fields = ('year', 'week')
+    raw_id_fields = ('school',)
 
 
 @admin.register(CountryDailyStatus)
@@ -49,6 +50,7 @@ class SchoolDailyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('school__name', 'year', 'week')
     ordering = ('-id',)
     readonly_fields = ('year', 'week', 'weekday')
+    raw_id_fields = ('school',)
 
 
 @admin.register(RealTimeConnectivity)

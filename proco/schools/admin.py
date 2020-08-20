@@ -26,6 +26,7 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
     readonly_fields = ('get_weekly_stats_url',)
+    raw_id_fields = ('location',)
 
     def get_urls(self):
         urls = super().get_urls()
