@@ -27,6 +27,7 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
     errors = []
 
     for i, data in enumerate(loaded):
+        row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
         data = {key.encode('ascii', 'ignore').decode(): value for key, value in data.items() if value != ''}
         if not data:
@@ -35,7 +36,9 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         required_fields = {'name', 'lat', 'lon'}
         missing_fields = required_fields.difference(set(data.keys()))
         if missing_fields:
-            errors.append(_('Row {0}: Missing data for required column(s) {1}').format(i, ', '.join(missing_fields)))
+            errors.append(
+                _('Row {0}: Missing data for required column(s) {1}').format(row_index, ', '.join(missing_fields))
+            )
             continue
 
         school = None
@@ -65,7 +68,7 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         try:
             school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
         except (TypeError, ValueError):
-            errors.append(_('Row {0}: Bad data provided for geopoint').format(i))
+            errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
 
         # static data
