@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.test import TestCase
 
 from proco.connection_statistics.tests.factories import CountryWeeklyStatusFactory
@@ -13,19 +15,21 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
     def setUpTestData(cls):
         cls.country_one = CountryFactory()
         cls.country_two = CountryFactory()
-        CountryWeeklyStatusFactory(country=cls.country_one)
-        CountryWeeklyStatusFactory(country=cls.country_two)
+        year, week_number, week_day = date.today().isocalendar()
+        CountryWeeklyStatusFactory(country=cls.country_one, year=year, week=week_number)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
 
     def test_countries_list(self):
-        response = self._test_list(
-            user=None, expected_objects=[self.country_one, self.country_two],
-        )
+        with self.assertNumQueries(2):
+            response = self._test_list(
+                user=None, expected_objects=[self.country_one, self.country_two],
+            )
         self.assertIn('integration_status', response.data[0])
 
     def test_country_detail(self):
-        response = self._test_retrieve(
-            user=None, instance=self.country_one,
-        )
+        with self.assertNumQueries(2):
+            response = self._test_retrieve(
+                user=None, instance=self.country_one,
+            )
         self.assertIn('statistics', response.data)
