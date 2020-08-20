@@ -12,6 +12,7 @@ class SchoolsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (
         DjangoFilterBackend,

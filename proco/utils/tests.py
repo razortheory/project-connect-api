@@ -78,9 +78,14 @@ class TestAPIViewSetMixin(APITestCaseMixin):
 
         self.assertEqual(response.status_code, expected_status)
 
+        if 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+
         if expected_status == status.HTTP_200_OK:
             self.assertListEqual(
-                sorted(obj['id'] for obj in response.data['results']),
+                sorted(obj['id'] for obj in results),
                 sorted(obj.id for obj in (expected_objects or [])),
             )
 

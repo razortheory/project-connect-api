@@ -22,7 +22,7 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         response = self._test_list(
             user=None, expected_objects=[self.country_one, self.country_two],
         )
-        self.assertIn('integration_status', response.data['results'][0])
+        self.assertIn('integration_status', response.data[0])
 
     def test_country_detail(self):
         response = self._test_retrieve(
