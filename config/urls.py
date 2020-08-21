@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/', include([
         path('locations/', include('proco.locations.api_urls')),
         path('locations/', include('proco.schools.api_urls')),
+        path('statistics/', include('proco.connection_statistics.api_urls')),
     ])),
 ]
 
