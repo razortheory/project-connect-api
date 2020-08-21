@@ -61,7 +61,7 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
 
 @admin.register(FileImport)
 class FileImportAdmin(admin.ModelAdmin):
-    list_display = ('id', 'uploaded_file', 'status')
+    list_display = ('id', 'uploaded_file', 'status', 'uploaded_by', 'modified', )
     list_filter = ('status',)
-    readonly_fields = ('status', 'errors')
+    readonly_fields = ('status', 'errors', 'uploaded_by', 'modified', )
     ordering = ('-id',)

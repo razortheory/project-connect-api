@@ -3,6 +3,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+
+admin.site.site_header = "Project Connect"
+admin.site.site_title = "Project Connect"
+admin.site.index_title = "Welcome to Project Connect"
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include([

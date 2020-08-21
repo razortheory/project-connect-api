@@ -44,6 +44,7 @@ THIRD_PARTY_APPS = [
     'mptt',
     'crispy_forms',
     'mapbox_location_field',
+    'admin_reorder',
 ]
 
 LOCAL_APPS = [
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'drf_secure_token.middleware.UpdateTokenMiddleware',
+    'admin_reorder.middleware.ModelAdminReorder',
 ]
 
 
@@ -206,3 +208,34 @@ IMAGES_PATH = 'images'
 # Crispy forms
 # ---------------
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+ADMIN_REORDER = (
+    {
+        'app': 'custom_auth',
+        'label': 'Authentication and authorization',
+        'models': (
+            'auth.Group',
+            'custom_auth.ApplicationUser',
+        ),
+    },
+    {
+        'app': 'connection_statistics',
+        'label': 'Summary',
+        'models': (
+            'connection_statistics.CountryWeeklyStatus',
+            'connection_statistics.SchoolWeeklyStatus',
+        ),
+    },
+    {
+        'app': 'connection_statistics',
+        'label': 'Real Time Connectivity Data',
+        'models': (
+            'connection_statistics.RealTimeConnectivity',
+            'connection_statistics.CountryDailyStatus',
+            'connection_statistics.SchoolDailyStatus',
+        ),
+    },
+    'locations',
+    'schools',
+)
