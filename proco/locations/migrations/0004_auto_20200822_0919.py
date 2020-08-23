@@ -18,7 +18,8 @@ def fill_flags(apps, schema_editor):
 
     for country in Country.objects.all().order_by('id'):
         try:
-            filename = 'proco/locations/migrations/flags/{}.svg'.format(country.id)
+            path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'migrations/flags')
+            filename = '{}/{}.svg'.format(path, country.id)
             flag = open(filename, 'rb')
             country.flag.save(get_random_name_image(filename), File(flag), save=True)
             country.save()
