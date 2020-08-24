@@ -43,7 +43,7 @@ class CountryWeeklyStatus(models.Model):
     avg_distance_school = models.FloatField(blank=True, null=True, default=None)
 
     class Meta:
-        verbose_name = _('Country Weekly Status')
+        verbose_name = _('Country Summary')
         verbose_name_plural = _('Country Summary')
         ordering = ('id',)
 

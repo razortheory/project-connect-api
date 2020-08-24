@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name='countryweeklystatus',
-            options={'ordering': ('id',), 'verbose_name': 'Country Weekly Status', 'verbose_name_plural': 'Country Summary'},
+            options={'ordering': ('id',), 'verbose_name': 'Country Summary', 'verbose_name_plural': 'Country Summary'},
         ),
         migrations.AlterModelOptions(
             name='realtimeconnectivity',

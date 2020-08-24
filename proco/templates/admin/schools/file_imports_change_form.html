@@ -5,7 +5,7 @@
 
     {% if original.status in original.PROCESS_STATUSES %}
         <script type="text/javascript">
-            setTimeout(function() {window.location.reload()}, 60 * 10 * 1000); // Refresh every 10 minutes
+            setTimeout(function() {window.location.reload()}, 10 * 1000); // Refresh every 10 minutes
         </script>
     {% endif %}
 {% endblock %}
