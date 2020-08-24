@@ -81,7 +81,7 @@ class SchoolWeeklyStatus(models.Model):
     connectivity_availability = models.FloatField(blank=True, null=True, default=None)
 
     class Meta:
-        verbose_name = _('School Weekly Status')
+        verbose_name = _('School Summary')
         verbose_name_plural = _('School Summary')
         ordering = ('id',)
 
@@ -96,7 +96,7 @@ class CountryDailyStatus(ConnectivityStatistics, models.Model):
     weekday = models.PositiveSmallIntegerField(default=get_current_weekday)
 
     class Meta:
-        verbose_name = _('Country Daily Status')
+        verbose_name = _('Country Daily Connectivity Summary')
         verbose_name_plural = _('Country Daily Connectivity Summary')
         ordering = ('id',)
 
@@ -111,7 +111,7 @@ class SchoolDailyStatus(ConnectivityStatistics, models.Model):
     weekday = models.PositiveSmallIntegerField(default=get_current_weekday)
 
     class Meta:
-        verbose_name = _('School Daily Status')
+        verbose_name = _('School Daily Connectivity Summary')
         verbose_name_plural = _('School Daily Connectivity Summary')
         ordering = ('id',)
 
@@ -123,7 +123,7 @@ class RealTimeConnectivity(ConnectivityStatistics, TimeStampedModel):
     school = models.ForeignKey(School, related_name='realtime_status', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Real Time Connectivity')
+        verbose_name = _('Real Time Connectivity Data')
         verbose_name_plural = _('Real Time Connectivity Data')
         ordering = ('id',)
 
