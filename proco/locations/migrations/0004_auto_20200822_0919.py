@@ -18,13 +18,12 @@ def fill_flags(apps, schema_editor):
 
     for country in Country.objects.all().order_by('id'):
         try:
-            path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'migrations/flags')
+            path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'migrations', 'flags')
             filename = '{}/{}.svg'.format(path, country.id)
             flag = open(filename, 'rb')
             country.flag.save(get_random_name_image(filename), File(flag), save=True)
             country.save()
-        except FileNotFoundError as e:
-            print (e)
+        except FileNotFoundError:
             print ("Flag for {} not found".format(country))
 
 
