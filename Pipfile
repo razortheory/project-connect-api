@@ -54,6 +54,7 @@ drf-nested-routers = "*"
 django-crispy-forms = "*"
 xlrd = "*"
 django-mapbox-location-field = "*"
+django-cors-headers = "*"
 
 [requires]
 python_version = "3.8"
