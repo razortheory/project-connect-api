@@ -9,6 +9,7 @@ from proco.schools.models import School
 
 
 class SchoolFactory(django_factory.DjangoModelFactory):
+    external_id = fuzzy.FuzzyInteger(0, 10000)
     name = fuzzy.FuzzyText(length=20)
     country = SubFactory(CountryFactory)
     location = SubFactory(LocationFactory)
