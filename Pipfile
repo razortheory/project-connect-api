@@ -54,6 +54,7 @@ xlrd = "*"
 django-mapbox-location-field = "*"
 django-cors-headers = "*"
 unicef-restlib = "*"
+django-modeladmin-reorder = "*"
 
 [requires]
 python_version = "3.8"

@@ -61,7 +61,10 @@ class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, M
 
 @admin.register(FileImport)
 class FileImportAdmin(admin.ModelAdmin):
-    list_display = ('id', 'uploaded_file', 'status')
+    change_form_template = 'admin/schools/file_imports_change_form.html'
+
+    list_display = ('id', 'uploaded_file', 'status', 'uploaded_by', 'modified')
+    list_select_related = ('uploaded_by',)
     list_filter = ('status',)
-    readonly_fields = ('status', 'errors')
+    readonly_fields = ('status', 'errors', 'uploaded_by', 'modified')
     ordering = ('-id',)
