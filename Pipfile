@@ -37,9 +37,7 @@ djangorestframework = ">=3.10"
 drf-secure-token = "*"
 gunicorn = "*"
 futures = "*"
-# BlobPermissions not available in 12 release (https://github.com/Azure/azure-sdk-for-python/blob/22be12d5fa3604acde0695705993347787497a2e/sdk/storage/azure-storage-blob/CHANGELOG.md#1200b4-2019-10-08)
 azure-storage-blob = "<12.0.0"
-django-storages = {version = "*", extras = ["azure"]}
 django-compressor = "*"
 boto3 = "*"
 Django = ">=2.2,<3"
@@ -55,6 +53,11 @@ django-crispy-forms = "*"
 xlrd = "*"
 django-mapbox-location-field = "*"
 django-cors-headers = "*"
+unicef-restlib = "*"
 
 [requires]
 python_version = "3.8"
+
+[packages.django-storages]
+version = "*"
+extras = [ "azure",]

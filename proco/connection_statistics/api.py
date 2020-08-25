@@ -1,7 +1,10 @@
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from proco.connection_statistics.models import RealTimeConnectivity
+from proco.connection_statistics.serializers import RealTimeConnectivitySerializer
 from proco.locations.models import Country
 from proco.schools.models import School
 
@@ -24,3 +27,11 @@ class GlobalStatsAPIView(APIView):
             'countries_joined': countries_joined,
         }
         return Response(data=data)
+
+
+class RealTimeConnectivityViewSet(
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = RealTimeConnectivity.objects.all()
+    serializer_class = RealTimeConnectivitySerializer
