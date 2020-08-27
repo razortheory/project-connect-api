@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
     'mapbox_location_field',
     'corsheaders',
     'admin_reorder',
+    'django_filters',
 ]
 
 LOCAL_APPS = [
