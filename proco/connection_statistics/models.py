@@ -92,10 +92,10 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
 class CountryDailyStatusQuerySet(models.QuerySet):
     def aggregate_daily_stats(self):
         return self.values(
-            'year', 'week', 'weekday'
+            'year', 'week', 'weekday',
         ).annotate(
             connectivity_speed=models.Avg('connectivity_speed'),
-            connectivity_latency=models.Avg('connectivity_latency')
+            connectivity_latency=models.Avg('connectivity_latency'),
         ).order_by('year', 'week', 'weekday')
 
 

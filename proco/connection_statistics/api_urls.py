@@ -10,6 +10,6 @@ urlpatterns = [
     path(
         'country/<int:country_id>/weekly-stat/<int:week>/<int:year>/',
         api.CountryWeekStatsAPIView.as_view(),
-        name='country-weekly-stat'
+        name='country-weekly-stat',
     ),
 ]
