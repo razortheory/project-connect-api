@@ -9,7 +9,7 @@ from proco.schools.models import School
 from proco.utils.utils import get_current_week, get_current_weekday, get_current_year
 
 
-class ConnectivityStatistics(models.Model):
+class ConnectivityStatistics(TimeStampedModel, models.Model):
     connectivity_speed = models.FloatField(blank=True, null=True, default=None)
     connectivity_latency = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
 
@@ -17,7 +17,7 @@ class ConnectivityStatistics(models.Model):
         abstract = True
 
 
-class CountryWeeklyStatus(models.Model):
+class CountryWeeklyStatus(TimeStampedModel, models.Model):
     JOINED = 0
     SCHOOL_MAPPED = 1
     STATIC_MAPPED = 2
@@ -51,7 +51,7 @@ class CountryWeeklyStatus(models.Model):
         return f'{self.year} {self.country.name} Week {self.week} Speed - {self.connectivity_speed}'
 
 
-class SchoolWeeklyStatus(models.Model):
+class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     CONNECTIVITY_STATUS_TYPES = Choices(
         ('unknown', _('Unknown')),
         ('no', _('No')),
@@ -89,11 +89,23 @@ class SchoolWeeklyStatus(models.Model):
         return f'{self.year} {self.school.name} Week {self.week} Speed - {self.connectivity_speed}'
 
 
+class CountryDailyStatusQuerySet(models.QuerySet):
+    def aggregate_daily_stats(self):
+        return self.values(
+            'year', 'week', 'weekday'
+        ).annotate(
+            connectivity_speed=models.Avg('connectivity_speed'),
+            connectivity_latency=models.Avg('connectivity_latency')
+        ).order_by('year', 'week', 'weekday')
+
+
 class CountryDailyStatus(ConnectivityStatistics, models.Model):
     country = models.ForeignKey(Country, related_name='daily_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
     weekday = models.PositiveSmallIntegerField(default=get_current_weekday)
+
+    objects = CountryDailyStatusQuerySet.as_manager()
 
     class Meta:
         verbose_name = _('Country Daily Connectivity Summary')
@@ -119,7 +131,7 @@ class SchoolDailyStatus(ConnectivityStatistics, models.Model):
         return f'{self.year} {self.school.name} Week {self.week} Day {self.weekday} Speed - {self.connectivity_speed}'
 
 
-class RealTimeConnectivity(ConnectivityStatistics, TimeStampedModel):
+class RealTimeConnectivity(ConnectivityStatistics):
     school = models.ForeignKey(School, related_name='realtime_status', on_delete=models.CASCADE)
 
     class Meta:

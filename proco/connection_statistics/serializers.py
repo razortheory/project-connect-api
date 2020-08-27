@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.models import CountryWeeklyStatus, SchoolWeeklyStatus
+from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus, SchoolWeeklyStatus
 
 
 class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
@@ -16,6 +16,8 @@ class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
             'connectivity_speed',
             'integration_status',
             'avg_distance_school',
+            'created',
+            'modified',
         )
         read_only_fields = fields
 
@@ -37,5 +39,20 @@ class SchoolWeeklyStatusSerializer(serializers.ModelSerializer):
             'connectivity_speed',
             'connectivity_latency',
             'connectivity_availability',
+            'created',
+            'modified',
+        )
+        read_only_fields = fields
+
+
+class CountryDailyStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CountryDailyStatus
+        fields = (
+            'year',
+            'week',
+            'weekday',
+            'connectivity_speed',
+            'connectivity_latency',
         )
         read_only_fields = fields
