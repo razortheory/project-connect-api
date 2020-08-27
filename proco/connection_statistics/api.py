@@ -54,4 +54,5 @@ class CountryDailyStatsListAPIView(ListAPIView):
 
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
+        queryset = queryset.filter(country_id=self.kwargs['country_id'])
         return queryset.aggregate_daily_stats()
