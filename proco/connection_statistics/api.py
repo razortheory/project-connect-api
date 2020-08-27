@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,14 +33,16 @@ class GlobalStatsAPIView(APIView):
         return Response(data=data)
 
 
-class CountryWeekStatsAPIView(APIView):
+class CountryWeekStatsAPIView(RetrieveAPIView):
     permission_classes = (AllowAny,)
+    serializer_class = CountryWeeklyStatusSerializer
 
-    def get(self, request, country_id, week, year, *args, **kwargs):
-        stat_instance = get_object_or_404(CountryWeeklyStatus, country_id=country_id, week=week, year=year)
-
-        serializer = CountryWeeklyStatusSerializer(instance=stat_instance)
-        return Response(data=serializer.data)
+    def get_object(self, *args, **kwargs):
+        instance = get_object_or_404(
+            CountryWeeklyStatus, country_id=self.kwargs['country_id'],
+            week=self.kwargs['week'], year=self.kwargs['year'],
+        )
+        return instance
 
 
 class CountryDailyStatsListAPIView(ListAPIView):
@@ -50,7 +52,7 @@ class CountryDailyStatsListAPIView(ListAPIView):
     filter_backends = (
         DjangoFilterBackend,
     )
-    filterset_fields = ['year', 'week', 'weekday']
+    filterset_fields = ['year', 'week']
 
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
