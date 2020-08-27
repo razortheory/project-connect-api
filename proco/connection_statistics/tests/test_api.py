@@ -47,15 +47,16 @@ class RealTimeConnectivityApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.school_one = SchoolFactory(country=cls.country_one, location__country=cls.country_one, geopoint=None)
 
     def test_create_realtime_api(self):
-        response = self.forced_auth_req(
-            'post',
-            reverse('connection_statistics:realtime-list'),
-            data={
-                'school': self.school_one.external_id,
-                'connectivity_speed': 25.5,
-                'connectivity_latency': 10,
-            },
-        )
+        with self.assertNumQueries(4):
+            response = self.forced_auth_req(
+                'post',
+                reverse('connection_statistics:realtime-list'),
+                data={
+                    'school': self.school_one.external_id,
+                    'connectivity_speed': 25.5,
+                    'connectivity_latency': 10,
+                },
+            )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['school'], self.school_one.name)
+        self.assertEqual(response.data['school'], str(self.school_one))
