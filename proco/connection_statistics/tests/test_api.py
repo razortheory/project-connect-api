@@ -75,7 +75,7 @@ class CountryWeekStatsApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_country_weekly_stats_queries(self):
         with self.assertNumQueries(1):
-            response = self.forced_auth_req(
+            self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-weekly-stat', kwargs={
                     'country_id': self.stat_one.country_id,
@@ -91,12 +91,11 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.country_one = CountryFactory()
         cls.country_two = CountryFactory()
 
-        cls.country_one_stats_number = random.randint(5, 25)
-        for i in range(cls.country_one_stats_number):
+        cls.country_one_stats_number = random.SystemRandom().randint(a=5, b=25)
+        for _i in range(cls.country_one_stats_number):
             CountryDailyStatusFactory(country=cls.country_one)
 
         CountryDailyStatusFactory(country=cls.country_two)
-
 
     def test_country_weekly_stats(self):
         response = self.forced_auth_req(
@@ -119,7 +118,7 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_country_weekly_stats_queries(self):
         with self.assertNumQueries(2):
-            response = self.forced_auth_req(
+            self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-daily-stat', kwargs={
                     'country_id': self.country_one.id,
