@@ -33,3 +33,16 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
                 user=None, instance=self.country_one,
             )
         self.assertIn('statistics', response.data)
+
+    def test_country_detail_cached(self):
+        with self.assertNumQueries(2):
+            response = self._test_retrieve(
+                user=None, instance=self.country_one,
+            )
+            print(response.status_code)
+        with self.assertNumQueries(2):
+            response = self._test_retrieve(
+                user=None, instance=self.country_one,
+            )
+            print(response.status_code)
+        self.assertIn('statistics', response.data)

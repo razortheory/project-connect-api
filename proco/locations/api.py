@@ -6,6 +6,7 @@ from rest_framework.filters import OrderingFilter
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.models import Country
 from proco.locations.serializers import CountrySerializer, DetailCountrySerializer, ListCountrySerializer
+from proco.utils.cache import etag_cached
 
 
 class CountryViewSet(
@@ -34,3 +35,7 @@ class CountryViewSet(
         else:
             serializer_class = DetailCountrySerializer
         return serializer_class
+
+    @etag_cached('locations', 'countries-list')
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
