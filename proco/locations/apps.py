@@ -9,6 +9,6 @@ class LocationsConfig(AppConfig):
         from proco.locations import signals  # NOQA
 
     GET_CACHE_KEY = {
-        'countries-list': 'proco.locations.cache.get_cache_countries_key'
+        'countries-list': 'proco.locations.cache.get_cache_countries_key',
     }
     CACHE_COUNTRIES_VERSION_KEY = 'countries-etag-version'

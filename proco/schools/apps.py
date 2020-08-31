@@ -9,6 +9,6 @@ class SchoolsConfig(AppConfig):
         from proco.schools import signals  # NOQA
 
     GET_CACHE_KEY = {
-        'schools-list': 'proco.schools.cache.get_cache_schools_key'
+        'schools-list': 'proco.schools.cache.get_cache_schools_key',
     }
-    CACHE_SCHOOLS_VERSION_KEY = 'schools-etag-country-{}'
+    CACHE_SCHOOLS_VERSION_KEY = 'schools-etag-country-{country_id}'

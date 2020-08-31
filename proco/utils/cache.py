@@ -1,13 +1,13 @@
 import uuid
 from functools import wraps
 
+from django.apps import apps
 from django.core.cache import cache
+from django.urls import get_callable
 from django.utils.cache import patch_cache_control
+
 from rest_framework import status
 from rest_framework.response import Response
-
-from django.apps import apps
-from django.urls import get_callable
 
 
 def etag_cached(app: str, cache_name: str):
@@ -24,14 +24,14 @@ def etag_cached(app: str, cache_name: str):
             func_ = get_callable(conf.GET_CACHE_KEY[cache_name])
             key = func_(self.request)
             cache_etag = cache.get(key)
-            request_etag = self.request.META.get("HTTP_IF_NONE_MATCH", None)
-            local_etag = cache_etag if cache_etag else '"{}"'.format(uuid.uuid4().hex)
+            request_etag = self.request.META.get('HTTP_IF_NONE_MATCH', None)
+            local_etag = cache_etag if cache_etag else f'{uuid.uuid4().hex}'
 
             if cache_etag and request_etag and cache_etag == request_etag:
                 response = Response(status=status.HTTP_304_NOT_MODIFIED)
             else:
                 response = func(self, *args, **kwargs)
-                response["ETag"] = local_etag
+                response['ETag'] = local_etag
 
             if not cache_etag:
                 cache.set(key, local_etag)

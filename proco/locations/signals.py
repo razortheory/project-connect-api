@@ -2,9 +2,11 @@
 # from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+
+from proco.locations.cache import invalidate_cache
 #
 from proco.locations.models import Country
-from proco.locations.cache import invalidate_cache
+
 #
 #
 # def to_multipolygon(geos_geom):

@@ -73,15 +73,12 @@ class TestAPIViewSetMixin(APITestCaseMixin):
     def make_detail_request(self, user, instance, **kwargs):
         return self.make_request_to_viewset(user, instance=instance, **kwargs)
 
-    def _test_list(self, user, expected_objects=None, expected_status=status.HTTP_200_OK, data=None):
-        response = self.make_list_request(user, data=data)
-
+    def _test_list(self, user, expected_objects=None, expected_status=status.HTTP_200_OK, data=None, **kwargs):
+        response = self.make_list_request(user, data=data, **kwargs)
         self.assertEqual(response.status_code, expected_status)
 
-        if 'results' in response.data:
-            results = response.data['results']
-        else:
-            results = response.data
+        if response.data:
+            results = response.data['results'] if 'results' in response.data else response.data
 
         if expected_status == status.HTTP_200_OK:
             self.assertListEqual(

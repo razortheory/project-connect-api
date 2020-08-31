@@ -1,8 +1,8 @@
+from django.apps import apps
 from django.core.cache import cache
 from django.utils.text import slugify
-from rest_framework.request import Request
 
-from django.apps import apps
+from rest_framework.request import Request
 
 CONF = apps.get_app_config('locations')
 
@@ -23,4 +23,4 @@ def invalidate_cache():
 
 def get_cache_countries_key(request: Request):
     url = str(request._request.get_raw_uri())
-    return 'countries-etag-%s-%s' % (get_cache_countries_version(), slugify(url))
+    return f'countries-etag-{get_cache_countries_version()}-{slugify(url)}'
