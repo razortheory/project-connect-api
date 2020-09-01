@@ -32,7 +32,7 @@ class DetailCountrySerializer(BaseCountrySerializer):
     statistics = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
-        fields = BaseCountrySerializer.Meta.fields + ('statistics',)
+        fields = BaseCountrySerializer.Meta.fields + ('statistics', 'geometry')
 
     def get_statistics(self, instance):
         return CountryWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
