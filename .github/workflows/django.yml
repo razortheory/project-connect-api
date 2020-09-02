@@ -18,7 +18,9 @@ jobs:
       - run: docker-compose -f docker/docker-compose.test.yml pull
 
       - name: Pull docker image
-        run: docker pull ttest/project-connect-api:prod
+        run: |
+          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+          docker pull ttest/project-connect-api:prod
 
       - name: Build docker image
         run: docker build -f docker/Dockerfile . -t proco_backend
