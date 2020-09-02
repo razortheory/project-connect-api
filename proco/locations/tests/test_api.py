@@ -1,8 +1,7 @@
 from datetime import date
 
+from django.core.cache import cache
 from django.test import TestCase
-
-from rest_framework import status
 
 from proco.connection_statistics.tests.factories import CountryWeeklyStatusFactory
 from proco.locations.tests.factories import CountryFactory
@@ -22,6 +21,10 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
 
+    def setUp(self):
+        cache.clear()
+        super().setUp()
+
     def test_countries_list(self):
         with self.assertNumQueries(2):
             response = self._test_list(
@@ -38,17 +41,11 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_country_list_cached(self):
         with self.assertNumQueries(2):
-            response = self._test_list(
+            self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
             )
-            etag = response._headers.get('etag', None)
-            self.assertTrue(etag)
 
         with self.assertNumQueries(0):
-            headers = {'HTTP_IF_NONE_MATCH': etag[1]}
             self._test_list(
-                user=None,
-                expected_objects=[self.country_one, self.country_two],
-                expected_status=status.HTTP_304_NOT_MODIFIED,
-                **headers,
+                user=None, expected_objects=[self.country_one, self.country_two],
             )

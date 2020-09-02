@@ -1,12 +1,7 @@
 # from django.contrib.gis.db.models.aggregates import Union
 # from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.db.models.signals import post_delete, post_save
-from django.dispatch import receiver
-
-from proco.locations.cache import invalidate_cache
-#
-from proco.locations.models import Country
-
+# from django.db.models.signals import post_delete, post_save
+# from django.dispatch import receiver
 #
 #
 # def to_multipolygon(geos_geom):
@@ -19,12 +14,3 @@ from proco.locations.models import Country
 #     union_geometry = qs.aggregate(geometry=Union('geometry'))['geometry']
 #     instance.country.geometry = to_multipolygon(union_geometry)
 #     instance.country.save()
-
-
-@receiver(post_delete, sender=Country)
-@receiver(post_save, sender=Country)
-def invalidate_locations_etag(sender, instance, **kwargs):
-    """
-    Invalidate the locations etag in the cache on every change.
-    """
-    invalidate_cache()

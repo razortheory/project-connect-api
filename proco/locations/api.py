@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.db.models import Prefetch
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
@@ -6,7 +9,6 @@ from rest_framework.filters import OrderingFilter
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.models import Country
 from proco.locations.serializers import CountrySerializer, DetailCountrySerializer, ListCountrySerializer
-from proco.utils.cache import etag_cached
 
 
 class CountryViewSet(
@@ -36,6 +38,6 @@ class CountryViewSet(
             serializer_class = DetailCountrySerializer
         return serializer_class
 
-    @etag_cached('locations', 'countries-list')
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

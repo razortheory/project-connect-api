@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 from rest_framework import mixins, viewsets
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -5,7 +9,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from proco.locations.models import Country
 from proco.schools.models import School
 from proco.schools.serializers import ListSchoolSerializer, SchoolSerializer
-from proco.utils.cache import etag_cached
 
 
 class SchoolsViewSet(
@@ -29,6 +32,6 @@ class SchoolsViewSet(
             serializer_class = ListSchoolSerializer
         return serializer_class
 
-    @etag_cached('schools', 'schools-list')
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
