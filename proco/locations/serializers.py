@@ -20,12 +20,22 @@ class CountrySerializer(BaseCountrySerializer):
 
 class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
+    date_of_join = serializers.SerializerMethodField()
+    connected_schools_percentage = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
-        fields = BaseCountrySerializer.Meta.fields + ('integration_status',)
+        fields = BaseCountrySerializer.Meta.fields + (
+            'integration_status', 'date_of_join', 'connected_schools_percentage',
+        )
 
     def get_integration_status(self, instance):
         return instance.latest_status[0].integration_status if instance.latest_status else None
+
+    def get_date_of_join(self, instance):
+        return getattr(instance, 'date_of_join', None)
+
+    def get_connected_schools_percentage(self, instance):
+        return getattr(instance, 'connected_schools_percentage', None)
 
 
 class DetailCountrySerializer(BaseCountrySerializer):

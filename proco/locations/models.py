@@ -1,5 +1,6 @@
 from django.contrib.gis.db.models import MultiPolygonField
 from django.db import models
+from django.db.models.functions import Cast
 from django.utils.translation import ugettext as _
 
 from model_utils.models import TimeStampedModel
@@ -22,6 +23,48 @@ class GeometryMixin(models.Model):
         super().save(*args, **kwargs)
 
 
+class CountryQuerySet(models.QuerySet):
+    def annotate_integration_status(self):
+        from proco.connection_statistics.models import CountryWeeklyStatus
+
+        return self.annotate(
+            integration_status=models.Subquery(
+                CountryWeeklyStatus.objects.filter(
+                    country_id=models.OuterRef('id')
+                ).order_by('-created').values('integration_status')[:1]
+            )
+        )
+
+    def annotate_date_of_join(self):
+        from proco.connection_statistics.models import CountryWeeklyStatus
+
+        return self.annotate(
+            date_of_join=models.Subquery(
+                CountryWeeklyStatus.objects.filter(
+                    country_id=models.OuterRef('id'),
+                    integration_status=CountryWeeklyStatus.JOINED
+                ).order_by('created').values('created')[:1]
+            )
+        )
+
+    def annotate_connected_schools_percentage(self):
+        from proco.connection_statistics.models import CountryWeeklyStatus
+
+        return self.annotate(
+            connected_schools_percentage=Cast(models.Subquery(
+                CountryWeeklyStatus.objects.filter(
+                    country_id=models.OuterRef('id'),
+                    integration_status=CountryWeeklyStatus.JOINED
+                ).order_by('-created').annotate(
+                    percentage=models.ExpressionWrapper(
+                        100.0 * models.F('schools_connected') / models.F('schools_total'),
+                        output_field=models.DecimalField(decimal_places=2, max_digits=6)
+                    ),
+                ).values('percentage')[:1]
+            ), models.DecimalField(decimal_places=2, max_digits=6))
+        )
+
+
 class Country(GeometryMixin, TimeStampedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=32)
@@ -31,6 +74,8 @@ class Country(GeometryMixin, TimeStampedModel):
 
     description = models.TextField(max_length=1000, null=True, blank=True)
     data_source = models.TextField(max_length=500, null=True, blank=True)
+
+    objects = CountryQuerySet.as_manager()
 
     class Meta:
         ordering = ('name',)
