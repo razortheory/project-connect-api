@@ -64,7 +64,7 @@ class CountryQuerySet(models.QuerySet):
             schools_with_data_percentage=models.Case(
                 models.When(
                     schools_count__gt=0, then=models.ExpressionWrapper(
-                        1.0 * models.F('schools_with_data') / models.F('schools_count'),
+                        100.0 * models.F('schools_with_data') / models.F('schools_count'),
                         output_field=models.DecimalField(decimal_places=2, max_digits=6)
                     )
                 ), default=None
