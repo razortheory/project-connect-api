@@ -144,6 +144,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Django cache settings
+# ------------------------------------
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': env('REDIS_URL', default='redis://localhost:6379/0'),
+        'TIMEOUT': 60 * 60,  # one hour
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+    },
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 # --------------------------------------------------------------------------

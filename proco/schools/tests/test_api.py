@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
@@ -18,6 +19,10 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.school_one = SchoolFactory(country=cls.country, location__country=cls.country)
         cls.school_two = SchoolFactory(country=cls.country, location__country=cls.country)
         SchoolWeeklyStatusFactory(school=cls.school_one)
+
+    def setUp(self):
+        cache.clear()
+        super().setUp()
 
     def test_schools_list(self):
         with self.assertNumQueries(1):

@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 from rest_framework import mixins, viewsets
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -27,3 +31,7 @@ class SchoolsViewSet(
         if self.action == 'list':
             serializer_class = ListSchoolSerializer
         return serializer_class
+
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

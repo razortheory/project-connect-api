@@ -19,5 +19,12 @@ services:
     environment:
       DATABASE_URL: postgis://test:test@db/test
       DJANGO_SETTINGS_MODULE: config.settings.dev
+      REDIS_URL: "redis://redis:6379/0"
     depends_on:
       - db
+
+  redis:
+    restart: always
+    image: redis:latest
+    expose:
+      - "6379"
