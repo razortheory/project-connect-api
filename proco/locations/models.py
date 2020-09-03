@@ -1,6 +1,5 @@
 from django.contrib.gis.db.models import MultiPolygonField
 from django.db import models
-from django.db.models.functions import Cast
 from django.utils.translation import ugettext as _
 
 from model_utils.models import TimeStampedModel
@@ -30,9 +29,9 @@ class CountryQuerySet(models.QuerySet):
         return self.annotate(
             integration_status=models.Subquery(
                 CountryWeeklyStatus.objects.filter(
-                    country_id=models.OuterRef('id')
-                ).order_by('-created').values('integration_status')[:1]
-            )
+                    country_id=models.OuterRef('id'),
+                ).order_by('-created').values('integration_status')[:1],
+            ),
         )
 
     def annotate_date_of_join(self):
@@ -42,33 +41,31 @@ class CountryQuerySet(models.QuerySet):
             date_of_join=models.Subquery(
                 CountryWeeklyStatus.objects.filter(
                     country_id=models.OuterRef('id'),
-                    integration_status=CountryWeeklyStatus.JOINED
-                ).order_by('created').values('created')[:1]
-            )
+                    integration_status=CountryWeeklyStatus.JOINED,
+                ).order_by('created').values('created')[:1],
+            ),
         )
 
     def annotate_schools_with_data_percentage(self):
-        from proco.schools.models import School
-
         return self.annotate(
             schools_with_data=models.Count(
                 models.Case(
                     models.When(
-                        schools__weekly_status__isnull=False, then=1
-                    )
-                )
-            )
+                        schools__weekly_status__isnull=False, then=1,
+                    ),
+                ),
+            ),
         ).annotate(
-            schools_count=models.Count('schools')
+            schools_count=models.Count('schools'),
         ).annotate(
             schools_with_data_percentage=models.Case(
                 models.When(
                     schools_count__gt=0, then=models.ExpressionWrapper(
                         100.0 * models.F('schools_with_data') / models.F('schools_count'),
-                        output_field=models.DecimalField(decimal_places=2, max_digits=6)
-                    )
-                ), default=None
-            )
+                        output_field=models.DecimalField(decimal_places=2, max_digits=6),
+                    ),
+                ), default=None,
+            ),
         )
 
 

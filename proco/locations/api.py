@@ -27,7 +27,7 @@ class CountryViewSet(
         NullsAlwaysLastOrderingFilter, SearchFilter,
     )
     ordering = ('name',)
-    ordering_fields = ('name', 'schools_with_data_percentage', 'integration_status', 'date_of_join',)
+    ordering_fields = ('name', 'schools_with_data_percentage', 'integration_status', 'date_of_join')
     search_fields = ('name',)
 
     def get_serializer_class(self):
