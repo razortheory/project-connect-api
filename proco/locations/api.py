@@ -5,10 +5,16 @@ from django.views.decorators.cache import cache_page
 
 from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView
 
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.models import Country
-from proco.locations.serializers import CountrySerializer, DetailCountrySerializer, ListCountrySerializer
+from proco.locations.serializers import (
+    BoundaryListCountrySerializer,
+    CountrySerializer,
+    DetailCountrySerializer,
+    ListCountrySerializer,
+)
 
 
 class CountryViewSet(
@@ -37,6 +43,16 @@ class CountryViewSet(
         else:
             serializer_class = DetailCountrySerializer
         return serializer_class
+
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class CountryBoundaryListAPIView(ListAPIView):
+    queryset = Country.objects.all()
+    serializer_class = BoundaryListCountrySerializer
+    pagination_class = None
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def list(self, request, *args, **kwargs):

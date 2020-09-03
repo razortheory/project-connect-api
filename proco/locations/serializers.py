@@ -9,13 +9,22 @@ class BaseCountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = (
             'id', 'name', 'code', 'flag',
-            'map_preview', 'description', 'data_source', 'geometry_simplified',
+            'map_preview', 'description', 'data_source',
         )
         read_only_fields = fields
 
 
 class CountrySerializer(BaseCountrySerializer):
     pass
+
+
+class BoundaryListCountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = (
+            'id', 'geometry', 'geometry_simplified',
+        )
+        read_only_fields = fields
 
 
 class ListCountrySerializer(BaseCountrySerializer):
@@ -32,7 +41,7 @@ class DetailCountrySerializer(BaseCountrySerializer):
     statistics = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
-        fields = BaseCountrySerializer.Meta.fields + ('statistics', 'geometry')
+        fields = BaseCountrySerializer.Meta.fields + ('statistics', 'geometry', 'geometry_simplified')
 
     def get_statistics(self, instance):
         return CountryWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
