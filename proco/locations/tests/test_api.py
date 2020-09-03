@@ -74,7 +74,6 @@ class CountryBoundaryApiTestCase(TestAPIViewSetMixin, TestCase):
                 'get',
                 reverse(self.base_view),
             )
-        self.assertIn('geometry', response.data[0])
         self.assertIn('geometry_simplified', response.data[0])
 
     def test_country_list_cached(self):
