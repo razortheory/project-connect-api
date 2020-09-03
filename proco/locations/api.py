@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 
 from rest_framework import mixins, viewsets
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.models import Country
@@ -23,10 +23,11 @@ class CountryViewSet(
     )
     serializer_class = CountrySerializer
     filter_backends = (
-        OrderingFilter,
+        OrderingFilter, SearchFilter,
     )
     ordering = ('name',)
     ordering_fields = ('name',)
+    search_fields = ('name',)
 
     def get_serializer_class(self):
         if self.action == 'list':
