@@ -47,21 +47,28 @@ class CountryQuerySet(models.QuerySet):
             )
         )
 
-    def annotate_connected_schools_percentage(self):
-        from proco.connection_statistics.models import CountryWeeklyStatus
+    def annotate_schools_with_data_percentage(self):
+        from proco.schools.models import School
 
         return self.annotate(
-            connected_schools_percentage=Cast(models.Subquery(
-                CountryWeeklyStatus.objects.filter(
-                    country_id=models.OuterRef('id'),
-                    integration_status=CountryWeeklyStatus.JOINED
-                ).order_by('-created').annotate(
-                    percentage=models.ExpressionWrapper(
-                        100.0 * models.F('schools_connected') / models.F('schools_total'),
+            schools_with_data=models.Count(
+                models.Case(
+                    models.When(
+                        schools__weekly_status__isnull=False, then=1
+                    )
+                )
+            )
+        ).annotate(
+            schools_count=models.Count('schools')
+        ).annotate(
+            schools_with_data_percentage=models.Case(
+                models.When(
+                    schools_count__gt=0, then=models.ExpressionWrapper(
+                        1.0 * models.F('schools_with_data') / models.F('schools_count'),
                         output_field=models.DecimalField(decimal_places=2, max_digits=6)
-                    ),
-                ).values('percentage')[:1]
-            ), models.DecimalField(decimal_places=2, max_digits=6))
+                    )
+                ), default=None
+            )
         )
 
 
