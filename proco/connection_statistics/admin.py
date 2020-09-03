@@ -36,21 +36,21 @@ class SchoolWeeklyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
 
 @admin.register(CountryDailyStatus)
 class CountryDailyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
-    list_display = ('get_country_name', 'year', 'week', 'weekday', 'connectivity_speed', 'connectivity_latency')
+    list_display = ('get_country_name', 'date', 'connectivity_speed', 'connectivity_latency')
     list_select_related = ('country',)
-    search_fields = ('country__name', 'year', 'week')
+    search_fields = ('country__name',)
     ordering = ('-id',)
-    readonly_fields = ('year', 'week', 'weekday')
+    date_hierarchy = 'date'
 
 
 @admin.register(SchoolDailyStatus)
 class SchoolDailyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
-    list_display = ('get_school_name', 'year', 'week', 'weekday', 'connectivity_speed', 'connectivity_latency')
+    list_display = ('get_school_name', 'date', 'connectivity_speed', 'connectivity_latency')
     list_select_related = ('school',)
-    search_fields = ('school__name', 'year', 'week')
+    search_fields = ('school__name',)
     ordering = ('-id',)
-    readonly_fields = ('year', 'week', 'weekday')
     raw_id_fields = ('school',)
+    date_hierarchy = 'date'
 
 
 @admin.register(RealTimeConnectivity)

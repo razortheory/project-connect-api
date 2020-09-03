@@ -9,7 +9,7 @@ class BaseCountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = (
             'id', 'name', 'code', 'flag',
-            'map_preview', 'description', 'data_source', 'geometry_simplified',
+            'map_preview', 'description', 'data_source',
         )
         read_only_fields = fields
 
@@ -22,7 +22,7 @@ class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
-        fields = BaseCountrySerializer.Meta.fields + ('integration_status',)
+        fields = BaseCountrySerializer.Meta.fields + ('integration_status', 'geometry_simplified')
 
     def get_integration_status(self, instance):
         return instance.latest_status[0].integration_status if instance.latest_status else None

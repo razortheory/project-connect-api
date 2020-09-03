@@ -1,4 +1,6 @@
-from django.shortcuts import get_object_or_404
+from datetime import datetime
+
+from django.http import Http404
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
@@ -7,6 +9,7 @@ from rest_framework.views import APIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 
+from proco.connection_statistics.filters import DateWeekNumberFilter, DateYearFilter
 from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus
 from proco.connection_statistics.serializers import CountryDailyStatusSerializer, CountryWeeklyStatusSerializer
 from proco.locations.models import Country
@@ -38,10 +41,13 @@ class CountryWeekStatsAPIView(RetrieveAPIView):
     serializer_class = CountryWeeklyStatusSerializer
 
     def get_object(self, *args, **kwargs):
-        instance = get_object_or_404(
-            CountryWeeklyStatus, country_id=self.kwargs['country_id'],
-            week=self.kwargs['week'], year=self.kwargs['year'],
-        )
+        week = self.kwargs['week']
+        year = self.kwargs['year']
+        date = datetime.strptime(f'{year}-W{week}-1', '%Y-W%W-%w')
+        instance = CountryWeeklyStatus.objects.filter(country_id=self.kwargs['country_id'], date__lte=date).first()
+        if not instance:
+            raise Http404
+
         return instance
 
 
@@ -51,10 +57,13 @@ class CountryDailyStatsListAPIView(ListAPIView):
     serializer_class = CountryDailyStatusSerializer
     filter_backends = (
         DjangoFilterBackend,
+        DateYearFilter,
+        DateWeekNumberFilter,
     )
-    filterset_fields = ['year', 'week']
+    filterset_fields = {
+        'date': ['lte', 'gte'],
+    }
 
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
-        queryset = queryset.filter(country_id=self.kwargs['country_id'])
-        return queryset.aggregate_daily_stats()
+        return queryset.filter(country_id=self.kwargs['country_id'])
