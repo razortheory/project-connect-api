@@ -2,6 +2,7 @@ from datetime import date
 
 from django.core.cache import cache
 from django.test import TestCase
+from django.urls import reverse
 
 from proco.connection_statistics.tests.factories import CountryWeeklyStatusFactory
 from proco.locations.tests.factories import CountryFactory
@@ -48,4 +49,42 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         with self.assertNumQueries(0):
             self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
+            )
+
+
+class CountryBoundaryApiTestCase(TestAPIViewSetMixin, TestCase):
+    base_view = 'locations:countries-boundary'
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.country_one = CountryFactory()
+        cls.country_two = CountryFactory()
+        year, week_number, week_day = date.today().isocalendar()
+        CountryWeeklyStatusFactory(country=cls.country_one, year=year, week=week_number)
+        SchoolFactory(country=cls.country_one, location__country=cls.country_one)
+        SchoolFactory(country=cls.country_one, location__country=cls.country_one)
+
+    def setUp(self):
+        cache.clear()
+        super().setUp()
+
+    def test_countries_list(self):
+        with self.assertNumQueries(1):
+            response = self.forced_auth_req(
+                'get',
+                reverse(self.base_view),
+            )
+        self.assertIn('geometry_simplified', response.data[0])
+
+    def test_country_list_cached(self):
+        with self.assertNumQueries(1):
+            self.forced_auth_req(
+                'get',
+                reverse(self.base_view),
+            )
+
+        with self.assertNumQueries(0):
+            self.forced_auth_req(
+                'get',
+                reverse(self.base_view),
             )

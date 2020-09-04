@@ -18,6 +18,15 @@ class CountrySerializer(BaseCountrySerializer):
     pass
 
 
+class BoundaryListCountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = (
+            'id', 'geometry_simplified',
+        )
+        read_only_fields = fields
+
+
 class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
     date_of_join = serializers.SerializerMethodField()
@@ -26,7 +35,6 @@ class ListCountrySerializer(BaseCountrySerializer):
     class Meta(BaseCountrySerializer.Meta):
         fields = BaseCountrySerializer.Meta.fields + (
             'integration_status', 'date_of_join', 'schools_with_data_percentage',
-            'geometry_simplified',
         )
 
     def get_integration_status(self, instance):
