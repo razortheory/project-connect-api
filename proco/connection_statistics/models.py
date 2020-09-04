@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.utils.translation import ugettext as _
 
@@ -6,7 +8,7 @@ from model_utils.models import TimeStampedModel
 
 from proco.locations.models import Country
 from proco.schools.models import School
-from proco.utils.utils import get_current_week, get_current_weekday, get_current_year
+from proco.utils.utils import get_current_week, get_current_year
 
 
 class ConnectivityStatistics(TimeStampedModel, models.Model):
@@ -32,6 +34,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     country = models.ForeignKey(Country, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
+    date = models.DateField()
     schools_total = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connected = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connectivity_unknown = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -50,6 +53,10 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     def __str__(self):
         return f'{self.year} {self.country.name} Week {self.week} Speed - {self.connectivity_speed}'
 
+    def save(self, **kwargs):
+        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        super().save(**kwargs)
+
 
 class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     CONNECTIVITY_STATUS_TYPES = Choices(
@@ -66,6 +73,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
+    date = models.DateField()
     num_students = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
     num_teachers = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
     num_classroom = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
@@ -88,24 +96,14 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     def __str__(self):
         return f'{self.year} {self.school.name} Week {self.week} Speed - {self.connectivity_speed}'
 
-
-class CountryDailyStatusQuerySet(models.QuerySet):
-    def aggregate_daily_stats(self):
-        return self.values(
-            'year', 'week', 'weekday',
-        ).annotate(
-            connectivity_speed=models.Avg('connectivity_speed'),
-            connectivity_latency=models.Avg('connectivity_latency'),
-        ).order_by('year', 'week', 'weekday')
+    def save(self, **kwargs):
+        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        super().save(**kwargs)
 
 
 class CountryDailyStatus(ConnectivityStatistics, models.Model):
     country = models.ForeignKey(Country, related_name='daily_status', on_delete=models.CASCADE)
-    year = models.PositiveSmallIntegerField(default=get_current_year)
-    week = models.PositiveSmallIntegerField(default=get_current_week)
-    weekday = models.PositiveSmallIntegerField(default=get_current_weekday)
-
-    objects = CountryDailyStatusQuerySet.as_manager()
+    date = models.DateField()
 
     class Meta:
         verbose_name = _('Country Daily Connectivity Summary')
@@ -113,14 +111,13 @@ class CountryDailyStatus(ConnectivityStatistics, models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return f'{self.year} {self.country.name} Week {self.week} Day {self.weekday} Speed - {self.connectivity_speed}'
+        year, week, weekday = self.date.isocalendar()
+        return f'{year} {self.country.name} Week {week} Day {weekday} Speed - {self.connectivity_speed}'
 
 
 class SchoolDailyStatus(ConnectivityStatistics, models.Model):
     school = models.ForeignKey(School, related_name='daily_status', on_delete=models.CASCADE)
-    year = models.PositiveSmallIntegerField(default=get_current_year)
-    week = models.PositiveSmallIntegerField(default=get_current_week)
-    weekday = models.PositiveSmallIntegerField(default=get_current_weekday)
+    date = models.DateField()
 
     class Meta:
         verbose_name = _('School Daily Connectivity Summary')
@@ -128,7 +125,8 @@ class SchoolDailyStatus(ConnectivityStatistics, models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return f'{self.year} {self.school.name} Week {self.week} Day {self.weekday} Speed - {self.connectivity_speed}'
+        year, week, weekday = self.date.isocalendar()
+        return f'{year} {self.school.name} Week {week} Day {weekday} Speed - {self.connectivity_speed}'
 
 
 class RealTimeConnectivity(ConnectivityStatistics):
