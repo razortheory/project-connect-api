@@ -4,7 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 from rest_framework import mixins, viewsets
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
 
 from proco.connection_statistics.models import CountryWeeklyStatus
@@ -15,6 +15,7 @@ from proco.locations.serializers import (
     DetailCountrySerializer,
     ListCountrySerializer,
 )
+from proco.utils.filters import NullsAlwaysLastOrderingFilter
 
 
 class CountryViewSet(
@@ -29,13 +30,14 @@ class CountryViewSet(
             CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
             to_attr='latest_status',
         ),
-    )
+    ).annotate_integration_status().annotate_date_of_join().annotate_schools_with_data_percentage()
     serializer_class = CountrySerializer
     filter_backends = (
-        OrderingFilter,
+        NullsAlwaysLastOrderingFilter, SearchFilter,
     )
     ordering = ('name',)
-    ordering_fields = ('name',)
+    ordering_fields = ('name', 'schools_with_data_percentage', 'integration_status', 'date_of_join')
+    search_fields = ('name',)
 
     def get_serializer_class(self):
         if self.action == 'list':
