@@ -9,9 +9,13 @@ from rest_framework.views import APIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from proco.connection_statistics.filters import DateWeekNumberFilter, DateYearFilter
-from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus
-from proco.connection_statistics.serializers import CountryDailyStatusSerializer, CountryWeeklyStatusSerializer
+from proco.connection_statistics.filters import DateMonthFilter, DateWeekNumberFilter, DateYearFilter
+from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus, SchoolDailyStatus
+from proco.connection_statistics.serializers import (
+    CountryDailyStatusSerializer,
+    CountryWeeklyStatusSerializer,
+    SchoolDailyStatusSerializer,
+)
 from proco.locations.models import Country
 from proco.schools.models import School
 
@@ -67,3 +71,22 @@ class CountryDailyStatsListAPIView(ListAPIView):
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
         return queryset.filter(country_id=self.kwargs['country_id'])
+
+
+class SchoolDailyStatsListAPIView(ListAPIView):
+    model = SchoolDailyStatus
+    queryset = model.objects.all()
+    serializer_class = SchoolDailyStatusSerializer
+    filter_backends = (
+        DjangoFilterBackend,
+        DateYearFilter,
+        DateWeekNumberFilter,
+        DateMonthFilter,
+    )
+    filterset_fields = {
+        'date': ['lte', 'gte'],
+    }
+
+    def get_queryset(self):
+        queryset = super(SchoolDailyStatsListAPIView, self).get_queryset()
+        return queryset.filter(school_id=self.kwargs['school_id'])
