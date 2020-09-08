@@ -1,6 +1,11 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus, SchoolWeeklyStatus
+from proco.connection_statistics.models import (
+    CountryDailyStatus,
+    CountryWeeklyStatus,
+    SchoolDailyStatus,
+    SchoolWeeklyStatus,
+)
 
 
 class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
@@ -52,6 +57,30 @@ class CountryDailyStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CountryDailyStatus
+        fields = (
+            'date',
+            'year',
+            'week',
+            'weekday',
+            'connectivity_speed',
+            'connectivity_latency',
+        )
+        read_only_fields = fields
+
+    def get_week(self, obj):
+        return obj.date.isocalendar()[1]
+
+    def get_weekday(self, obj):
+        return obj.date.isocalendar()[2]
+
+
+class SchoolDailyStatusSerializer(serializers.ModelSerializer):
+    year = serializers.ReadOnlyField(source='date.year')
+    week = serializers.SerializerMethodField()
+    weekday = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SchoolDailyStatus
         fields = (
             'date',
             'year',
