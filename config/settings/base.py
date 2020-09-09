@@ -243,7 +243,6 @@ ADMIN_REORDER = (
         'app': 'custom_auth',
         'label': 'Authentication and authorization',
         'models': (
-            'auth.Group',
             'custom_auth.ApplicationUser',
         ),
     },
