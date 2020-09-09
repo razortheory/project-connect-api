@@ -25,7 +25,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         super().setUp()
 
     def test_schools_list(self):
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(2):
             response = self.forced_auth_req(
                 'get',
                 reverse('schools:schools-list', args=[self.country.id]),
