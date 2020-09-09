@@ -48,9 +48,9 @@ def aggregate_school_daily_status_to_school_weekly_status():
     for school in schools:
         qs_school_weekly = SchoolWeeklyStatus.objects.filter(school=school, week=date.isocalendar()[1])
         if qs_school_weekly.exists():
-            school_weekly = qs_school_weekly.first()
+            school_weekly = qs_school_weekly.last()
         else:
-            school_weekly = SchoolWeeklyStatus.objects.filter(school=school).order_by('-week').first()
+            school_weekly = SchoolWeeklyStatus.objects.filter(school=school).last()
             school_weekly.id = None
 
         qs_country_daily_status = SchoolDailyStatus.objects.filter(school=school, date__gte=date)
@@ -67,9 +67,9 @@ def aggregate_country_daily_status_to_country_weekly_status():
     for country in countries:
         qs_country_weekly = CountryWeeklyStatus.objects.filter(country=country, week=date.isocalendar()[1])
         if qs_country_weekly.exists():
-            country_weekly = qs_country_weekly.first()
+            country_weekly = qs_country_weekly.last()
         else:
-            country_weekly = CountryWeeklyStatus.objects.filter(country=country).order_by('-week').first()
+            country_weekly = CountryWeeklyStatus.objects.filter(country=country).last()
             country_weekly.id = None
 
         qs_country_daily_status = CountryDailyStatus.objects.filter(country=country, date__gte=date)
