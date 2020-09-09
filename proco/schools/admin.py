@@ -10,7 +10,7 @@ from mapbox_location_field.widgets import MapAdminInput
 from proco.schools.forms import ImportSchoolsCSVForm
 from proco.schools.models import FileImport, School
 from proco.schools.tasks import process_loaded_file
-from proco.utils.admin import CountryNameDisplayAdminMixin, LocationNameDisplayAdminMixin
+from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
 @admin.register(School)
