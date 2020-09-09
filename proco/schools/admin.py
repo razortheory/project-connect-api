@@ -10,23 +10,22 @@ from mapbox_location_field.widgets import MapAdminInput
 from proco.schools.forms import ImportSchoolsCSVForm
 from proco.schools.models import FileImport, School
 from proco.schools.tasks import process_loaded_file
-from proco.utils.admin import CountryNameDisplayAdminMixin, LocationNameDisplayAdminMixin
+from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
 @admin.register(School)
-class SchoolAdmin(LocationNameDisplayAdminMixin, CountryNameDisplayAdminMixin, MapAdmin):
+class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
     formfield_overrides = {
         PointField: {'widget': MapAdminInput},
     }
-    list_display = ('name', 'get_country_name', 'get_location_name', 'address', 'postal_code',
-                    'education_level', 'environment', 'school_type')
+    list_display = ('name', 'get_country_name', 'address', 'education_level', 'school_type')
     list_select_related = ('country', 'location')
     list_filter = ('country', 'education_level', 'environment', 'school_type')
     search_fields = ('name', 'country__name', 'location__name')
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
     readonly_fields = ('get_weekly_stats_url',)
-    raw_id_fields = ('location',)
+    raw_id_fields = ('country', 'location')
 
     def get_urls(self):
         urls = super().get_urls()
