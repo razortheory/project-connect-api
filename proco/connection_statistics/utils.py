@@ -59,6 +59,7 @@ def aggregate_school_daily_status_to_school_weekly_status():
             school_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
             school_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
             school_weekly.save()
+            school_weekly.reset_date_fields()
 
 
 def aggregate_country_daily_status_to_country_weekly_status():
@@ -78,3 +79,4 @@ def aggregate_country_daily_status_to_country_weekly_status():
             country_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
             country_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
             country_weekly.save()
+            country_weekly.reset_date_fields()
