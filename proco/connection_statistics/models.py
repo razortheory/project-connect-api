@@ -57,6 +57,12 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
         self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
         super().save(**kwargs)
 
+    def reset_date_fields(self):
+        self.week = get_current_week()
+        self.year = get_current_year()
+        self.date = datetime.now().date()
+        self.save(update_fields=('week', 'year', 'date'))
+
 
 class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     CONNECTIVITY_TYPES = Choices(
@@ -108,6 +114,12 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
         self.connectivity_status = self.get_connectivity_status()
         super().save(**kwargs)
+
+    def reset_date_fields(self):
+        self.week = get_current_week()
+        self.year = get_current_year()
+        self.date = datetime.now().date()
+        self.save(update_fields=('week', 'year', 'date'))
 
     def get_connectivity_status(self):
         if not self.connectivity:
