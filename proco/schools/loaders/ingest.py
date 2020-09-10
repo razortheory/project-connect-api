@@ -145,4 +145,8 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             schools_weekly_status_list = []
             updated_schools = []
 
+    if len(schools_weekly_status_list) > 0:
+        SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
+        SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
+
     return errors
