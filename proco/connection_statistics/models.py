@@ -65,7 +65,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
 
 
 class SchoolWeeklyStatus(TimeStampedModel, models.Model):
-    CONNECTIVITY_STATUS_TYPES = Choices(
+    CONNECTIVITY_TYPES = Choices(
         ('unknown', _('Unknown')),
         ('no', _('No')),
         ('2g', _('2G')),
@@ -74,6 +74,12 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         ('fiber', _('Fiber')),
         ('cable', _('Cable')),
         ('dsl', _('DSL')),
+    )
+    CONNECTIVITY_STATUSES = Choices(
+        ('no', _('No connectivity')),
+        ('unknown', _('Data unavailable')),
+        ('moderate', _('Moderate')),
+        ('good', _('Good')),
     )
 
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
@@ -89,9 +95,11 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     computer_lab = models.BooleanField(default=False)
     num_computers = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
     connectivity = models.BooleanField(default=False)
-    connectivity_status = models.CharField(max_length=64, default='unknown')
-    connectivity_speed = models.FloatField(blank=True, null=True, default=None)
-    connectivity_latency = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
+    connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
+                                           choices=CONNECTIVITY_STATUSES)
+    connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
+    connectivity_speed = models.FloatField(_('Down speed (mbps)'), blank=True, null=True, default=None)
+    connectivity_latency = models.PositiveSmallIntegerField(_('Latency (ms)'), blank=True, null=True, default=None)
     connectivity_availability = models.FloatField(blank=True, null=True, default=None)
 
     class Meta:
@@ -104,6 +112,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
 
     def save(self, **kwargs):
         self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        self.connectivity_status = self.get_connectivity_status()
         super().save(**kwargs)
 
     def reset_date_fields(self):
@@ -111,6 +120,18 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         self.year = get_current_year()
         self.date = datetime.now().date()
         self.save(update_fields=('week', 'year', 'date'))
+
+    def get_connectivity_status(self):
+        if not self.connectivity:
+            return self.CONNECTIVITY_STATUSES.no
+
+        if not self.connectivity_speed:
+            return self.CONNECTIVITY_STATUSES.unknown
+
+        if self.connectivity_speed > 5:
+            return self.CONNECTIVITY_STATUSES.good
+        else:
+            return self.CONNECTIVITY_STATUSES.moderate
 
 
 class CountryDailyStatus(ConnectivityStatistics, models.Model):

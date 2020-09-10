@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -6,6 +7,7 @@ from rest_framework import mixins, viewsets
 
 from django_filters.rest_framework import DjangoFilterBackend
 
+from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.models import School
 from proco.schools.serializers import ListSchoolSerializer, SchoolSerializer
@@ -16,6 +18,13 @@ class SchoolsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    queryset = School.objects.prefetch_related(
+        Prefetch(
+            'weekly_status',
+            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
+            to_attr='latest_status',
+        ),
+    )
     pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (
@@ -24,7 +33,7 @@ class SchoolsViewSet(
     related_model = Country
 
     def get_queryset(self):
-        return School.objects.filter(country_id=self.kwargs['country_pk'])
+        return super().get_queryset().filter(country_id=self.kwargs['country_pk'])
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
