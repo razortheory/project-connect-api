@@ -26,6 +26,9 @@ def load_data(uploaded_file):
 def save_data(country, loaded: Iterable[Dict]) -> List[str]:
     errors = []
 
+    year, week_number, week_day = date.today().isocalendar()
+    schools_weekly_status_list = []
+    updated_schools = []
     for i, data in enumerate(loaded):
         row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
@@ -128,9 +131,22 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         else:
             school = School.objects.create(**school_data)
 
-        year, week_number, week_day = date.today().isocalendar()
-        SchoolWeeklyStatus.objects.update_or_create(
-            year=year, week=week_number, school=school, defaults=history_data,
+        schools_weekly_status_list.append(
+            SchoolWeeklyStatus(
+                year=year, week=week_number, school=school,
+                date=date.today(), **history_data,
+            ),
         )
+        updated_schools.append(school.id)
+
+        if i > 0 and i % 5000 == 0:
+            SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
+            SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
+            schools_weekly_status_list = []
+            updated_schools = []
+
+    if len(schools_weekly_status_list) > 0:
+        SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
+        SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
 
     return errors
