@@ -67,6 +67,10 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
 
         try:
             school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
+
+            if school_data['geopoint'] == Point(x=0, y=0):
+                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
+                continue
         except (TypeError, ValueError):
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
