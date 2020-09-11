@@ -38,6 +38,8 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.school_two = SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolWeeklyStatusFactory(school=cls.school_one, connectivity=True)
         SchoolWeeklyStatusFactory(school=cls.school_two, connectivity=False)
+        CountryWeeklyStatusFactory(country=cls.country_one, integration_status=CountryWeeklyStatus.REALTIME_MAPPED)
+        CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED)
 
     def test_global_stats(self):
         response = self.forced_auth_req(
@@ -48,13 +50,15 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
             'total_schools': 2,
             'schools_mapped': 1,
             'percent_schools_without_connectivity': 50.0,
-            'countries_joined': 1,
+            'countries_joined': 2,
+            'countries_connected_to_realtime': 1,
+            'countries_with_static_data': 1,
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, correct_response)
 
     def test_global_stats_queries(self):
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:global-stat'),

@@ -24,18 +24,23 @@ class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        countries_joined = Country.objects.count()
+        countries_qs = Country.objects.all()
         schools_qs = School.objects.annotate_status_connectivity()
+
+        countries_joined = countries_qs.count()
         total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
         schools_without_connectivity = schools_qs.filter(connectivity=False).count()
         percent_schools_without_connectivity = schools_without_connectivity / total_schools * 100
+        aggregate_statuses = CountryWeeklyStatus.objects.aggregate_integration_statuses()
 
         data = {
             'total_schools': total_schools,
             'schools_mapped': schools_mapped,
             'percent_schools_without_connectivity': percent_schools_without_connectivity,
             'countries_joined': countries_joined,
+            'countries_connected_to_realtime': aggregate_statuses['countries_connected_to_realtime'],
+            'countries_with_static_data': aggregate_statuses['countries_with_static_data'],
         }
         return Response(data=data)
 
