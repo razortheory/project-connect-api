@@ -25,4 +25,4 @@ class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     list_select_related = ('country', 'parent')
     search_fields = ('name', 'country__name')
     exclude = ('geometry_simplified',)
-    raw_id_fields = ('parent',)
+    raw_id_fields = ('parent', 'country')

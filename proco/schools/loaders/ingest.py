@@ -26,6 +26,9 @@ def load_data(uploaded_file):
 def save_data(country, loaded: Iterable[Dict]) -> List[str]:
     errors = []
 
+    year, week_number, week_day = date.today().isocalendar()
+    schools_weekly_status_list = []
+    updated_schools = []
     for i, data in enumerate(loaded):
         row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
@@ -67,6 +70,10 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
 
         try:
             school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
+
+            if school_data['geopoint'] == Point(x=0, y=0):
+                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
+                continue
         except (TypeError, ValueError):
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
@@ -90,20 +97,30 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             history_data['num_classroom'] = data['num_classroom']
         if 'num_latrines' in data:
             history_data['num_latrines'] = data['num_latrines']
+
         if 'electricity' in data:
             history_data['electricity_availability'] = data['electricity'].lower() in ['true', 'yes', '1']
+
         if 'computer_lab' in data:
             history_data['computer_lab'] = data['computer_lab'].lower() in ['true', 'yes', '1']
         if 'num_computers' in data:
             history_data['num_computers'] = data['num_computers']
+            history_data['computer_lab'] = True
+
         if 'connectivity' in data:
             history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
         if 'type_connectivity' in data:
-            history_data['connectivity_status'] = data['type_connectivity']
+            history_data['connectivity_type'] = data['type_connectivity']
         if 'speed_connectivity' in data:
-            history_data['connectivity_speed'] = data['speed_connectivity']
+            try:
+                history_data['connectivity_speed'] = float(data['speed_connectivity'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for connectivity_speed').format(row_index))
+                continue
+            history_data['connectivity'] = True
         if 'latency_connectivity' in data:
             history_data['connectivity_latency'] = data['latency_connectivity']
+
         if 'water' in data:
             history_data['running_water'] = data['water'].lower() in ['true', 'yes', '1']
 
@@ -114,9 +131,22 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         else:
             school = School.objects.create(**school_data)
 
-        year, week_number, week_day = date.today().isocalendar()
-        SchoolWeeklyStatus.objects.update_or_create(
-            year=year, week=week_number, school=school, defaults=history_data,
+        schools_weekly_status_list.append(
+            SchoolWeeklyStatus(
+                year=year, week=week_number, school=school,
+                date=date.today(), **history_data,
+            ),
         )
+        updated_schools.append(school.id)
+
+        if i > 0 and i % 5000 == 0:
+            SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
+            SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
+            schools_weekly_status_list = []
+            updated_schools = []
+
+    if len(schools_weekly_status_list) > 0:
+        SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
+        SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
 
     return errors
