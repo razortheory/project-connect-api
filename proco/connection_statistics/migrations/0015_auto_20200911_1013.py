@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('connection_statistics', '0014_auto_20200911_1012'),
         ('locations', '0004_auto_20200822_0919'),
+        ('schools', '0007_auto_20200817_1104'),
     ]
 
     operations = [
