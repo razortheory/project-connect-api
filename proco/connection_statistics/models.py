@@ -55,6 +55,8 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
 
     def save(self, **kwargs):
         self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        if self.integration_status == CountryWeeklyStatus.SCHOOL_MAPPED and self.connectivity_speed:
+            self.integration_status = CountryWeeklyStatus.STATIC_MAPPED
         super().save(**kwargs)
 
     def reset_date_fields(self):

@@ -8,7 +8,7 @@ from proco.schools.models import School
 @receiver(post_save, sender=School)
 def change_integration_status_country(instance, created=False, **kwargs):
     if instance.geopoint:
-        country_weekly = CountryWeeklyStatus.objects.filter(country_pk=instance.country.id).last()
+        country_weekly = CountryWeeklyStatus.objects.filter(country_id=instance.country.id).last()
         if country_weekly.integration_status == CountryWeeklyStatus.JOINED:
             country_weekly.id = None
             country_weekly.integration_status = CountryWeeklyStatus.SCHOOL_MAPPED

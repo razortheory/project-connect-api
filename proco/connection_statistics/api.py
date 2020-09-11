@@ -48,7 +48,7 @@ class CountryWeekStatsAPIView(RetrieveAPIView):
         week = self.kwargs['week']
         year = self.kwargs['year']
         date = datetime.strptime(f'{year}-W{week}-1', '%Y-W%W-%w')
-        instance = CountryWeeklyStatus.objects.filter(country_id=self.kwargs['country_id'], date__lte=date).first()
+        instance = CountryWeeklyStatus.objects.filter(country_id=self.kwargs['country_id'], date__lte=date).last()
         if not instance:
             raise Http404
 

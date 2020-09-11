@@ -78,5 +78,9 @@ def aggregate_country_daily_status_to_country_weekly_status():
             aggregate = qs_country_daily_status.aggregate(Avg('connectivity_speed'), Avg('connectivity_latency'))
             country_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
             country_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
+            if country_weekly.integration_status in [
+                CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
+            ] and aggregate['connectivity_speed__avg']:
+                country_weekly.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
             country_weekly.save()
             country_weekly.reset_date_fields()

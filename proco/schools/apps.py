@@ -6,4 +6,4 @@ class SchoolsConfig(AppConfig):
     verbose_name = 'Schools'
 
     def ready(self):
-        from proco.locations import signals  # NOQA
+        from proco.schools import signals  # NOQA
