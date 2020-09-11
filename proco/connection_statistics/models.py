@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -34,7 +34,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     country = models.ForeignKey(Country, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
-    date = models.DateField()
+    date = models.DateField(default=date.today)
     schools_total = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connected = models.PositiveIntegerField(blank=True, null=True, default=None)
     schools_connectivity_unknown = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -55,6 +55,8 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
 
     def save(self, **kwargs):
         self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        if self.integration_status == CountryWeeklyStatus.SCHOOL_MAPPED and self.connectivity_speed:
+            self.integration_status = CountryWeeklyStatus.STATIC_MAPPED
         super().save(**kwargs)
 
     def reset_date_fields(self):
@@ -85,7 +87,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
-    date = models.DateField()
+    date = models.DateField(default=date.today)
     num_students = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
     num_teachers = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
     num_classroom = models.PositiveSmallIntegerField(blank=True, null=True, default=None)

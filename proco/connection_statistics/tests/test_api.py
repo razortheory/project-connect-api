@@ -148,7 +148,6 @@ class AggregateConnectivityDataTestCase(TestCase):
         cls.school = SchoolFactory(country=cls.country)
         RealTimeConnectivityFactory(school=cls.school, connectivity_speed=40.0)
         RealTimeConnectivityFactory(school=cls.school, connectivity_speed=60.0)
-        CountryWeeklyStatusFactory(country=cls.country, date=(datetime.now() - timedelta(days=7)).date())
         SchoolWeeklyStatusFactory(school=cls.school, date=(datetime.now() - timedelta(days=7)).date())
 
     def test_aggregate_real_time_data_to_school_daily_status(self):
@@ -164,13 +163,18 @@ class AggregateConnectivityDataTestCase(TestCase):
     def test_aggregate_country_daily_status_to_country_weekly_status(self):
         CountryDailyStatusFactory(country=self.country, connectivity_speed=40.0, date=datetime.now().date())
         CountryDailyStatusFactory(country=self.country, connectivity_speed=60.0, date=datetime.now().date())
+
         aggregate_country_daily_status_to_country_weekly_status()
-        self.assertEqual(CountryWeeklyStatus.objects.count(), 2)
-        self.assertEqual(CountryWeeklyStatus.objects.last().connectivity_speed, 50.0)
+        self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 2)
+        self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).last().connectivity_speed, 50.0)
+
+        country_weekly = CountryWeeklyStatus.objects.filter(country=self.country).last()
+        self.assertEqual(country_weekly.integration_status, CountryWeeklyStatus.REALTIME_MAPPED)
 
     def test_aggregate_school_daily_status_to_school_weekly_status(self):
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=40.0, date=datetime.now().date())
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=60.0, date=datetime.now().date())
+
         aggregate_school_daily_status_to_school_weekly_status()
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 2)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity_speed, 50.0)
