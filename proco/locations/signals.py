@@ -1,7 +1,11 @@
 # from django.contrib.gis.db.models.aggregates import Union
 # from django.contrib.gis.geos import MultiPolygon, Polygon
-# from django.db.models.signals import post_delete, post_save
-# from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from proco.connection_statistics.models import CountryWeeklyStatus
+from proco.locations.models import Country
+
 #
 #
 # def to_multipolygon(geos_geom):
@@ -14,3 +18,9 @@
 #     union_geometry = qs.aggregate(geometry=Union('geometry'))['geometry']
 #     instance.country.geometry = to_multipolygon(union_geometry)
 #     instance.country.save()
+
+
+@receiver(post_save, sender=Country)
+def create_country_weekly_status(instance, created=False, **kwargs):
+    if created:
+        CountryWeeklyStatus.objects.create(country=instance)
