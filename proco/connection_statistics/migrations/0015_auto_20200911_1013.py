@@ -6,10 +6,13 @@ from django.db import migrations
 def set_initial_weekly_status(apps, schema_migration):
     Country = apps.get_model('locations', 'Country')
     CountryWeeklyStatus = apps.get_model('connection_statistics', 'CountryWeeklyStatus')
+    School = apps.get_model('schools', 'School')
+
     for country in Country.objects.all():
         qs = CountryWeeklyStatus.objects.filter(country=country)
         if not qs.exists():
-            CountryWeeklyStatus.objects.create(country=country)
+            integration_status = 1 if School.objects.filter(country=country, geopoint__isnull=False).exists() else 0
+            CountryWeeklyStatus.objects.create(country=country, integration_status=integration_status)
 
 
 class Migration(migrations.Migration):
