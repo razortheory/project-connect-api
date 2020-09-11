@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date, datetime
 
 from django.db import models
 from django.utils.translation import ugettext as _
