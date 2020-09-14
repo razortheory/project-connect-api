@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from celery.schedules import crontab
 from celery.task import periodic_task
+
 from proco.connection_statistics.utils import (
     aggregate_country_daily_status_to_country_weekly_status,
     aggregate_real_time_data_to_school_daily_status,
