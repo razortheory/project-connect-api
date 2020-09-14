@@ -9,7 +9,7 @@ from model_utils.models import TimeStampedModel
 from proco.connection_statistics.managers import CountryWeeklyStatusManager
 from proco.locations.models import Country
 from proco.schools.models import School
-from proco.utils.utils import get_current_week, get_current_year
+from proco.utils.dates import get_current_week, get_current_year
 
 
 class ConnectivityStatistics(TimeStampedModel, models.Model):
@@ -52,6 +52,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
         verbose_name = _('Country Summary')
         verbose_name_plural = _('Country Summary')
         ordering = ('id',)
+        unique_together = ('year', 'week', 'country')
 
     def __str__(self):
         return f'{self.year} {self.country.name} Week {self.week} Speed - {self.connectivity_speed}'
@@ -111,6 +112,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         verbose_name = _('School Summary')
         verbose_name_plural = _('School Summary')
         ordering = ('id',)
+        unique_together = ('year', 'week', 'school')
 
     def __str__(self):
         return f'{self.year} {self.school.name} Week {self.week} Speed - {self.connectivity_speed}'
@@ -147,6 +149,7 @@ class CountryDailyStatus(ConnectivityStatistics, models.Model):
         verbose_name = _('Country Daily Connectivity Summary')
         verbose_name_plural = _('Country Daily Connectivity Summary')
         ordering = ('id',)
+        unique_together = ('date', 'country')
 
     def __str__(self):
         year, week, weekday = self.date.isocalendar()
@@ -161,6 +164,7 @@ class SchoolDailyStatus(ConnectivityStatistics, models.Model):
         verbose_name = _('School Daily Connectivity Summary')
         verbose_name_plural = _('School Daily Connectivity Summary')
         ordering = ('id',)
+        unique_together = ('date', 'school')
 
     def __str__(self):
         year, week, weekday = self.date.isocalendar()

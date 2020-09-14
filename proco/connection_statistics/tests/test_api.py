@@ -21,9 +21,9 @@ from proco.connection_statistics.tests.factories import (
 )
 from proco.connection_statistics.utils import (
     aggregate_country_daily_status_to_country_weekly_status,
-    aggregate_real_time_data_to_country_daily_status,
     aggregate_real_time_data_to_school_daily_status,
     aggregate_school_daily_status_to_school_weekly_status,
+    aggregate_school_daily_to_country_daily,
 )
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
@@ -152,7 +152,8 @@ class AggregateConnectivityDataTestCase(TestCase):
         cls.school = SchoolFactory(country=cls.country)
         RealTimeConnectivityFactory(school=cls.school, connectivity_speed=40.0)
         RealTimeConnectivityFactory(school=cls.school, connectivity_speed=60.0)
-        SchoolWeeklyStatusFactory(school=cls.school, date=(datetime.now() - timedelta(days=7)).date())
+        year, week, weekday = (datetime.now() - timedelta(days=7)).date().isocalendar()
+        SchoolWeeklyStatusFactory(school=cls.school, year=year, week=week)
 
     def test_aggregate_real_time_data_to_school_daily_status(self):
         aggregate_real_time_data_to_school_daily_status()
@@ -160,25 +161,36 @@ class AggregateConnectivityDataTestCase(TestCase):
         self.assertEqual(SchoolDailyStatus.objects.first().connectivity_speed, 50.0)
 
     def test_aggregate_real_time_data_to_country_daily_status(self):
-        aggregate_real_time_data_to_country_daily_status()
+        aggregate_real_time_data_to_school_daily_status()
+        aggregate_school_daily_to_country_daily()
         self.assertEqual(CountryDailyStatus.objects.count(), 1)
         self.assertEqual(CountryDailyStatus.objects.first().connectivity_speed, 50.0)
 
+    def test_aggregate_school_daily_to_country_daily(self):
+        today = datetime.now().date()
+        SchoolDailyStatusFactory(school__country=self.country, connectivity_speed=40.0, date=today)
+        SchoolDailyStatusFactory(school__country=self.country, connectivity_speed=60.0, date=today)
+
+        aggregate_school_daily_to_country_daily()
+        self.assertEqual(CountryDailyStatus.objects.get(country=self.country, date=today).connectivity_speed, 50.0)
+
     def test_aggregate_country_daily_status_to_country_weekly_status(self):
-        CountryDailyStatusFactory(country=self.country, connectivity_speed=40.0, date=datetime.now().date())
-        CountryDailyStatusFactory(country=self.country, connectivity_speed=60.0, date=datetime.now().date())
+        today = datetime.now().date()
+        CountryDailyStatusFactory(country=self.country, connectivity_speed=40.0, date=today - timedelta(days=1))
+        CountryDailyStatusFactory(country=self.country, connectivity_speed=60.0, date=today)
 
         aggregate_country_daily_status_to_country_weekly_status()
-        self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 2)
+        self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 1)
         self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).last().connectivity_speed, 50.0)
 
         country_weekly = CountryWeeklyStatus.objects.filter(country=self.country).last()
         self.assertEqual(country_weekly.integration_status, CountryWeeklyStatus.REALTIME_MAPPED)
 
     def test_aggregate_school_daily_status_to_school_weekly_status(self):
-        SchoolDailyStatusFactory(school=self.school, connectivity_speed=40.0, date=datetime.now().date())
-        SchoolDailyStatusFactory(school=self.school, connectivity_speed=60.0, date=datetime.now().date())
+        today = datetime.now().date()
+        SchoolDailyStatusFactory(school=self.school, connectivity_speed=40.0, date=today - timedelta(days=1))
+        SchoolDailyStatusFactory(school=self.school, connectivity_speed=60.0, date=today)
 
         aggregate_school_daily_status_to_school_weekly_status()
-        self.assertEqual(SchoolWeeklyStatus.objects.count(), 2)
+        self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity_speed, 50.0)

@@ -4,7 +4,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
 import model_utils.fields
-import proco.utils.utils
+import proco.utils.dates
 
 
 class Migration(migrations.Migration):
@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
             name='SchoolWeeklyStatus',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('year', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_year)),
-                ('week', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_week)),
+                ('year', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_year)),
+                ('week', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_week)),
                 ('num_students', models.PositiveSmallIntegerField(blank=True, default=None, null=True)),
                 ('num_teachers', models.PositiveSmallIntegerField(blank=True, default=None, null=True)),
                 ('num_classroom', models.PositiveSmallIntegerField(blank=True, default=None, null=True)),
@@ -48,9 +48,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('connectivity_speed', models.DecimalField(blank=True, decimal_places=2, default=None, max_digits=6, null=True)),
                 ('connectivity_latency', models.PositiveSmallIntegerField(blank=True, default=None, null=True)),
-                ('year', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_year)),
-                ('week', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_week)),
-                ('weekday', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_weekday)),
+                ('year', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_year)),
+                ('week', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_week)),
+                ('weekday', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_weekday)),
                 ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_status', to='schools.School')),
             ],
             options={
@@ -77,8 +77,8 @@ class Migration(migrations.Migration):
             name='CountryWeeklyStatus',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('year', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_year)),
-                ('week', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_week)),
+                ('year', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_year)),
+                ('week', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_week)),
                 ('schools_total', models.PositiveIntegerField(blank=True, default=None, null=True)),
                 ('schools_connected', models.PositiveIntegerField(blank=True, default=None, null=True)),
                 ('schools_connectivity_unknown', models.PositiveIntegerField(blank=True, default=None, null=True)),
@@ -101,9 +101,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('connectivity_speed', models.DecimalField(blank=True, decimal_places=2, default=None, max_digits=6, null=True)),
                 ('connectivity_latency', models.PositiveSmallIntegerField(blank=True, default=None, null=True)),
-                ('year', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_year)),
-                ('week', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_week)),
-                ('weekday', models.PositiveSmallIntegerField(default=proco.utils.utils.get_current_weekday)),
+                ('year', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_year)),
+                ('week', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_week)),
+                ('weekday', models.PositiveSmallIntegerField(default=proco.utils.dates.get_current_weekday)),
                 ('country', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_status', to='locations.Country')),
             ],
             options={
