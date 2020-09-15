@@ -5,6 +5,8 @@ from proco.locations.models import Country
 
 
 class BaseCountrySerializer(serializers.ModelSerializer):
+    map_preview = serializers.SerializerMethodField()
+
     class Meta:
         model = Country
         fields = (
@@ -12,6 +14,14 @@ class BaseCountrySerializer(serializers.ModelSerializer):
             'map_preview', 'description', 'data_source',
         )
         read_only_fields = fields
+
+    def get_map_preview(self, instance):
+        if not instance.map_preview:
+            return ''
+
+        request = self.context.get('request')
+        photo_url = instance.map_preview.url
+        return request.build_absolute_uri(photo_url)
 
 
 class CountrySerializer(BaseCountrySerializer):
