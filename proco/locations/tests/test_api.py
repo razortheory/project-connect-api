@@ -1,10 +1,7 @@
-from datetime import date
-
 from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
-from proco.connection_statistics.tests.factories import CountryWeeklyStatusFactory
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
 from proco.utils.tests import TestAPIViewSetMixin
@@ -17,8 +14,6 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
     def setUpTestData(cls):
         cls.country_one = CountryFactory()
         cls.country_two = CountryFactory()
-        year, week_number, week_day = date.today().isocalendar()
-        CountryWeeklyStatusFactory(country=cls.country_one, year=year, week=week_number)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
 
@@ -59,8 +54,6 @@ class CountryBoundaryApiTestCase(TestAPIViewSetMixin, TestCase):
     def setUpTestData(cls):
         cls.country_one = CountryFactory()
         cls.country_two = CountryFactory()
-        year, week_number, week_day = date.today().isocalendar()
-        CountryWeeklyStatusFactory(country=cls.country_one, year=year, week=week_number)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
 
