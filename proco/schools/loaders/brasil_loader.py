@@ -51,18 +51,24 @@ class BrasilSimnetLoader(object):
 
         statistic = self.load_schools_statistic(date)
 
+        existing_statuses = []
         statistic_batch = []
         for data in statistic:
             if 'school_code' in data:
                 school = School.objects.filter(external_id=data['school_code']).first()
 
                 if school:
+                    # todo: replace with aggregation for all similar entries
+                    if (date, school.id) in existing_statuses:
+                        continue
+
                     daily_statistic = SchoolDailyStatus(
                         date=date, school=school,
                         connectivity_speed=data.get('tcp_down_median_mbps', None),
                         connectivity_latency=data.get('rtt_median_ms', None),
                     )
                     statistic_batch.append(daily_statistic)
+                    existing_statuses.append((date, school.id))
 
                 if len(statistic_batch) == 5000:
                     SchoolDailyStatus.objects.bulk_create(statistic_batch)
