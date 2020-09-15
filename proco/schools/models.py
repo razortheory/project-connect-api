@@ -38,7 +38,7 @@ class School(TimeStampedModel):
 
     timezone = TimeZoneField(blank=True, null=True)
     gps_confidence = models.FloatField(null=True, blank=True)
-    altitude = models.PositiveIntegerField(blank=True, null=True)
+    altitude = models.PositiveIntegerField(blank=True, default=0)
     address = models.CharField(blank=True, max_length=255)
     postal_code = models.CharField(blank=True, max_length=128)
     email = models.EmailField(max_length=128, null=True, blank=True, default=None)
