@@ -14,7 +14,7 @@ from proco.connection_statistics.utils import (
 from proco.schools.loaders.brasil_loader import brasil_statistic_loader
 
 
-@periodic_task(run_every=crontab(hour='*/6'))
+@periodic_task(run_every=crontab(hour='*/6', minute=0))
 def aggregate_real_time_data():
     aggregate_real_time_data_to_school_daily_status()
     aggregate_school_daily_to_country_daily()
