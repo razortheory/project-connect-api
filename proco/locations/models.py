@@ -76,8 +76,8 @@ class Country(GeometryMixin, TimeStampedModel):
     flag = models.ImageField(verbose_name=_('Country flag'), upload_to=get_random_name_image)
     map_preview = models.ImageField(upload_to=get_random_name_image, null=True, blank=True, default=None)
 
-    description = models.TextField(max_length=1000, null=True, blank=True)
-    data_source = models.TextField(max_length=500, null=True, blank=True)
+    description = models.TextField(max_length=1000, blank=True, default='')
+    data_source = models.TextField(max_length=500, blank=True, default='')
 
     objects = CountryQuerySet.as_manager()
 
