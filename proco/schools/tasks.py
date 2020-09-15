@@ -13,7 +13,7 @@ class FailedImportError(Exception):
     pass
 
 
-@app.task(soft_time_limit=30 * 60 * 60, time_limit=30 * 60 * 60)
+@app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def process_loaded_file(country_pk: int, pk: int):
     country = Country.objects.get(pk=country_pk)
     imported_file = FileImport.objects.filter(pk=pk).first()

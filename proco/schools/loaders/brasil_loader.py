@@ -1,9 +1,12 @@
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 import requests
+from dateutil import parser as dateutil_parser
+from pytz import UTC
 
-from proco.connection_statistics.models import SchoolDailyStatus
+from proco.connection_statistics.models import RealTimeConnectivity
 from proco.locations.models import Country
 from proco.schools.models import School
 
@@ -11,8 +14,9 @@ from proco.schools.models import School
 class BrasilSimnetLoader(object):
     base_url = 'https://api.simet.nic.br/'
 
-    def __init__(self):
-        self.country = Country.objects.get(code='BR')
+    @cached_property
+    def country(self):
+        return Country.objects.get(code='BR')
 
     def load_schools(self):
         response = requests.get('{0}school-measures/v1/getSchools'.format(self.base_url))
@@ -51,31 +55,49 @@ class BrasilSimnetLoader(object):
 
         statistic = self.load_schools_statistic(date)
 
-        existing_statuses = []
-        statistic_batch = []
+        new_entries = []
+        schools = {}
+        last_schools_data = {}
         for data in statistic:
-            if 'school_code' in data:
-                school = School.objects.filter(external_id=data['school_code']).first()
+            if 'school_code' not in data or 'time' not in data:
+                continue
 
-                if school:
-                    # todo: replace with aggregation for all similar entries
-                    if (date, school.id) in existing_statuses:
-                        continue
+            code = data['school_code']
+            if code in schools:
+                school = schools[code]
+            else:
+                school = School.objects.filter(country=self.country, external_id=data['school_code']).first()
+                schools[code] = school
 
-                    daily_statistic = SchoolDailyStatus(
-                        date=date, school=school,
-                        connectivity_speed=data.get('tcp_down_median_mbps', None),
-                        connectivity_latency=data.get('rtt_median_ms', None),
-                    )
-                    statistic_batch.append(daily_statistic)
-                    existing_statuses.append((date, school.id))
+            if not school:
+                continue
 
-                if len(statistic_batch) == 5000:
-                    SchoolDailyStatus.objects.bulk_create(statistic_batch)
-                    statistic_batch = []
+            entry_time = dateutil_parser.parse(data['time']).replace(tzinfo=UTC)
+            if school.id not in last_schools_data:
+                latest_school_entry = school.realtime_status.order_by('created').last()
+                if latest_school_entry:
+                    last_schools_data[school.id] = latest_school_entry.created
+                else:
+                    last_schools_data[school.id] = entry_time.replace(hour=0, minute=0, second=0)
 
-        if len(statistic_batch) > 0:
-            SchoolDailyStatus.objects.bulk_create(statistic_batch)
+            if entry_time <= last_schools_data[school.id]:
+                # record already saved
+                continue
+
+            new_entries.append(
+                RealTimeConnectivity(
+                    created=entry_time, school=school,
+                    connectivity_speed=data.get('tcp_down_median_mbps', None),
+                    connectivity_latency=data.get('rtt_median_ms', None),
+                ),
+            )
+
+            if len(new_entries) == 5000:
+                RealTimeConnectivity.objects.bulk_create(new_entries)
+                new_entries = []
+
+        if len(new_entries) > 0:
+            RealTimeConnectivity.objects.bulk_create(new_entries)
 
 
 brasil_statistic_loader = BrasilSimnetLoader()

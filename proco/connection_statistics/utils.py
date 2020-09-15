@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Avg
+from django.db.models import Avg, Prefetch
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -78,6 +78,7 @@ def aggregate_school_daily_status_to_school_weekly_status():
         ).aggregate(
             Avg('connectivity_speed'), Avg('connectivity_latency'),
         )
+        school_weekly.connectivity = bool(aggregate['connectivity_speed__avg'])
         school_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
         school_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
         school_weekly.save()
@@ -111,3 +112,70 @@ def aggregate_country_daily_status_to_country_weekly_status():
         ] and aggregate['connectivity_speed__avg']:
             country_weekly.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
         country_weekly.save()
+
+
+def update_country_weekly_status(country: Country, force=False):
+    if not hasattr(country, 'latest_status'):
+        raise RuntimeError('country latest status should be prefetched')
+
+    country_status = country.latest_status[0]
+    if not force and not (country_status.year == get_current_year() and country_status.week == get_current_week()):
+        # entry should be already updated
+        return
+
+    statistics = {
+        'schools_total': 0,
+        'schools_connected': 0,
+        'schools_connectivity_no': 0,
+        'schools_connectivity_unknown': 0,
+        'schools_connectivity_moderate': 0,
+        'schools_connectivity_good': 0,
+    }
+    country_schools = country.schools.all().prefetch_related(
+        Prefetch(
+            'weekly_status',
+            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
+            to_attr='latest_status',
+        ),
+    )
+
+    # slower but much easier to work with
+    for school in country_schools:
+        statistics['schools_total'] += 1
+        if not school.latest_status:
+            statistics['schools_connectivity_unknown'] += 1
+            continue
+
+        latest_status = school.latest_status[0]
+        connectivity_status = latest_status.get_connectivity_status()
+        if connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no:
+            statistics['schools_connectivity_no'] += 1
+        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown:
+            statistics['schools_connectivity_unknown'] += 1
+            statistics['schools_connected'] += 1
+        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate:
+            statistics['schools_connectivity_moderate'] += 1
+            statistics['schools_connected'] += 1
+        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good:
+            statistics['schools_connectivity_good'] += 1
+            statistics['schools_connected'] += 1
+
+    for field, value in statistics.items():
+        setattr(country_status, field, value)
+
+    # todo: calculate
+    country_status.avg_distance_school = 0
+
+    country_status.save()
+
+
+def update_countries_weekly_statuses(force=False):
+    countries = Country.objects.all().prefetch_related(
+        Prefetch(
+            'weekly_status',
+            CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
+            to_attr='latest_status',
+        ),
+    )
+    for country in countries:
+        update_country_weekly_status(country, force=force)
