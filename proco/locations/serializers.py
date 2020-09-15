@@ -54,8 +54,7 @@ class ListCountrySerializer(BaseCountrySerializer):
         return getattr(instance, 'date_of_join', None)
 
     def get_schools_with_data_percentage(self, instance):
-        schools_with_data_percentage = getattr(instance, 'schools_with_data_percentage', None)
-        return schools_with_data_percentage if schools_with_data_percentage else 0.0
+        return getattr(instance, 'schools_with_data_percentage', None)
 
 
 class DetailCountrySerializer(BaseCountrySerializer):

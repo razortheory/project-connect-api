@@ -64,7 +64,7 @@ class CountryQuerySet(models.QuerySet):
                         100.0 * models.F('schools_with_data') / models.F('schools_count'),
                         output_field=models.DecimalField(decimal_places=2, max_digits=6),
                     ),
-                ), default=None,
+                ), default=0.0,
             ),
         )
 
