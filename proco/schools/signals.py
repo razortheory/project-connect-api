@@ -14,6 +14,7 @@ def change_integration_status_country(instance, created=False, **kwargs):
             year, week, weekday = timezone.now().isocalendar()
             if not (country_weekly.year == year and country_weekly.week == week):
                 country_weekly.id = None
+                country_weekly.year = year
+                country_weekly.week = week
             country_weekly.integration_status = CountryWeeklyStatus.SCHOOL_MAPPED
             country_weekly.save()
-            country_weekly.reset_date_fields()
