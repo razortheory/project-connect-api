@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db.models import Avg, Prefetch
+from django.utils import timezone
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -13,7 +14,8 @@ from proco.locations.models import Country
 from proco.utils.dates import get_current_week, get_current_year
 
 
-def aggregate_real_time_data_to_school_daily_status(date):
+def aggregate_real_time_data_to_school_daily_status(date=None):
+    date = date or timezone.now().date()
     schools = RealTimeConnectivity.objects.filter(
         created__date=date,
     ).order_by('school').values_list('school', flat=True).order_by('school_id').distinct('school_id')
@@ -26,12 +28,13 @@ def aggregate_real_time_data_to_school_daily_status(date):
             Avg('connectivity_latency'),
         )
         school_daily_status, _ = SchoolDailyStatus.objects.get_or_create(school_id=school, date=date)
-        school_daily_status.connectivity_speed = aggregate['connectivity_speed__avg']
-        school_daily_status.connectivity_latency = aggregate['connectivity_latency__avg']
+        school_daily_status.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
+        school_daily_status.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
         school_daily_status.save()
 
 
-def aggregate_school_daily_to_country_daily(date):
+def aggregate_school_daily_to_country_daily(date=None):
+    date = date or timezone.now().date()
     for country in Country.objects.all():
         aggregate = SchoolDailyStatus.objects.filter(
             school__country=country, date=date,
@@ -44,18 +47,19 @@ def aggregate_school_daily_to_country_daily(date):
             continue
 
         CountryDailyStatus.objects.update_or_create(country=country, date=date, defaults={
-            'connectivity_speed': aggregate['connectivity_speed__avg'],
-            'connectivity_latency': aggregate['connectivity_latency__avg'],
+            'connectivity_speed': aggregate['connectivity_speed__avg'] or 0,
+            'connectivity_latency': aggregate['connectivity_latency__avg'] or 0,
         })
 
 
-def aggregate_school_daily_status_to_school_weekly_status():
-    date = (datetime.now() - timedelta(days=7)).date()
-    schools = SchoolDailyStatus.objects.filter(date__gte=date).values_list(
+def aggregate_school_daily_status_to_school_weekly_status(date=None):
+    date = date or timezone.now().date()
+    week_ago = date - timedelta(days=7)
+    schools = SchoolDailyStatus.objects.filter(date__gte=week_ago).values_list(
         'school', flat=True,
     ).order_by('school_id').distinct('school_id')
     for school in schools:
-        qs_school_weekly = SchoolWeeklyStatus.objects.filter(school=school, week=date.isocalendar()[1])
+        qs_school_weekly = SchoolWeeklyStatus.objects.filter(school=school, week=week_ago.isocalendar()[1])
         if qs_school_weekly.exists():
             school_weekly = qs_school_weekly.last()
         else:
@@ -74,18 +78,19 @@ def aggregate_school_daily_status_to_school_weekly_status():
                 )
 
         aggregate = SchoolDailyStatus.objects.filter(
-            school=school, date__gte=date,
+            school=school, date__gte=week_ago,
         ).aggregate(
             Avg('connectivity_speed'), Avg('connectivity_latency'),
         )
         school_weekly.connectivity = bool(aggregate['connectivity_speed__avg'])
-        school_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
-        school_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
+        school_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
+        school_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
         school_weekly.save()
 
 
-def aggregate_country_daily_status_to_country_weekly_status():
-    week_ago = (datetime.now() - timedelta(days=7)).date()
+def aggregate_country_daily_status_to_country_weekly_status(date=None):
+    date = date or timezone.now().date()
+    week_ago = date - timedelta(days=7)
     countries = CountryDailyStatus.objects.filter(
         date__gte=week_ago,
     ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id')
@@ -105,8 +110,8 @@ def aggregate_country_daily_status_to_country_weekly_status():
         ).aggregate(
             Avg('connectivity_speed'), Avg('connectivity_latency'),
         )
-        country_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
-        country_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
+        country_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
+        country_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
         if country_weekly.integration_status in [
             CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
         ] and aggregate['connectivity_speed__avg']:
