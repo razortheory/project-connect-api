@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.models import School
-from proco.schools.serializers import ListSchoolSerializer, SchoolSerializer
+from proco.schools.serializers import BaseSchoolSerializer, ListSchoolSerializer, SchoolSerializer
 
 
 class SchoolsViewSet(
@@ -48,14 +48,8 @@ class SchoolsViewSet(
 
 
 class RandomSchoolsListAPIView(ListAPIView):
-    queryset = School.objects.prefetch_related(
-        Prefetch(
-            'weekly_status',
-            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
-            to_attr='latest_status',
-        ),
-    ).order_by('?')[:settings.RANDOM_SCHOOLS_DEFAULT_AMOUNT]
-    serializer_class = SchoolSerializer
+    queryset = School.objects.order_by('?')[:settings.RANDOM_SCHOOLS_DEFAULT_AMOUNT]
+    serializer_class = BaseSchoolSerializer
     pagination_class = None
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
