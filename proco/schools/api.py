@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.models import School
-from proco.schools.serializers import BaseSchoolSerializer, ListSchoolSerializer, SchoolSerializer
+from proco.schools.serializers import ListSchoolSerializer, SchoolPointSerializer, SchoolSerializer
 
 
 class SchoolsViewSet(
@@ -49,7 +49,7 @@ class SchoolsViewSet(
 
 class RandomSchoolsListAPIView(ListAPIView):
     queryset = School.objects.order_by('?')[:settings.RANDOM_SCHOOLS_DEFAULT_AMOUNT]
-    serializer_class = BaseSchoolSerializer
+    serializer_class = SchoolPointSerializer
     pagination_class = None
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
