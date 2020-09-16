@@ -44,7 +44,9 @@ class BrasilSimnetLoader(object):
                 defaults={
                     'computer_lab': bool(int(float(school_data.get('QT_COMP_ALUNO', 0)))),
                     'num_computers': int(float(school_data.get('QT_COMPUTADOR', 0))),
-                    'connectivity_type': school_data.get('TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown),
+                    'connectivity_type': school_data.get(
+                        'TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown,
+                    ),
                 },
             )
 
