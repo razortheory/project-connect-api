@@ -41,8 +41,8 @@ class BrasilSimnetLoader(object):
             SchoolWeeklyStatus.objects.update_or_create(
                 school=school, week=date.isocalendar()[1], year=date.isocalendar()[0],
                 defaults={
-                    'computer_lab': bool(int(float(school_data['QT_COMP_ALUNO']))),
-                    'num_computers': int(float(school_data['QT_COMPUTADOR'])),
+                    'computer_lab': bool(int(float(school_data.get('QT_COMP_ALUNO', 0)))),
+                    'num_computers': int(float(school_data.get('QT_COMPUTADOR', 0))),
                 }
             )
 
