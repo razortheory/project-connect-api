@@ -32,6 +32,7 @@ class BrasilSimnetLoader(object):
                 defaults={
                     'name': school_data['NO_ENTIDADE'],
                     'geopoint': Point(x=school_data['LNG'], y=school_data['LAT']),
+                    'environment': school_data.get('TP_LOCALIZACAO', ''),
                     'admin_1_name': school_data.get('NM_ESTADO', ''),
                     'admin_4_name': school_data.get('NM_MUNICIP', ''),
                 },
@@ -43,7 +44,8 @@ class BrasilSimnetLoader(object):
                 defaults={
                     'computer_lab': bool(int(float(school_data.get('QT_COMP_ALUNO', 0)))),
                     'num_computers': int(float(school_data.get('QT_COMPUTADOR', 0))),
-                }
+                    'connectivity_type': school_data.get('TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown),
+                },
             )
 
     def update_schools(self):
