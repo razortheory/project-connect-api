@@ -59,7 +59,10 @@ def aggregate_school_daily_status_to_school_weekly_status(date=None):
         'school', flat=True,
     ).order_by('school_id').distinct('school_id')
     for school in schools:
-        qs_school_weekly = SchoolWeeklyStatus.objects.filter(school=school, week=week_ago.isocalendar()[1])
+        qs_school_weekly = SchoolWeeklyStatus.objects.filter(
+            school=school, week=week_ago.isocalendar()[1],
+            year=week_ago.isocalendar()[0],
+        )
         if qs_school_weekly.exists():
             school_weekly = qs_school_weekly.last()
         else:
