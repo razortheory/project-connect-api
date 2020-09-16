@@ -4,6 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 from rest_framework import mixins, viewsets
+from rest_framework.generics import ListAPIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -40,6 +41,22 @@ class SchoolsViewSet(
         if self.action == 'list':
             serializer_class = ListSchoolSerializer
         return serializer_class
+
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class RandomSchoolsListAPIView(ListAPIView):
+    queryset = School.objects.prefetch_related(
+        Prefetch(
+            'weekly_status',
+            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
+            to_attr='latest_status',
+        ),
+    ).order_by('?')[:settings.RANDOM_SCHOOLS_DEFAULT_AMOUNT]
+    serializer_class = SchoolSerializer
+    pagination_class = None
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def list(self, request, *args, **kwargs):
