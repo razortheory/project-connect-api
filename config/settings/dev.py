@@ -54,7 +54,7 @@ if CELERY_ENABLED:
 
     CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='amqp://guest@localhost//')
 
-    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_ALWAYS_EAGER = False
 
 
 # Sentry config

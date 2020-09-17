@@ -267,3 +267,5 @@ ADMIN_REORDER = (
     'locations',
     'schools',
 )
+
+RANDOM_SCHOOLS_DEFAULT_AMOUNT = env('RANDOM_SCHOOLS_DEFAULT_AMOUNT', default=20000)

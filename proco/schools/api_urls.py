@@ -12,4 +12,5 @@ app_name = 'schools'
 
 urlpatterns = [
     path('', include(country_schools.urls)),
+    path('schools/random/', api.RandomSchoolsListAPIView.as_view(), name='random-schools'),
 ]
