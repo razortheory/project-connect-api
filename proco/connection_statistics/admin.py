@@ -21,6 +21,12 @@ class CountryWeeklyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     ordering = ('-id',)
     readonly_fields = ('year', 'week', 'integration_status')
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(country__in=request.user.countries_available.all())
+        return qs
+
     def has_change_permission(self, request, obj=None):
         perm = super().has_change_permission(request, obj)
         if not request.user.is_superuser and obj:
@@ -39,6 +45,12 @@ class SchoolWeeklyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     readonly_fields = ('year', 'week')
     raw_id_fields = ('school',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(school__country__in=request.user.countries_available.all())
+        return qs
+
 
 @admin.register(CountryDailyStatus)
 class CountryDailyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
@@ -47,6 +59,12 @@ class CountryDailyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('country__name',)
     ordering = ('-id',)
     date_hierarchy = 'date'
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(country__in=request.user.countries_available.all())
+        return qs
 
 
 @admin.register(SchoolDailyStatus)
@@ -58,6 +76,12 @@ class SchoolDailyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     raw_id_fields = ('school',)
     date_hierarchy = 'date'
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(school__country__in=request.user.countries_available.all())
+        return qs
+
 
 @admin.register(RealTimeConnectivity)
 class RealTimeConnectivityAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
@@ -66,3 +90,9 @@ class RealTimeConnectivityAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('school__name',)
     ordering = ('-id',)
     readonly_fields = ('created', 'modified')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(school__country__in=request.user.countries_available.all())
+        return qs
