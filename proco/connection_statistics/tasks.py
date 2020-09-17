@@ -29,6 +29,13 @@ def update_brasil_schools():
     brasil_statistic_loader.update_schools()
 
 
+@app.task(soft_time_limit=60 * 60, time_limit=60 * 60)
+def test_celery():
+    print ("!" * 100)
+    print("OK")
+    print ("!" * 100)
+
+
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def load_brasil_daily_statistics(*args):
     # would be good to separate schools loading from statistics and run once a day

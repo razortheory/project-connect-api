@@ -39,7 +39,7 @@ services:
   celery_worker:
     container_name: proco_prod_celeryd
     image: rttest/project-connect-api:prod
-    command: pipenv run celery multi start 3 --concurrency=3 --app=proco.taskapp --loglevel=INFO --time-limit=300 --soft-time-limit=60 --logfile=/logs/celeryd-%n.log && while true; do sleep 2; done
+    command: bash -c "pipenv run celery multi start 3 --concurrency=3 --app=proco.taskapp --loglevel=INFO --time-limit=300 --soft-time-limit=60 --logfile=/logs/celeryd-%n.log && while true; do sleep 2; done"
     environment:
       DJANGO_SETTINGS_MODULE: "config.settings.prod"
     env_file:
