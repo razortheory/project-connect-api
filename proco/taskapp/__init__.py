@@ -25,10 +25,5 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=1, minute=0),
         'args': (),
     },
-    'test_celery': {
-        'task': 'proco.connection_statistics.test_celery',
-        'schedule': crontab(minute=1),
-        'args': (),
-    },
 }
 app.conf.timezone = 'UTC'
