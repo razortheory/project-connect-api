@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from templated_email import send_templated_mail
 
+from proco.locations.models import Country
+
 
 class ApplicationUser(AbstractBaseUser, PermissionsMixin):
 
@@ -42,6 +44,14 @@ class ApplicationUser(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    countries_available = models.ManyToManyField(
+        Country,
+        verbose_name=_('countries_available'),
+        blank=True,
+        help_text=_('The countries with which the user is associated to create permissions.'),
+        related_name='countries_available',
+    )
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

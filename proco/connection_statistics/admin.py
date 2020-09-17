@@ -21,6 +21,12 @@ class CountryWeeklyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     ordering = ('-id',)
     readonly_fields = ('year', 'week', 'integration_status')
 
+    def has_change_permission(self, request, obj=None):
+        perm = super().has_change_permission(request, obj)
+        if not request.user.is_superuser and obj:
+            perm = obj.country in request.user.countries_available.all()
+        return perm
+
 
 @admin.register(SchoolWeeklyStatus)
 class SchoolWeeklyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):

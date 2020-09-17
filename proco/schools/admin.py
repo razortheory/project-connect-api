@@ -67,3 +67,9 @@ class FileImportAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     readonly_fields = ('status', 'errors', 'uploaded_by', 'modified')
     ordering = ('-id',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(uploaded_by=request.user)
+        return qs
