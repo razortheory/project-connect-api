@@ -30,13 +30,18 @@ class CountryViewSet(
             CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
             to_attr='latest_status',
         ),
-    ).annotate_integration_status().annotate_date_of_join().annotate_schools_with_data_percentage()
+        Prefetch(
+            'weekly_status',
+            CountryWeeklyStatus.objects.order_by('country_id', 'year', 'week').distinct('country_id'),
+            to_attr='first_status',
+        ),
+    )
     serializer_class = CountrySerializer
     filter_backends = (
         NullsAlwaysLastOrderingFilter, SearchFilter,
     )
     ordering = ('name',)
-    ordering_fields = ('name', 'schools_with_data_percentage', 'integration_status', 'date_of_join')
+    ordering_fields = ('name',)
     search_fields = ('name',)
 
     def get_serializer_class(self):

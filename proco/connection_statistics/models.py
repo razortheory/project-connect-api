@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext as _
 
@@ -45,6 +46,9 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     connectivity_speed = models.FloatField(blank=True, default=0.0)
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
     avg_distance_school = models.FloatField(blank=True, default=0.0)
+    schools_with_data_percentage = models.DecimalField(
+        decimal_places=2, max_digits=6, default=0, validators=[MaxValueValidator(100), MinValueValidator(0)],
+    )
 
     objects = CountryWeeklyStatusManager()
 
