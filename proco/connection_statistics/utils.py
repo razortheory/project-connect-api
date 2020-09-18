@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.db.models import Avg, Prefetch
 from django.utils import timezone
@@ -11,6 +11,7 @@ from proco.connection_statistics.models import (
     SchoolWeeklyStatus,
 )
 from proco.locations.models import Country
+from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
 
@@ -91,6 +92,11 @@ def aggregate_school_daily_status_to_school_weekly_status(date=None):
         school_weekly.save()
 
 
+def _get_start_and_end_date_from_calendar_week(year, calendar_week):
+    monday = datetime.strptime(f'{year}-{calendar_week}-1', '%Y-%W-%w').date()
+    return monday, monday + timedelta(days=6.9)
+
+
 def aggregate_country_daily_status_to_country_weekly_status(date=None):
     date = date or timezone.now().date()
     week_ago = date - timedelta(days=7)
@@ -115,6 +121,15 @@ def aggregate_country_daily_status_to_country_weekly_status(date=None):
         )
         country_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
         country_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
+
+        week_start, week_end = _get_start_and_end_date_from_calendar_week(country_weekly.year, country_weekly.week)
+        schools_number = School.objects.filter(created__lte=week_end, country=country_weekly.country).count()
+        if schools_number:
+            schools_with_data_number = School.objects.filter(
+                weekly_status__created__lte=week_end, country=country_weekly.country,
+            ).count()
+            country_weekly.schools_with_data_percentage = 100.0 * schools_with_data_number / schools_number
+
         if country_weekly.integration_status in [
             CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
         ] and aggregate['connectivity_speed__avg']:

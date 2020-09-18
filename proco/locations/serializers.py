@@ -39,7 +39,6 @@ class BoundaryListCountrySerializer(serializers.ModelSerializer):
 
 class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
-    date_of_join = serializers.SerializerMethodField()
     schools_with_data_percentage = serializers.SerializerMethodField()
     schools_total = serializers.SerializerMethodField()
 
@@ -55,10 +54,10 @@ class ListCountrySerializer(BaseCountrySerializer):
         return instance.latest_status[0].schools_total if instance.latest_status else None
 
     def get_date_of_join(self, instance):
-        return getattr(instance, 'date_of_join', None)
+        return instance.first_status[0].created if instance.first_status else None
 
     def get_schools_with_data_percentage(self, instance):
-        return getattr(instance, 'schools_with_data_percentage', None)
+        return instance.latest_status[0].schools_with_data_percentage if instance.latest_status else None
 
 
 class DetailCountrySerializer(BaseCountrySerializer):
