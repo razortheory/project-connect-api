@@ -24,3 +24,10 @@ from proco.locations.models import Country
 def create_country_weekly_status(instance, created=False, **kwargs):
     if created:
         CountryWeeklyStatus.objects.create(country=instance)
+
+
+@receiver(post_save, sender=CountryWeeklyStatus)
+def set_date_of_join(instance, created=False, **kwargs):
+    if created and instance.country.date_of_join is None:
+        country.date_of_join = instance.date_of_join
+        country.save()
