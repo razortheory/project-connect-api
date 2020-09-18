@@ -29,5 +29,5 @@ def create_country_weekly_status(instance, created=False, **kwargs):
 @receiver(post_save, sender=CountryWeeklyStatus)
 def set_date_of_join(instance, created=False, **kwargs):
     if created and instance.country.date_of_join is None:
-        country.date_of_join = instance.date_of_join
+        country.date_of_join = instance.date
         country.save()
