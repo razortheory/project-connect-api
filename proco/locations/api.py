@@ -30,11 +30,6 @@ class CountryViewSet(
             CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
             to_attr='latest_status',
         ),
-        Prefetch(
-            'weekly_status',
-            CountryWeeklyStatus.objects.order_by('country_id', 'year', 'week').distinct('country_id'),
-            to_attr='first_status',
-        ),
     )
     serializer_class = CountrySerializer
     filter_backends = (

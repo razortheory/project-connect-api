@@ -32,6 +32,8 @@ class Country(GeometryMixin, TimeStampedModel):
     description = models.TextField(max_length=1000, blank=True, default='')
     data_source = models.TextField(max_length=500, blank=True, default='')
 
+    date_of_join = models.DateField(null=True)
+
     class Meta:
         ordering = ('name',)
         verbose_name = _('Country')

@@ -22,21 +22,21 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         super().setUp()
 
     def test_countries_list(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
             )
         self.assertIn('integration_status', response.data[0])
 
     def test_country_detail(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = self._test_retrieve(
                 user=None, instance=self.country_one,
             )
         self.assertIn('statistics', response.data)
 
     def test_country_list_cached(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
             )

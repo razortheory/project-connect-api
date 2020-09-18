@@ -39,7 +39,6 @@ class BoundaryListCountrySerializer(serializers.ModelSerializer):
 
 class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
-    date_of_join = serializers.SerializerMethodField()
     schools_with_data_percentage = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
