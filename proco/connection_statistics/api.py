@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from django.core.cache import cache
+from django.conf import settings
 from django.http import Http404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
@@ -25,6 +27,7 @@ class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
     CACHE_KEY_LAST_DATA_UPDATE = 'cache-global-stat'
 
+    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
         countries_qs = Country.objects.all()
         schools_qs = School.objects.annotate_status_connectivity()
@@ -35,6 +38,7 @@ class GlobalStatsAPIView(APIView):
         schools_without_connectivity = schools_qs.filter(connectivity=False).count()
         percent_schools_without_connectivity = schools_without_connectivity / total_schools * 100
         aggregate_statuses = CountryWeeklyStatus.objects.aggregate_integration_statuses()
+        last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
 
         data = {
             'total_schools': total_schools,
@@ -43,18 +47,8 @@ class GlobalStatsAPIView(APIView):
             'countries_joined': countries_joined,
             'countries_connected_to_realtime': aggregate_statuses['countries_connected_to_realtime'],
             'countries_with_static_data': aggregate_statuses['countries_with_static_data'],
+            'last_date_updated': last_date_updated.strftime('%B %Y'),
         }
-
-        cache_data = cache.get(self.CACHE_KEY_LAST_DATA_UPDATE)
-        if cache_data:
-            date = cache_data.pop('last_date_updated', datetime.now().strftime('%B %Y'))
-            if cache_data != data:
-                data['last_date_updated'] = datetime.now().strftime('%B %Y')
-            else:
-                data['last_date_updated'] = date
-        else:
-            data['last_date_updated'] = datetime.now().strftime('%B %Y')
-            cache.set(self.CACHE_KEY_LAST_DATA_UPDATE, data)
 
         return Response(data=data)
 
