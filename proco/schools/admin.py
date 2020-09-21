@@ -34,6 +34,12 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
         ]
         return custom_urls + urls
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(country__in=request.user.countries_available.all())
+        return qs
+
     def import_csv(self, request):
         if request.method == 'GET':
             form = ImportSchoolsCSVForm()
@@ -67,3 +73,9 @@ class FileImportAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     readonly_fields = ('status', 'errors', 'uploaded_by', 'modified')
     ordering = ('-id',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(uploaded_by=request.user)
+        return qs

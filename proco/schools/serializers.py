@@ -14,6 +14,11 @@ class BaseSchoolSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class SchoolPointSerializer(BaseSchoolSerializer):
+    class Meta(BaseSchoolSerializer.Meta):
+        fields = ('geopoint',)
+
+
 class ListSchoolSerializer(BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
     coverage_status = serializers.SerializerMethodField()

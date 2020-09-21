@@ -243,6 +243,7 @@ ADMIN_REORDER = (
         'app': 'custom_auth',
         'label': 'Authentication and authorization',
         'models': (
+            'auth.Group',
             'custom_auth.ApplicationUser',
         ),
     },
@@ -266,3 +267,5 @@ ADMIN_REORDER = (
     'locations',
     'schools',
 )
+
+RANDOM_SCHOOLS_DEFAULT_AMOUNT = env('RANDOM_SCHOOLS_DEFAULT_AMOUNT', default=20000)

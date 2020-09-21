@@ -22,53 +22,6 @@ class GeometryMixin(models.Model):
         super().save(*args, **kwargs)
 
 
-class CountryQuerySet(models.QuerySet):
-    def annotate_integration_status(self):
-        from proco.connection_statistics.models import CountryWeeklyStatus
-
-        return self.annotate(
-            integration_status=models.Subquery(
-                CountryWeeklyStatus.objects.filter(
-                    country_id=models.OuterRef('id'),
-                ).order_by('-created').values('integration_status')[:1],
-            ),
-        )
-
-    def annotate_date_of_join(self):
-        from proco.connection_statistics.models import CountryWeeklyStatus
-
-        return self.annotate(
-            date_of_join=models.Subquery(
-                CountryWeeklyStatus.objects.filter(
-                    country_id=models.OuterRef('id'),
-                    integration_status=CountryWeeklyStatus.JOINED,
-                ).order_by('created').values('created')[:1],
-            ),
-        )
-
-    def annotate_schools_with_data_percentage(self):
-        return self.annotate(
-            schools_with_data=models.Count(
-                models.Case(
-                    models.When(
-                        schools__weekly_status__isnull=False, then=1,
-                    ),
-                ),
-            ),
-        ).annotate(
-            schools_count=models.Count('schools'),
-        ).annotate(
-            schools_with_data_percentage=models.Case(
-                models.When(
-                    schools_count__gt=0, then=models.ExpressionWrapper(
-                        100.0 * models.F('schools_with_data') / models.F('schools_count'),
-                        output_field=models.DecimalField(decimal_places=2, max_digits=6),
-                    ),
-                ), default=0.0,
-            ),
-        )
-
-
 class Country(GeometryMixin, TimeStampedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=32)
@@ -79,7 +32,7 @@ class Country(GeometryMixin, TimeStampedModel):
     description = models.TextField(max_length=1000, blank=True, default='')
     data_source = models.TextField(max_length=500, blank=True, default='')
 
-    objects = CountryQuerySet.as_manager()
+    date_of_join = models.DateField(null=True)
 
     class Meta:
         ordering = ('name',)

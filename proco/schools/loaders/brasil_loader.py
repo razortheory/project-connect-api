@@ -6,7 +6,7 @@ import requests
 from dateutil import parser as dateutil_parser
 from pytz import UTC
 
-from proco.connection_statistics.models import RealTimeConnectivity
+from proco.connection_statistics.models import RealTimeConnectivity, SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.models import School
 
@@ -26,14 +26,27 @@ class BrasilSimnetLoader(object):
         required_fields = {'LNG', 'LAT', 'CO_ENTIDADE', 'NO_ENTIDADE'}
 
         if required_fields - set(school_data.keys()) == set():
-            School.objects.update_or_create(
+            school, created = School.objects.update_or_create(
                 external_id=school_data['CO_ENTIDADE'],
                 country=self.country,
                 defaults={
                     'name': school_data['NO_ENTIDADE'],
                     'geopoint': Point(x=school_data['LNG'], y=school_data['LAT']),
+                    'environment': school_data.get('TP_LOCALIZACAO', ''),
                     'admin_1_name': school_data.get('NM_ESTADO', ''),
                     'admin_4_name': school_data.get('NM_MUNICIP', ''),
+                },
+            )
+
+            date = timezone.now().date()
+            SchoolWeeklyStatus.objects.update_or_create(
+                school=school, week=date.isocalendar()[1], year=date.isocalendar()[0],
+                defaults={
+                    'computer_lab': bool(int(float(school_data.get('QT_COMP_ALUNO', 0)))),
+                    'num_computers': int(float(school_data.get('QT_COMPUTADOR', 0))),
+                    'connectivity_type': school_data.get(
+                        'TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown,
+                    ),
                 },
             )
 
