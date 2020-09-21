@@ -60,6 +60,7 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
             'countries_joined': 2,
             'countries_connected_to_realtime': 1,
             'countries_with_static_data': 1,
+            'last_date_updated': datetime.now().strftime('%B %Y'),
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, correct_response)

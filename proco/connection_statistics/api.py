@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core.cache import cache
 from django.http import Http404
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -22,6 +23,7 @@ from proco.schools.models import School
 
 class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
+    CACHE_KEY_LAST_DATA_UPDATE = 'cache-global-stat'
 
     def get(self, request, *args, **kwargs):
         countries_qs = Country.objects.all()
@@ -42,6 +44,18 @@ class GlobalStatsAPIView(APIView):
             'countries_connected_to_realtime': aggregate_statuses['countries_connected_to_realtime'],
             'countries_with_static_data': aggregate_statuses['countries_with_static_data'],
         }
+
+        cache_data = cache.get(self.CACHE_KEY_LAST_DATA_UPDATE)
+        if cache_data:
+            date = cache_data.pop('last_date_updated', datetime.now().strftime('%B %Y'))
+            if cache_data != data:
+                data['last_date_updated'] = datetime.now().strftime('%B %Y')
+            else:
+                data['last_date_updated'] = date
+        else:
+            data['last_date_updated'] = datetime.now().strftime('%B %Y')
+            cache.set(self.CACHE_KEY_LAST_DATA_UPDATE, data)
+
         return Response(data=data)
 
 
