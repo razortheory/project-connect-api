@@ -186,7 +186,6 @@ def update_country_weekly_status(country: Country, force=False):
     for field, value in statistics.items():
         setattr(country_status, field, value)
 
-    # todo: calculate
     schools_points = country.schools.all().annotate(
         x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
         y=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
