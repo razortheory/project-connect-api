@@ -23,7 +23,8 @@ def fill_schools_with_data_percentage_field(apps, schema_editor):
 
         if schools_number:
             schools_with_data_number = School.objects.filter(
-                weekly_status__week=country_weekly.week, country=country_weekly.country, weekly_status__year=country_weekly.year,
+                weekly_status__week=country_weekly.week, country=country_weekly.country,
+                weekly_status__year=country_weekly.year,
             ).distinct('id').count()
 
             country_weekly.schools_with_data_percentage = 1.0 * schools_with_data_number / schools_number
