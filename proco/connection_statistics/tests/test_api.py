@@ -56,7 +56,7 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         correct_response = {
             'total_schools': 2,
             'schools_mapped': 1,
-            'percent_schools_without_connectivity': 50.0,
+            'percent_schools_without_connectivity': 0.5,
             'countries_joined': 2,
             'countries_connected_to_realtime': 1,
             'countries_with_static_data': 1,
