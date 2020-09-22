@@ -15,5 +15,4 @@ app_name = 'schools'
 urlpatterns = [
     path('', include(country_schools.urls)),
     path('schools/random/', api.RandomSchoolsListAPIView.as_view(), name='random-schools'),
-    # path('export-csv-schools/', api.CSVExportSchoolsListView.as_view(), name='export-schools-csv')
 ]
