@@ -25,7 +25,6 @@ from proco.schools.models import School
 
 class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
-    CACHE_KEY_LAST_DATA_UPDATE = 'cache-global-stat'
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
