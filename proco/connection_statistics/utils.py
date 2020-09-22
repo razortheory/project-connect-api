@@ -130,8 +130,8 @@ def aggregate_country_daily_status_to_country_weekly_status(date=None):
         if schools_number:
             schools_with_data_number = School.objects.filter(
                 weekly_status__created__lte=week_end, country=country_weekly.country,
-            ).count()
-            country_weekly.schools_with_data_percentage = 100.0 * schools_with_data_number / schools_number
+            ).distinct('id').count()
+            country_weekly.schools_with_data_percentage = 1.0 * schools_with_data_number / schools_number
 
         if country_weekly.integration_status in [
             CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,

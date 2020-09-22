@@ -47,7 +47,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
     avg_distance_school = models.FloatField(blank=True, default=0.0)
     schools_with_data_percentage = models.DecimalField(
-        decimal_places=2, max_digits=6, default=0, validators=[MaxValueValidator(100), MinValueValidator(0)],
+        decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
 
     objects = CountryWeeklyStatusManager()
