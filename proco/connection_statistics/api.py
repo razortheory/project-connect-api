@@ -35,7 +35,7 @@ class GlobalStatsAPIView(APIView):
         total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
         schools_without_connectivity = schools_qs.filter(connectivity=False).count()
-        percent_schools_without_connectivity = schools_without_connectivity / total_schools * 100
+        percent_schools_without_connectivity = schools_without_connectivity / total_schools
         aggregate_statuses = CountryWeeklyStatus.objects.aggregate_integration_statuses()
         last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
 
