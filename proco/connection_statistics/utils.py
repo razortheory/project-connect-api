@@ -5,6 +5,7 @@ from django.utils import timezone
 
 import numpy as np
 from scipy.spatial.distance import pdist
+from sklearn.neighbors import DistanceMetric
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -191,10 +192,14 @@ def update_country_weekly_status(country: Country, force=False):
         setattr(country_status, field, value)
 
     schools_points = country.schools.all().annotate(
-        x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
-        y=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
-    ).values_list('x', 'y')
-    country_status.avg_distance_school = np.mean(pdist(schools_points))
+        lon=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
+        lat=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
+    ).values_list('lat', 'lon')
+
+    # mean Earth radius
+    R = 6371.0088
+    dist = DistanceMetric.get_metric('haversine')
+    country_status.avg_distance_school = R * np.mean(dist.pairwise(np.radians(schools_points)))
 
     country_status.save()
 

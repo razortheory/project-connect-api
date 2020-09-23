@@ -54,6 +54,16 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             school = School.objects.filter(external_id=data['school_id']).first()
             school_data['external_id'] = data['school_id']
 
+        try:
+            school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
+
+            if school_data['geopoint'] == Point(x=0, y=0):
+                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
+                continue
+        except (TypeError, ValueError):
+            errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
+            continue
+
         if not school:
             school = School.objects.filter(name=data['name']).first()
 
@@ -67,16 +77,6 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             school_data['admin_4_name'] = data['admin4']
 
         school_data['name'] = data['name']
-
-        try:
-            school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
-
-            if school_data['geopoint'] == Point(x=0, y=0):
-                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
-                continue
-        except (TypeError, ValueError):
-            errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
-            continue
 
         # static data
         if 'educ_level' in data:
