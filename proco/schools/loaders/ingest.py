@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Tuple
 
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
@@ -23,7 +23,8 @@ def load_data(uploaded_file):
     return loader.load_file(uploaded_file)
 
 
-def save_data(country, loaded: Iterable[Dict]) -> List[str]:
+def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
+    warnings = []
     errors = []
 
     year, week_number, week_day = date.today().isocalendar()
@@ -57,8 +58,8 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         if not school:
             school = School.objects.filter(name=data['name']).first()
 
-        if school.id in updated_schools:
-            errors.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
+        if school and school.id in updated_schools:
+            warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
             continue
 
         if 'admin1' in data:
@@ -153,4 +154,4 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
 
-    return errors
+    return warnings, errors
