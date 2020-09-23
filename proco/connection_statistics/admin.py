@@ -90,6 +90,7 @@ class RealTimeConnectivityAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('school__name',)
     ordering = ('-id',)
     readonly_fields = ('created', 'modified')
+    raw_id_fields = ('school',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -72,7 +72,7 @@ class BrasilSimnetLoader(object):
         schools = {}
         last_schools_data = {}
         for data in statistic:
-            if 'school_code' not in data or 'time' not in data:
+            if 'school_code' not in data or 'time' not in data or 'tcp_down_median_mbps' not in data:
                 continue
 
             code = data['school_code']
