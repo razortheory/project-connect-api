@@ -57,6 +57,10 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         if not school:
             school = School.objects.filter(name=data['name']).first()
 
+        if school.id in updated_schools:
+            errors.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
+            continue
+
         if 'admin1' in data:
             school_data['admin_1_name'] = data['admin1']
         if 'admin2' in data:
