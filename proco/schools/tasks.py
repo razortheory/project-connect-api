@@ -36,7 +36,7 @@ def process_loaded_file(country_pk: int, pk: int):
         imported_file.errors = '\n'.join(errors)
         if warnings:
             imported_file.errors += '\nWarnings:\n'
-            imported_file.errors += '\n'.join(errors)
+            imported_file.errors += '\n'.join(warnings)
 
         if errors:
             imported_file.status = FileImport.STATUSES.failed
