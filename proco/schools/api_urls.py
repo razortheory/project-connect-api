@@ -7,8 +7,6 @@ from proco.schools import api
 
 country_schools = routers.NestedSimpleRouter(location_router, r'countries', lookup='country')
 country_schools.register(r'schools', api.SchoolsViewSet, basename='schools')
-country_schools.register(r'export-csv-schools', api.CSVExportSchoolsListViewSet, basename='export_csv_schools')
-
 
 app_name = 'schools'
 
