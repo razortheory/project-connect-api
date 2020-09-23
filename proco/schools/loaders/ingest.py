@@ -1,8 +1,8 @@
 from datetime import date
+from re import findall
 from typing import Dict, Iterable, List, Tuple
 
 from django.contrib.gis.geos import Point
-from django.utils.formats import sanitize_separators
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
@@ -22,6 +22,12 @@ def load_data(uploaded_file):
         raise NotImplementedError
 
     return loader.load_file(uploaded_file)
+
+
+def clean_number(num: [int, str]):
+    if isinstance(num, str):
+        num = ''.join(findall(r'[0-9]+', num))
+    return num
 
 
 def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
@@ -96,13 +102,13 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
         # historical data
         if 'num_students' in data:
-            history_data['num_students'] = sanitize_separators(data['num_students'])
+            history_data['num_students'] = clean_number(data['num_students'])
         if 'num_teachers' in data:
-            history_data['num_teachers'] = sanitize_separators(data['num_teachers'])
+            history_data['num_teachers'] = clean_number(data['num_teachers'])
         if 'num_classroom' in data:
-            history_data['num_classroom'] = sanitize_separators(data['num_classroom'])
+            history_data['num_classroom'] = clean_number(data['num_classroom'])
         if 'num_latrines' in data:
-            history_data['num_latrines'] = sanitize_separators(data['num_latrines'])
+            history_data['num_latrines'] = clean_number(data['num_latrines'])
 
         if 'electricity' in data:
             history_data['electricity_availability'] = data['electricity'].lower() in ['true', 'yes', '1']
@@ -110,7 +116,7 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         if 'computer_lab' in data:
             history_data['computer_lab'] = data['computer_lab'].lower() in ['true', 'yes', '1']
         if 'num_computers' in data:
-            history_data['num_computers'] = sanitize_separators(data['num_computers'])
+            history_data['num_computers'] = clean_number(data['num_computers'])
             history_data['computer_lab'] = True
 
         if 'connectivity' in data:
