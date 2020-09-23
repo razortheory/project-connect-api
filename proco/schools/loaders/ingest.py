@@ -82,6 +82,13 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         if 'educ_level' in data:
             school_data['education_level'] = data['educ_level']
         if 'environment' in data:
+            if data['environment'] not in dict(School.ENVIRONMENT_STATUSES).keys():
+                errors.append(
+                    _('Row {0}: Bad data provided for environment: should be in {1}').format(
+                        row_index, ",".join(dict(School.ENVIRONMENT_STATUSES).keys()),
+                    )
+                )
+                continue
             school_data['environment'] = data['environment']
         if 'address' in data:
             school_data['address'] = data['address']
@@ -90,12 +97,24 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
 
         # historical data
         if 'num_students' in data:
+            if data['num_students'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_students').format(row_index))
+                continue
             history_data['num_students'] = data['num_students']
         if 'num_teachers' in data:
+            if data['num_teachers'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_teachers').format(row_index))
+                continue
             history_data['num_teachers'] = data['num_teachers']
         if 'num_classroom' in data:
+            if data['num_classroom'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_classroom').format(row_index))
+                continue
             history_data['num_classroom'] = data['num_classroom']
         if 'num_latrines' in data:
+            if data['num_latrines'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_latrines').format(row_index))
+                continue
             history_data['num_latrines'] = data['num_latrines']
 
         if 'electricity' in data:
@@ -104,6 +123,9 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
         if 'computer_lab' in data:
             history_data['computer_lab'] = data['computer_lab'].lower() in ['true', 'yes', '1']
         if 'num_computers' in data:
+            if data['num_computers'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_computers').format(row_index))
+                continue
             history_data['num_computers'] = data['num_computers']
             history_data['computer_lab'] = True
 
