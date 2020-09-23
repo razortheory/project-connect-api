@@ -196,9 +196,9 @@ def update_country_weekly_status(country: Country, force=False):
     ).values_list('lat', 'lon')
 
     # mean Earth radius
-    R = 6371.0088
+    earth_radius = 6371.0088
     dist = DistanceMetric.get_metric('haversine')
-    distances = R * dist.pairwise(np.radians(schools_points))
+    distances = earth_radius * dist.pairwise(np.radians(schools_points))
     indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
     country_status.avg_distance_school = np.mean(distances[indexes])
 

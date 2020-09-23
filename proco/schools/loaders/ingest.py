@@ -92,8 +92,8 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             if data['environment'] not in dict(School.ENVIRONMENT_STATUSES).keys():
                 errors.append(
                     _('Row {0}: Bad data provided for environment: should be in {1}').format(
-                        row_index, ",".join(dict(School.ENVIRONMENT_STATUSES).keys()),
-                    )
+                        row_index, ', '.join(dict(School.ENVIRONMENT_STATUSES).keys()),
+                    ),
                 )
                 continue
             school_data['environment'] = data['environment']
