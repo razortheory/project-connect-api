@@ -27,14 +27,18 @@ def process_loaded_file(country_pk: int, pk: int):
         # todo: rewrite with transaction savepoint
         try:
             with transaction.atomic():
-                errors = ingest.save_data(country, load_data(imported_file.uploaded_file))
+                warnings, errors = ingest.save_data(country, load_data(imported_file.uploaded_file))
                 if errors:
                     raise FailedImportError
         except FailedImportError:
             pass
 
+        imported_file.errors = '\n'.join(errors)
+        if warnings:
+            imported_file.errors += '\nWarnings:\n'
+            imported_file.errors += '\n'.join(warnings)
+
         if errors:
-            imported_file.errors = '\n'.join(errors)
             imported_file.status = FileImport.STATUSES.failed
         else:
             imported_file.status = FileImport.STATUSES.completed

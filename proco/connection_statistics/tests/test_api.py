@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
@@ -45,8 +46,13 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.school_two = SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolWeeklyStatusFactory(school=cls.school_one, connectivity=True)
         SchoolWeeklyStatusFactory(school=cls.school_two, connectivity=False)
-        CountryWeeklyStatusFactory(country=cls.country_one, integration_status=CountryWeeklyStatus.REALTIME_MAPPED)
-        CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED)
+        CountryWeeklyStatusFactory(country=cls.country_one, integration_status=CountryWeeklyStatus.REALTIME_MAPPED,
+                                   year=2020)
+        cls.cws = CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED, year=2021)
+
+    def setUp(self):
+        cache.clear()
+        super().setUp()
 
     def test_global_stats(self):
         response = self.forced_auth_req(
@@ -60,12 +66,18 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
             'countries_joined': 2,
             'countries_connected_to_realtime': 1,
             'countries_with_static_data': 1,
+            'last_date_updated': self.cws.date.strftime('%B %Y'),
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, correct_response)
 
     def test_global_stats_queries(self):
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
+            self.forced_auth_req(
+                'get',
+                reverse('connection_statistics:global-stat'),
+            )
+        with self.assertNumQueries(0):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:global-stat'),
