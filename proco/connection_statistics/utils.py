@@ -4,7 +4,6 @@ from django.db.models import Avg, F, FloatField, Func, Prefetch
 from django.utils import timezone
 
 import numpy as np
-from scipy.spatial.distance import pdist
 from sklearn.neighbors import DistanceMetric
 
 from proco.connection_statistics.models import (

@@ -2,6 +2,7 @@ from datetime import date
 from typing import Dict, Iterable, List
 
 from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
@@ -65,7 +66,7 @@ def save_data(country, loaded: Iterable[Dict]) -> List[str]:
             continue
 
         if not school:
-            school = School.objects.filter(name=data['name']).first()
+            school = School.objects.filter(name=data['name'], distance__lte=(school_data['geopoint'], D(m=500))).first()
 
         if 'admin1' in data:
             school_data['admin_1_name'] = data['admin1']

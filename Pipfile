@@ -57,7 +57,6 @@ django-mapbox-location-field = "*"
 django-cors-headers = "*"
 django-modeladmin-reorder = "*"
 django-redis = "*"
-scipy = ">=1.5,<1.6"
 numpy = "1.18"
 sklearn = "*"
 
