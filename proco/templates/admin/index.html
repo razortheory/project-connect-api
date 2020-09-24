@@ -6,9 +6,11 @@
     <div class="admin-actions">
       <h2>Global actions</h2>
       <ul class="action-list">
-        <i class="fas fa-trash"></i>
         <li>
-          <a href="{% url 'admin:admin_clear_cache' %}">CACHE CLEAR</a>
+          <a href="{% url 'admin:admin_clear_cache' %}">
+            <i class="fas fa-trash clear-cache"></i>
+            CACHE CLEAR
+          </a>
         </li>
       </ul>
     </div>
@@ -20,5 +22,6 @@
   {{ block.super }}
   {% if user.is_superuser %}
     <link rel="stylesheet" type="text/css" href="{% static 'admin/styles/admin.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome/css/all.css' %}">
   {% endif %}
 {% endblock %}
