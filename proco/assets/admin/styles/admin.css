@@ -1,8 +1,14 @@
+ul.action-list {
+  padding-left: 20px;
+}
 ul.action-list li {
   list-style-type: none;
 }
 ul.action-list li a {
   font-weight: 600;
+}
+ul.action-list li a i {
+  padding-right: 5px;
 }
 
 .admin-actions {
