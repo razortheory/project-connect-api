@@ -26,7 +26,7 @@ AUTH_USER_MODEL = 'custom_auth.ApplicationUser'
 # --------------------------------------------------------------------------
 
 DJANGO_APPS = [
-    'django.contrib.admin',
+    'config.apps.CustomAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
