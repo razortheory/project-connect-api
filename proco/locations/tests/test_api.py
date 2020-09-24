@@ -1,6 +1,9 @@
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
+
+from rest_framework import status
 
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
@@ -46,6 +49,12 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
                 user=None, expected_objects=[self.country_one, self.country_two],
             )
 
+    def test_empty_countries_hidden(self):
+        CountryFactory(geometry=GEOSGeometry('{"type": "MultiPolygon", "coordinates": []}'))
+        self._test_list(
+            user=None, expected_objects=[self.country_one, self.country_two],
+        )
+
 
 class CountryBoundaryApiTestCase(TestAPIViewSetMixin, TestCase):
     base_view = 'locations:countries-boundary'
@@ -63,21 +72,21 @@ class CountryBoundaryApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_countries_list(self):
         with self.assertNumQueries(1):
-            response = self.forced_auth_req(
-                'get',
-                reverse(self.base_view),
-            )
+            response = self.forced_auth_req('get', reverse(self.base_view))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('geometry_simplified', response.data[0])
 
     def test_country_list_cached(self):
         with self.assertNumQueries(1):
-            self.forced_auth_req(
-                'get',
-                reverse(self.base_view),
-            )
+            response = self.forced_auth_req('get', reverse(self.base_view))
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         with self.assertNumQueries(0):
-            self.forced_auth_req(
-                'get',
-                reverse(self.base_view),
-            )
+            response = self.forced_auth_req('get', reverse(self.base_view))
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_empty_countries_hidden(self):
+        CountryFactory(geometry=GEOSGeometry('{"type": "MultiPolygon", "coordinates": []}'))
+        response = self.forced_auth_req('get', reverse(self.base_view))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual([r['id'] for r in response.data], [self.country_one.id, self.country_two.id])
