@@ -67,8 +67,14 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
 
+        if 'educ_level' in data:
+            school_data['education_level'] = data['educ_level']
+
         if not school:
-            school = School.objects.filter(name=data['name'], distance__lte=(school_data['geopoint'], D(m=500))).first()
+            school = School.objects.filter(
+                name=data['name'], distance__lte=(school_data['geopoint'], D(m=500)),
+                education_level=school_data['education_level'],
+            ).first()
 
         if school and school.id in updated_schools:
             warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
@@ -86,8 +92,6 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         school_data['name'] = data['name']
 
         # static data
-        if 'educ_level' in data:
-            school_data['education_level'] = data['educ_level']
         if 'environment' in data:
             if data['environment'] not in dict(School.ENVIRONMENT_STATUSES).keys():
                 errors.append(
