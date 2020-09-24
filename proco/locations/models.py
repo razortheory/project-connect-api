@@ -1,4 +1,5 @@
 from django.contrib.gis.db.models import MultiPolygonField
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import models
 from django.utils.translation import ugettext as _
 
@@ -15,9 +16,31 @@ class GeometryMixin(models.Model):
     class Meta:
         abstract = True
 
+    @classmethod
+    def to_multipolygon(cls, geos_geom: [MultiPolygon, Polygon]) -> MultiPolygon:
+        return MultiPolygon(geos_geom) if isinstance(geos_geom, Polygon) else geos_geom
+
+    @classmethod
+    def optimize_geometry(cls, geometry: [GEOSGeometry]) -> [MultiPolygon]:
+        if geometry is None:
+            return geometry
+
+        # magic numbers
+        tolerance = 0.03
+        tolerance_divider = 4
+        max_attempts = 5
+
+        for _i in range(max_attempts):
+            geometry_simplified = geometry.simplify(tolerance=tolerance)
+            if not geometry_simplified.empty:
+                return cls.to_multipolygon(geometry_simplified)
+
+            tolerance = tolerance / tolerance_divider
+
+        return geometry
+
     def save(self, *args, **kwargs):
-        if self.geometry:
-            self.geometry_simplified = self.geometry.simplify(tolerance=0.03)
+        self.geometry_simplified = self.optimize_geometry(self.geometry)
 
         super().save(*args, **kwargs)
 

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models import Prefetch
+from django.db.models import BooleanField, F, Func, Prefetch
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -24,13 +24,15 @@ class CountryViewSet(
     viewsets.GenericViewSet,
 ):
     pagination_class = None
-    queryset = Country.objects.all().prefetch_related(
+    queryset = Country.objects.all().annotate(
+        geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
+    ).prefetch_related(
         Prefetch(
             'weekly_status',
             CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
             to_attr='latest_status',
         ),
-    )
+    ).filter(geometry_empty=False)
     serializer_class = CountrySerializer
     filter_backends = (
         NullsAlwaysLastOrderingFilter, SearchFilter,
@@ -56,7 +58,9 @@ class CountryViewSet(
 
 
 class CountryBoundaryListAPIView(ListAPIView):
-    queryset = Country.objects.all()
+    queryset = Country.objects.all().annotate(
+        geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
+    ).filter(geometry_empty=False)
     serializer_class = BoundaryListCountrySerializer
     pagination_class = None
 
