@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.connection_statistics.serializers import SchoolWeeklyStatusSerializer
+from proco.locations.fields import GeoPointCSVField
 from proco.schools.models import School
 
 
@@ -17,6 +18,19 @@ class BaseSchoolSerializer(serializers.ModelSerializer):
 class SchoolPointSerializer(BaseSchoolSerializer):
     class Meta(BaseSchoolSerializer.Meta):
         fields = ('geopoint',)
+
+
+class CSVSchoolsListSerializer(BaseSchoolSerializer):
+    connectivity_status = serializers.SerializerMethodField()
+    geopoint = GeoPointCSVField()
+
+    class Meta(BaseSchoolSerializer.Meta):
+        fields = ('name', 'geopoint', 'connectivity_status')
+
+    def get_connectivity_status(self, obj):
+        if not obj.latest_status:
+            return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
+        return obj.latest_status[0].connectivity_status
 
 
 class ListSchoolSerializer(BaseSchoolSerializer):
