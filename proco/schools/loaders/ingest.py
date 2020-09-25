@@ -5,7 +5,8 @@ from typing import Dict, Iterable, List, Tuple
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 
-from proco.connection_statistics.models import SchoolWeeklyStatus
+from proco.connection_statistics.models import CountryWeeklyStatus, SchoolWeeklyStatus
+from proco.connection_statistics.utils import update_country_weekly_status
 from proco.schools.loaders import csv as csv_loader
 from proco.schools.loaders import xls as xls_loader
 from proco.schools.models import School
@@ -160,5 +161,10 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
     if len(schools_weekly_status_list) > 0:
         SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
+
+    CountryWeeklyStatus.objects.get_or_create(
+        country=country, week=week_number, year=year,
+    )
+    update_country_weekly_status(country, force=True)
 
     return warnings, errors
