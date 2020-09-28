@@ -59,6 +59,11 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         history_data = {}
 
         if 'school_id' in data:
+            if len(data['school_id']) > School._meta.get_field('external_id').max_length:
+                errors.append(_(
+                    'Row {0}: Bad data provided for school identifier: exceeded the allowed number of characters',
+                ).format(row_index))
+                continue
             school = School.objects.filter(external_id=data['school_id']).first()
             school_data['external_id'] = data['school_id']
 
