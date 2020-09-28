@@ -56,7 +56,10 @@ class SchoolSerializer(BaseSchoolSerializer):
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'statistics', 'gps_confidence', 'address', 'postal_code',
+            'statistics',
+            'gps_confidence', 'address', 'postal_code',
+            'admin_1_name', 'admin_2_name', 'admin_3_name', 'admin_4_name',
+            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type',
         )
 
     def get_statistics(self, instance):
