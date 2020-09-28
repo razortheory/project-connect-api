@@ -97,10 +97,15 @@ class BrasilSimnetLoader(object):
                 # record already saved
                 continue
 
+            connectivity_speed = data.get('tcp_down_median_mbps', None)
+            if connectivity_speed:
+                # convert Mbps to bps
+                connectivity_speed = connectivity_speed * 10 ** 6
+
             new_entries.append(
                 RealTimeConnectivity(
                     created=entry_time, school=school,
-                    connectivity_speed=data.get('tcp_down_median_mbps', None),
+                    connectivity_speed=connectivity_speed,
                     connectivity_latency=data.get('rtt_median_ms', None),
                 ),
             )
