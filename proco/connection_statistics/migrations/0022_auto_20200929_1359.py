@@ -62,9 +62,9 @@ def set_correct_data_country_weekly_statuses(apps, schema_editor):
                 connectivity_status = 'moderate'
                 if not latest_status.connectivity:
                     connectivity_status = 'no'
-                if not latest_status.connectivity_speed:
+                elif not latest_status.connectivity_speed:
                     connectivity_status = 'unknown'
-                if latest_status.connectivity_speed > 5:
+                elif latest_status.connectivity_speed > 5:
                     connectivity_status = 'good'
 
                 if connectivity_status == 'no':
