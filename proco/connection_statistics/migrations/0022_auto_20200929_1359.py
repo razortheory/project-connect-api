@@ -58,16 +58,24 @@ def set_correct_data_country_weekly_statuses(apps, schema_editor):
                     continue
 
                 latest_status = school.latest_status[0]
-                connectivity_status = latest_status.get_connectivity_status()
-                if connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no:
+
+                connectivity_status = 'moderate'
+                if not latest_status.connectivity:
+                    connectivity_status = 'no'
+                if not latest_status.connectivity_speed:
+                    connectivity_status = 'unknown'
+                if latest_status.connectivity_speed > 5:
+                    connectivity_status = 'good'
+
+                if connectivity_status == 'no':
                     statistics['schools_connectivity_no'] += 1
-                elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown:
+                elif connectivity_status == 'unknown':
                     statistics['schools_connectivity_unknown'] += 1
                     statistics['schools_connected'] += 1
-                elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate:
+                elif connectivity_status == 'moderate':
                     statistics['schools_connectivity_moderate'] += 1
                     statistics['schools_connected'] += 1
-                elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good:
+                elif connectivity_status == 'good':
                     statistics['schools_connectivity_good'] += 1
                     statistics['schools_connected'] += 1
 
