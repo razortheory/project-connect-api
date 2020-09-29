@@ -9,6 +9,7 @@ from pytz import UTC
 from proco.connection_statistics.models import RealTimeConnectivity, SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.models import School
+from proco.utils.dates import get_current_week, get_current_year
 
 
 class BrasilSimnetLoader(object):
@@ -39,16 +40,32 @@ class BrasilSimnetLoader(object):
             )
 
             date = timezone.now().date()
-            SchoolWeeklyStatus.objects.update_or_create(
+            school_weekly = SchoolWeeklyStatus.objects.filter(
                 school=school, week=date.isocalendar()[1], year=date.isocalendar()[0],
-                defaults={
-                    'computer_lab': bool(int(float(school_data.get('QT_COMP_ALUNO', 0)))),
-                    'num_computers': int(float(school_data.get('QT_COMPUTADOR', 0))),
-                    'connectivity_type': school_data.get(
-                        'TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown,
-                    ),
-                },
+            ).last()
+
+            if not school_weekly:
+                school_weekly = SchoolWeeklyStatus.objects.filter(school=school).last()
+
+                if school_weekly:
+                    # copy latest available one
+                    school_weekly.id = None
+                    school_weekly.year = get_current_year()
+                    school_weekly.week = get_current_week()
+                else:
+                    school_weekly = SchoolWeeklyStatus.objects.create(
+                        school_id=school,
+                        year=get_current_year(),
+                        week=get_current_week(),
+                        connectivity=True,
+                    )
+
+            school_weekly.computer_lab = bool(int(float(school_data.get('QT_COMP_ALUNO', 0))))
+            school_weekly.num_computers = int(float(school_data.get('QT_COMPUTADOR', 0)))
+            school_weekly.connectivity_type = school_data.get(
+                'TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown,
             )
+            school_weekly.save()
 
     def update_schools(self):
         schools = self.load_schools()
