@@ -82,6 +82,7 @@ def aggregate_school_daily_status_to_school_weekly_status(date=None):
                     school_id=school,
                     year=get_current_year(),
                     week=get_current_week(),
+                    connectivity=True,
                 )
 
         aggregate = SchoolDailyStatus.objects.filter(

@@ -47,8 +47,9 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         SchoolWeeklyStatusFactory(school=cls.school_one, connectivity=True)
         SchoolWeeklyStatusFactory(school=cls.school_two, connectivity=False)
         CountryWeeklyStatusFactory(country=cls.country_one, integration_status=CountryWeeklyStatus.REALTIME_MAPPED,
-                                   year=2020)
-        cls.cws = CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED, year=2021)
+                                   year=datetime.now().year + 1)
+        cls.cws = CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED,
+                                             year=datetime.now().year + 2)
 
     def setUp(self):
         cache.clear()
