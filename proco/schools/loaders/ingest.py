@@ -130,7 +130,10 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             history_data['connectivity_type'] = data['type_connectivity']
         if 'speed_connectivity' in data:
             try:
-                history_data['connectivity_speed'] = float(data['speed_connectivity']) * 1000  # convert kbps to bps
+                speed = float(data['speed_connectivity'])
+                if 600 > speed > 500:
+                    speed = 0.5
+                history_data['connectivity_speed'] = speed * (10 ** 6)  # mbps to bps
             except ValueError:
                 errors.append(_('Row {0}: Bad data provided for connectivity_speed').format(row_index))
                 continue
