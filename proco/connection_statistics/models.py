@@ -124,7 +124,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         if not self.connectivity_speed:
             return self.CONNECTIVITY_STATUSES.unknown
 
-        if self.connectivity_speed > 5:
+        if self.connectivity_speed > 5 * (10 ** 6):
             return self.CONNECTIVITY_STATUSES.good
         else:
             return self.CONNECTIVITY_STATUSES.moderate
