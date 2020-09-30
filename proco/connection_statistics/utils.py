@@ -14,7 +14,6 @@ from proco.connection_statistics.models import (
     SchoolWeeklyStatus,
 )
 from proco.locations.models import Country
-from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
 
@@ -118,28 +117,8 @@ def aggregate_country_daily_status_to_country_weekly_status(date=None):
             country_weekly.year = get_current_year()
             country_weekly.week = get_current_week()
 
-        aggregate = CountryDailyStatus.objects.filter(
-            country=country, date__gte=week_ago,
-        ).aggregate(
-            Avg('connectivity_speed'), Avg('connectivity_latency'),
-        )
-        country_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
-        country_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
-
-        week_start, week_end = _get_start_and_end_date_from_calendar_week(country_weekly.year, country_weekly.week)
-        schools_number = School.objects.filter(created__lte=week_end, country=country_weekly.country).count()
-        if schools_number:
-            schools_with_data_number = School.objects.filter(
-                country=country_weekly.country,
-                daily_status__date__gte=week_start, daily_status__date__lte=week_end,
-            ).distinct('id').count()
-            country_weekly.schools_with_data_percentage = 1.0 * schools_with_data_number / schools_number
-
-        if country_weekly.integration_status in [
-            CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
-        ] and aggregate['connectivity_speed__avg']:
-            country_weekly.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
-        country_weekly.save()
+        country.latest_status = [country_weekly]
+        update_country_weekly_status(country, force=True)
 
 
 def update_country_weekly_status(country: Country, force=False):
@@ -168,20 +147,37 @@ def update_country_weekly_status(country: Country, force=False):
         connectivity_good=Count(
             'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
         ),
+        connectivity_speed=Avg('connectivity_speed'),
+        connectivity_latency=Avg('connectivity_latency'),
     )
+
+    country_status.connectivity_speed = schools_stats['connectivity_speed__avg'] or 0
+    country_status.connectivity_latency = schools_stats['connectivity_latency__avg'] or 0
 
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
         school__country=country,
     ).order_by('school_id').distinct('school_id').count()
+    current_week_statuses = (
+        schools_stats['connectivity_no'] +
+        + schools_stats['connectivity_unknown']
+        + schools_stats['connectivity_moderate']
+        + schools_stats['connectivity_good']
+    )
 
     country_status.connectivity_no = schools_stats['connectivity_no']
     country_status.connectivity_unknown = (
         schools_stats['connectivity_unknown']
-        + (overall_connected_schools - sum(schools_stats.values()))
+        + (overall_connected_schools - current_week_statuses)
     )
     country_status.connectivity_moderate = schools_stats['connectivity_moderate']
     country_status.connectivity_good = schools_stats['connectivity_good']
     country_status.schools_connected = country_status.connectivity_moderate + country_status.connectivity_good
+    country_status.schools_with_data_percentage = 1.0 * overall_connected_schools / country_status.schools_total
+
+    if country_status.integration_status in [
+        CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
+    ] and country_status.connectivity_speed:
+        country_status.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
 
     schools_points = list(country.schools.all().annotate(
         x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
