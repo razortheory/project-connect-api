@@ -176,9 +176,9 @@ def update_country_weekly_status(country: Country, force=False):
     country_status.schools_connected = country_status.connectivity_moderate + country_status.connectivity_good
     country_status.schools_with_data_percentage = 1.0 * overall_connected_schools / country_status.schools_total
 
-    if country_status.integration_status in [
-        CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
-    ] and country_status.connectivity_speed:
+    if country_status.integration_status == CountryWeeklyStatus.SCHOOL_MAPPED and country_status.connectivity_speed:
+        country_status.integration_status = CountryWeeklyStatus.STATIC_MAPPED
+    if country_status.integration_status == CountryWeeklyStatus.STATIC_MAPPED and country.daily_status.exists():
         country_status.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
 
     schools_points = list(country.schools.all().annotate(
