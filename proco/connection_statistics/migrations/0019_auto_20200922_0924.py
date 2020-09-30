@@ -7,7 +7,7 @@ import calendar
 from datetime import datetime, timedelta
 
 
-def get_start_and_end_date_from_calendar_week(year, calendar_week):       
+def get_start_and_end_date_from_calendar_week(year, calendar_week):
     monday = datetime.strptime(f'{year}-{calendar_week}-1', "%Y-%W-%w").date()
     return monday, monday + timedelta(days=6.9)
 

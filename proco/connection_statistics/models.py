@@ -102,7 +102,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
                                            choices=CONNECTIVITY_STATUSES)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
-    connectivity_speed = models.FloatField(_('Down speed (mbps)'), blank=True, default=0.0)
+    connectivity_speed = models.FloatField(_('Down speed (bps)'), blank=True, default=0.0)
     connectivity_latency = models.PositiveSmallIntegerField(_('Latency (ms)'), blank=True, default=0)
     connectivity_availability = models.FloatField(blank=True, default=0.0)
 
@@ -127,7 +127,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         if not self.connectivity_speed:
             return self.CONNECTIVITY_STATUSES.unknown
 
-        if self.connectivity_speed > 5:
+        if self.connectivity_speed > 5 * (10 ** 6):
             return self.CONNECTIVITY_STATUSES.good
         else:
             return self.CONNECTIVITY_STATUSES.moderate
