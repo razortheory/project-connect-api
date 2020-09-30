@@ -48,8 +48,11 @@ def process_loaded_file(country_pk: int, pk: int):
         imported_file.save()
 
         if not errors:
-            update_specific_country_weekly_status(country)
-            cache.clear()
+            def update_stats():
+                update_specific_country_weekly_status(country)
+                cache.clear()
+
+            transaction.on_commit(update_stats)
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
