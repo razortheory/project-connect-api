@@ -82,6 +82,7 @@ def aggregate_school_daily_status_to_school_weekly_status(date=None):
                     school_id=school,
                     year=get_current_year(),
                     week=get_current_week(),
+                    connectivity=True,
                 )
 
         aggregate = SchoolDailyStatus.objects.filter(
@@ -209,3 +210,20 @@ def update_countries_weekly_statuses(force=False):
     )
     for country in countries:
         update_country_weekly_status(country, force=force)
+
+
+def update_specific_country_weekly_status(country: Country):
+    country_weekly = CountryWeeklyStatus.objects.filter(
+        country=country,
+    ).order_by(
+        'country_id', '-year', '-week',
+    ).first()
+
+    if not (country_weekly.year == get_current_year() and country_weekly.week == get_current_week()):
+        # copy latest available one
+        country.id = None
+        country_weekly.year = get_current_year()
+        country_weekly.week = get_current_week()
+
+    country.latest_status = [country_weekly]
+    update_country_weekly_status(country, force=True)

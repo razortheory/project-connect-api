@@ -14,7 +14,7 @@ from proco.utils.dates import get_current_week, get_current_year
 
 
 class ConnectivityStatistics(TimeStampedModel, models.Model):
-    connectivity_speed = models.FloatField(blank=True, null=True, default=None)
+    connectivity_speed = models.PositiveIntegerField(blank=True, null=True, default=None)
     connectivity_latency = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
 
     class Meta:
@@ -43,7 +43,7 @@ class CountryWeeklyStatus(TimeStampedModel, models.Model):
     schools_connectivity_no = models.PositiveIntegerField(blank=True, default=0)
     schools_connectivity_moderate = models.PositiveIntegerField(blank=True, default=0)
     schools_connectivity_good = models.PositiveIntegerField(blank=True, default=0)
-    connectivity_speed = models.FloatField(blank=True, default=0.0)
+    connectivity_speed = models.PositiveIntegerField(blank=True, null=True, default=None)
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
     avg_distance_school = models.FloatField(blank=True, default=0.0)
     schools_with_data_percentage = models.DecimalField(
@@ -102,7 +102,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
     connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
                                            choices=CONNECTIVITY_STATUSES)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
-    connectivity_speed = models.FloatField(_('Down speed (bps)'), blank=True, default=0.0)
+    connectivity_speed = models.PositiveIntegerField(blank=True, null=True, default=None)
     connectivity_latency = models.PositiveSmallIntegerField(_('Latency (ms)'), blank=True, default=0)
     connectivity_availability = models.FloatField(blank=True, default=0.0)
 
@@ -127,7 +127,7 @@ class SchoolWeeklyStatus(TimeStampedModel, models.Model):
         if not self.connectivity_speed:
             return self.CONNECTIVITY_STATUSES.unknown
 
-        if self.connectivity_speed > 5 * (10 ** 6):
+        if self.connectivity_speed > 5:
             return self.CONNECTIVITY_STATUSES.good
         else:
             return self.CONNECTIVITY_STATUSES.moderate

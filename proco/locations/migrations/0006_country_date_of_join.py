@@ -18,6 +18,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('locations', '0005_auto_20200915_0723'),
+        ('connection_statistics', '0018_countryweeklystatus_schools_with_data_percentage'),
     ]
 
     operations = [
