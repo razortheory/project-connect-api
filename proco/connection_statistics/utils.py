@@ -157,7 +157,7 @@ def update_country_weekly_status(country: Country, force=False):
         year=country_status.year, week=country_status.week, school__country=country,
     ).aggregate(
         connectivity_no=Count(
-            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown),
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no),
         ),
         connectivity_unknown=Count(
             'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown),
@@ -183,11 +183,12 @@ def update_country_weekly_status(country: Country, force=False):
     country_status.connectivity_good = schools_stats['connectivity_good']
     country_status.schools_connected = country_status.connectivity_moderate + country_status.connectivity_good
 
-    schools_points = country.schools.all().annotate(
+    schools_points = list(country.schools.all().annotate(
         x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
         y=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
-    ).values_list('x', 'y')
-    country_status.avg_distance_school = np.mean(pdist(schools_points))
+    ).values_list('x', 'y'))
+    if schools_points:
+        country_status.avg_distance_school = np.mean(pdist(schools_points))
 
     country_status.save()
 
