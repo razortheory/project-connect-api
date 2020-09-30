@@ -54,7 +54,7 @@ class BrasilSimnetLoader(object):
                     school_weekly.week = get_current_week()
                 else:
                     school_weekly = SchoolWeeklyStatus.objects.create(
-                        school_id=school,
+                        school=school,
                         year=get_current_year(),
                         week=get_current_week(),
                         connectivity=True,
