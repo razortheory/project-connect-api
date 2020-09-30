@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Avg, F, FloatField, Func, Prefetch
+from django.db.models import Avg, Count, F, FloatField, Func, Prefetch, Q
 from django.utils import timezone
 
 import numpy as np
@@ -151,45 +151,35 @@ def update_country_weekly_status(country: Country, force=False):
         # entry should be already updated
         return
 
-    statistics = {
-        'schools_total': 0,
-        'schools_connected': 0,
-        'schools_connectivity_no': 0,
-        'schools_connectivity_unknown': 0,
-        'schools_connectivity_moderate': 0,
-        'schools_connectivity_good': 0,
-    }
-    country_schools = country.schools.all().prefetch_related(
-        Prefetch(
-            'weekly_status',
-            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
-            to_attr='latest_status',
+    country_status.schools_total = country.schools.count()
+
+    schools_stats = SchoolWeeklyStatus.objects.filter(
+        year=country_status.year, week=country_status.week, school__country=country,
+    ).aggregate(
+        connectivity_no=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no),
+        ),
+        connectivity_unknown=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown),
+        ),
+        connectivity_moderate=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate),
+        ),
+        connectivity_good=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
         ),
     )
 
-    # slower but much easier to work with
-    for school in country_schools:
-        statistics['schools_total'] += 1
-        if not school.latest_status:
-            statistics['schools_connectivity_unknown'] += 1
-            continue
-
-        latest_status = school.latest_status[0]
-        connectivity_status = latest_status.get_connectivity_status()
-        if connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no:
-            statistics['schools_connectivity_no'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown:
-            statistics['schools_connectivity_unknown'] += 1
-            statistics['schools_connected'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate:
-            statistics['schools_connectivity_moderate'] += 1
-            statistics['schools_connected'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good:
-            statistics['schools_connectivity_good'] += 1
-            statistics['schools_connected'] += 1
-
-    for field, value in statistics.items():
-        setattr(country_status, field, value)
+    country_status.connectivity_no = schools_stats['connectivity_no']
+    country_status.connectivity_unknown = schools_stats['connectivity_unknown'] + (
+        country_status.schools_total
+        - schools_stats['connectivity_no']
+        - schools_stats['connectivity_unknown']
+        - schools_stats['connectivity_moderate']
+        - schools_stats['connectivity_good']
+    )
+    country_status.connectivity_moderate = schools_stats['connectivity_moderate']
+    country_status.connectivity_good = schools_stats['connectivity_good']
 
     schools_points = country.schools.all().annotate(
         x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
