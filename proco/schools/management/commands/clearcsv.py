@@ -66,5 +66,8 @@ class Command(BaseCommand):
                 if 'num_latrines' in data:
                     if not data['num_latrines'].isdigit():
                         continue
+                if 'latency_connectivity' in data:
+                    if not data['latency_connectivity'].isdigit():
+                        continue
 
                 writer.writerow(row.values())
