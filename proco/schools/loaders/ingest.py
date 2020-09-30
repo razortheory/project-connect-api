@@ -148,12 +148,11 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         else:
             school = School.objects.create(**school_data)
 
-        schools_weekly_status_list.append(
-            SchoolWeeklyStatus(
-                year=year, week=week_number, school=school,
-                date=date.today(), **history_data,
-            ),
-        )
+        status = SchoolWeeklyStatus(year=year, week=week_number, school=school, **history_data)
+        status.date = status.get_date()
+        status.connectivity_status = status.get_connectivity_status()
+
+        schools_weekly_status_list.append(status)
         updated_schools.append(school.id)
 
         if i > 0 and i % 5000 == 0:

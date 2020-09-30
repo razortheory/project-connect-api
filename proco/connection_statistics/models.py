@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -36,7 +36,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     country = models.ForeignKey(Country, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
-    date = models.DateField(default=date.today)
+    date = models.DateField()
     schools_total = models.PositiveIntegerField(blank=True, default=0)
     schools_connected = models.PositiveIntegerField(blank=True, default=0)
     schools_connectivity_unknown = models.PositiveIntegerField(blank=True, default=0)
@@ -88,7 +88,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
     week = models.PositiveSmallIntegerField(default=get_current_week)
-    date = models.DateField(default=date.today)
+    date = models.DateField()
     num_students = models.PositiveSmallIntegerField(blank=True, default=0)
     num_teachers = models.PositiveSmallIntegerField(blank=True, default=0)
     num_classroom = models.PositiveSmallIntegerField(blank=True, default=0)
@@ -113,9 +113,12 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         return f'{self.year} {self.school.name} Week {self.week} Speed - {self.connectivity_speed}'
 
     def save(self, **kwargs):
-        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
         super().save(**kwargs)
+
+    def get_date(self):
+        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
 
     def get_connectivity_status(self):
         if not self.connectivity:

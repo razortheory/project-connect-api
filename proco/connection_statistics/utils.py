@@ -217,6 +217,7 @@ def update_specific_country_weekly_status(country: Country):
         country.id = None
         country_weekly.year = get_current_year()
         country_weekly.week = get_current_week()
+        country_weekly.save()
 
     country.latest_status = [country_weekly]
     update_country_weekly_status(country, force=True)
