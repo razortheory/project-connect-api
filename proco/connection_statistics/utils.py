@@ -171,7 +171,7 @@ def update_country_weekly_status(country: Country, force=False):
     )
 
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
-        school__country=country
+        school__country=country,
     ).order_by('school_id').distinct('school_id').count()
 
     country_status.connectivity_no = schools_stats['connectivity_no']
