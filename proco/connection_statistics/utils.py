@@ -103,9 +103,11 @@ def _get_start_and_end_date_from_calendar_week(year, calendar_week):
 def aggregate_country_daily_status_to_country_weekly_status(date=None):
     date = date or timezone.now().date()
     week_ago = date - timedelta(days=7)
-    countries = CountryDailyStatus.objects.filter(
-        date__gte=week_ago,
-    ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id')
+    countries = Country.objects.filter(
+        id__in=CountryDailyStatus.objects.filter(
+            date__gte=week_ago,
+        ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id'),
+    )
     for country in countries:
         country_weekly = CountryWeeklyStatus.objects.filter(
             country=country, year=get_current_year(), week=get_current_week(),
@@ -151,8 +153,8 @@ def update_country_weekly_status(country: Country, force=False):
         connectivity_latency=Avg('connectivity_latency'),
     )
 
-    country_status.connectivity_speed = schools_stats['connectivity_speed__avg'] or 0
-    country_status.connectivity_latency = schools_stats['connectivity_latency__avg'] or 0
+    country_status.connectivity_speed = schools_stats['connectivity_speed'] or 0
+    country_status.connectivity_latency = schools_stats['connectivity_latency'] or 0
 
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
         school__country=country,

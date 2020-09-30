@@ -35,6 +35,7 @@ from proco.connection_statistics.utils import (
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.loaders.brasil_loader import brasil_statistic_loader
 from proco.schools.tests.factories import SchoolFactory
+from proco.utils.dates import get_current_week, get_current_year
 from proco.utils.tests import TestAPIViewSetMixin
 
 
@@ -197,9 +198,13 @@ class AggregateConnectivityDataTestCase(TestCase):
         self.assertEqual(CountryDailyStatus.objects.get(country=self.country, date=today).connectivity_speed, 5000000)
 
     def test_aggregate_country_daily_status_to_country_weekly_status(self):
-        today = datetime.now().date()
-        CountryDailyStatusFactory(country=self.country, connectivity_speed=4000000, date=today - timedelta(days=1))
-        CountryDailyStatusFactory(country=self.country, connectivity_speed=6000000, date=today)
+        CountryDailyStatusFactory(country=self.country, date=datetime.now().date())
+        SchoolWeeklyStatusFactory(
+            school__country=self.country, connectivity_speed=4000000, year=get_current_year(), week=get_current_week(),
+        )
+        SchoolWeeklyStatusFactory(
+            school__country=self.country, connectivity_speed=6000000, year=get_current_year(), week=get_current_week(),
+        )
 
         aggregate_country_daily_status_to_country_weekly_status()
         self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 1)
