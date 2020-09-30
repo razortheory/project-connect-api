@@ -32,8 +32,6 @@ def process_loaded_file(country_pk: int, pk: int):
                 warnings, errors = ingest.save_data(country, load_data(imported_file.uploaded_file))
                 if errors:
                     raise FailedImportError
-                else:
-                    update_specific_country_weekly_status(country)
         except FailedImportError:
             pass
 
@@ -46,9 +44,12 @@ def process_loaded_file(country_pk: int, pk: int):
             imported_file.status = FileImport.STATUSES.failed
         else:
             imported_file.status = FileImport.STATUSES.completed
-            cache.clear()
 
         imported_file.save()
+
+        if not errors:
+            update_specific_country_weekly_status(country)
+            cache.clear()
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
