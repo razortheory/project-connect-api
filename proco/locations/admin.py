@@ -30,4 +30,5 @@ class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
 
     def get_queryset(self, *args, **kwargs):
         qs = super(LocationAdmin, self).get_queryset(*args, **kwargs).defer('geometry', 'geometry_simplified')
+        qs = qs.prefetch_related('country')
         return qs
