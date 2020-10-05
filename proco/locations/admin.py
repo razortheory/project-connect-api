@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from django_mptt_admin.admin import DjangoMpttAdmin
-
+from proco.locations.filters import CountryFilterList
 from proco.locations.models import Country, Location
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
@@ -22,10 +21,14 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(CountryNameDisplayAdminMixin, DjangoMpttAdmin):
-    tree_auto_open = False
+class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'get_country_name')
-    list_select_related = ('country', 'parent')
+    list_filter = (CountryFilterList,)
     search_fields = ('name', 'country__name')
     exclude = ('geometry_simplified',)
     raw_id_fields = ('parent', 'country')
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super(LocationAdmin, self).get_queryset(*args, **kwargs).defer('geometry', 'geometry_simplified')
+        qs = qs.prefetch_related('country')
+        return qs
