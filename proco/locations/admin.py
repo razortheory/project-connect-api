@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from proco.locations.models import Country, Location
 from proco.locations.filters import CountryFilterList
+from proco.locations.models import Country, Location
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
