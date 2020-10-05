@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
+from django_mptt_admin.admin import DjangoMpttAdmin
+
 from proco.locations.models import Country, Location
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
@@ -20,7 +22,8 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
+class LocationAdmin(CountryNameDisplayAdminMixin, DjangoMpttAdmin):
+    tree_auto_open = False
     list_display = ('name', 'get_country_name')
     list_select_related = ('country', 'parent')
     search_fields = ('name', 'country__name')
