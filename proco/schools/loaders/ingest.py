@@ -92,7 +92,6 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
                 errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
                 continue
             elif not country.geometry.contains(school_data['geopoint']):
-                print ("Point ourside: ", data['lon'], data['lat'])
                 errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
                 continue
         except (TypeError, ValueError):
