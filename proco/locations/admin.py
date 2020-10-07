@@ -28,7 +28,7 @@ class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     exclude = ('geometry_simplified',)
     raw_id_fields = ('parent', 'country')
 
-    def get_queryset(self, *args, **kwargs):
-        qs = super(LocationAdmin, self).get_queryset(*args, **kwargs).defer('geometry', 'geometry_simplified')
-        qs = qs.prefetch_related('country')
-        return qs
+    def get_queryset(self, request):
+        return Location._base_manager.defer(
+            'geometry', 'geometry_simplified',
+        ).order_by(Location.objects.tree_id_attr, Location.objects.left_attr)
