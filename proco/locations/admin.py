@@ -22,6 +22,8 @@ class CountryAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
+    show_full_result_count = False
+
     list_display = ('name', 'get_country_name')
     list_filter = (CountryFilterList,)
     search_fields = ('name', 'country__name')
@@ -31,4 +33,6 @@ class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     def get_queryset(self, request):
         return Location._base_manager.defer(
             'geometry', 'geometry_simplified',
-        ).order_by(Location.objects.tree_id_attr, Location.objects.left_attr)
+        ).order_by(
+            Location.objects.tree_id_attr, Location.objects.left_attr,
+        ).prefetch_related('country')
