@@ -149,8 +149,8 @@ def update_country_weekly_status(country: Country, force=False):
         connectivity_good=Count(
             'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
         ),
-        connectivity_speed=Avg('connectivity_speed'),
-        connectivity_latency=Avg('connectivity_latency'),
+        connectivity_speed=Avg('connectivity_speed', filter=Q(connectivity_speed__gt=0)),
+        connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
 
     country_status.connectivity_speed = schools_stats['connectivity_speed'] or 0
