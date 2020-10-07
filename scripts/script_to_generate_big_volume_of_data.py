@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.gis.db.models.functions import GeoFunc
 from django.db.models import Value
+from django.utils import timezone
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -79,28 +80,26 @@ for country in Country.objects.all():
 
 print(f'Schools generated - {total_schools_generated}')
 
-
-schools = School.objects.all()
 realtime_list = []
 schools_daily_list = []
 schools_weekly_list = []
 schools_count = 0
-for school in schools:
+for school in School.objects.iterator():
     for day in range(NUMBER_DAYS_REALTIME_STATISTICS):
         for hour in range(0, 20, 5):
-            date = datetime.now() - timedelta(days=day, hours=hour)
+            date = timezone.now() - timezone.timedelta(days=day, hours=hour)
             rt = RealTimeConnectivityFactory.build(school=school, created=date)
             realtime_list.append(rt)
 
     for day in range(NUMBER_DAYS_DAILY_STATISTICS):
-        date = datetime.now() - timedelta(days=day)
+        date = timezone.now() - timezone.timedelta(days=day)
         sd = SchoolDailyStatusFactory.build(school=school, created=date, date=date)
         schools_daily_list.append(sd)
 
     for day in range(0, NUMBER_DAYS_WEEKLY_STATISTICS, 7):
-        date = datetime.now() - timedelta(days=day)
+        date = timezone.now() - timezone.timedelta(days=day)
         year, week = date.isocalendar()[:2]
-        sw = SchoolWeeklyStatusFactory.build(school=school, year=year, week=week)
+        sw = SchoolWeeklyStatusFactory.build(school=school, year=year, week=week, date=date)
         schools_weekly_list.append(sw)
 
     schools_count += 1
@@ -110,6 +109,10 @@ for school in schools:
         SchoolDailyStatus.objects.bulk_create(schools_daily_list)
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_list)
         schools_count = 0
+        schools_weekly_list = []
+        schools_daily_list = []
+        realtime_list = []
+        print(f'{school.name} - {school.country.name} created {schools_count}')
 
 if schools_count > 0:
     RealTimeConnectivity.objects.bulk_create(realtime_list)
