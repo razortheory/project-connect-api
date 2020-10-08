@@ -186,7 +186,7 @@ def update_country_weekly_status(country: Country, force=False):
         lat=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
     ).values_list('lat', 'lon'))
 
-    if schools_points.count() > 1:
+    if len(schools_points) > 1:
         # mean Earth radius
         earth_radius = 6371.0088
         dist = DistanceMetric.get_metric('haversine')
