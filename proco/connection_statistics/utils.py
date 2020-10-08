@@ -184,14 +184,14 @@ def update_country_weekly_status(country: Country, force=False):
     schools_points = list(country.schools.all().annotate(
         lon=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
         lat=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
-    ).values_list('lat', 'lon')
+    ).values_list('lat', 'lon'))
 
-    # mean Earth radius
-    earth_radius = 6371.0088
-    dist = DistanceMetric.get_metric('haversine')
-    distances = earth_radius * dist.pairwise(np.radians(schools_points))
-    indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1]))
-    if schools_points:
+    if schools_points.count() > 1:
+        # mean Earth radius
+        earth_radius = 6371.0088
+        dist = DistanceMetric.get_metric('haversine')
+        distances = earth_radius * dist.pairwise(np.radians(schools_points))
+        indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
         country_status.avg_distance_school = np.mean(distances[indexes])
 
     country_status.save()
