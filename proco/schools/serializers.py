@@ -53,11 +53,18 @@ class ListSchoolSerializer(BaseSchoolSerializer):
 
 class SchoolSerializer(BaseSchoolSerializer):
     statistics = serializers.SerializerMethodField()
+    coverage_status = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'statistics', 'gps_confidence', 'address', 'postal_code',
+            'statistics',
+            'gps_confidence', 'address', 'postal_code',
+            'admin_1_name', 'admin_2_name', 'admin_3_name', 'admin_4_name',
+            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type', 'coverage_status',
         )
 
     def get_statistics(self, instance):
         return SchoolWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
+
+    def get_coverage_status(self, obj):
+        return 'unknown'

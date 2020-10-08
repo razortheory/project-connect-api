@@ -60,6 +60,11 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         history_data = {}
 
         if 'school_id' in data:
+            if len(data['school_id']) > School._meta.get_field('external_id').max_length:
+                errors.append(_(
+                    'Row {0}: Bad data provided for school identifier: exceeded the allowed number of characters',
+                ).format(row_index))
+                continue
             school = School.objects.filter(external_id=data['school_id']).first()
             school_data['external_id'] = data['school_id']
 
@@ -68,6 +73,9 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
             if school_data['geopoint'] == Point(x=0, y=0):
                 errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
+                continue
+            elif not country.geometry.contains(school_data['geopoint']):
+                errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
                 continue
         except (TypeError, ValueError):
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
@@ -152,7 +160,10 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             history_data['connectivity_type'] = data['type_connectivity']
         if 'speed_connectivity' in data:
             try:
-                history_data['connectivity_speed'] = float(data['speed_connectivity'])
+                speed = float(data['speed_connectivity'])
+                if 600 > speed > 500:
+                    speed = 0.5
+                history_data['connectivity_speed'] = speed * (10 ** 6)  # mbps to bps
             except ValueError:
                 errors.append(_('Row {0}: Bad data provided for connectivity_speed').format(row_index))
                 continue
@@ -170,12 +181,11 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         else:
             school = School.objects.create(**school_data)
 
-        schools_weekly_status_list.append(
-            SchoolWeeklyStatus(
-                year=year, week=week_number, school=school,
-                date=date.today(), **history_data,
-            ),
-        )
+        status = SchoolWeeklyStatus(year=year, week=week_number, school=school, **history_data)
+        status.date = status.get_date()
+        status.connectivity_status = status.get_connectivity_status()
+
+        schools_weekly_status_list.append(status)
         updated_schools.append(school.id)
 
         if i > 0 and i % 5000 == 0:

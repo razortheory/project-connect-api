@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Avg, F, FloatField, Func, Prefetch
+from django.db.models import Avg, Count, F, FloatField, Func, Prefetch, Q
 from django.utils import timezone
 
 import numpy as np
@@ -14,7 +14,6 @@ from proco.connection_statistics.models import (
     SchoolWeeklyStatus,
 )
 from proco.locations.models import Country
-from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
 
@@ -82,6 +81,7 @@ def aggregate_school_daily_status_to_school_weekly_status(date=None):
                     school_id=school,
                     year=get_current_year(),
                     week=get_current_week(),
+                    connectivity=True,
                 )
 
         aggregate = SchoolDailyStatus.objects.filter(
@@ -103,9 +103,11 @@ def _get_start_and_end_date_from_calendar_week(year, calendar_week):
 def aggregate_country_daily_status_to_country_weekly_status(date=None):
     date = date or timezone.now().date()
     week_ago = date - timedelta(days=7)
-    countries = CountryDailyStatus.objects.filter(
-        date__gte=week_ago,
-    ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id')
+    countries = Country.objects.filter(
+        id__in=CountryDailyStatus.objects.filter(
+            date__gte=week_ago,
+        ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id'),
+    )
     for country in countries:
         country_weekly = CountryWeeklyStatus.objects.filter(
             country=country, year=get_current_year(), week=get_current_week(),
@@ -117,28 +119,8 @@ def aggregate_country_daily_status_to_country_weekly_status(date=None):
             country_weekly.year = get_current_year()
             country_weekly.week = get_current_week()
 
-        aggregate = CountryDailyStatus.objects.filter(
-            country=country, date__gte=week_ago,
-        ).aggregate(
-            Avg('connectivity_speed'), Avg('connectivity_latency'),
-        )
-        country_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
-        country_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
-
-        week_start, week_end = _get_start_and_end_date_from_calendar_week(country_weekly.year, country_weekly.week)
-        schools_number = School.objects.filter(created__lte=week_end, country=country_weekly.country).count()
-        if schools_number:
-            schools_with_data_number = School.objects.filter(
-                weekly_status__week=country_weekly.week, country=country_weekly.country,
-                weekly_status__year=country_weekly.year,
-            ).distinct('id').count()
-            country_weekly.schools_with_data_percentage = 1.0 * schools_with_data_number / schools_number
-
-        if country_weekly.integration_status in [
-            CountryWeeklyStatus.STATIC_MAPPED, CountryWeeklyStatus.SCHOOL_MAPPED,
-        ] and aggregate['connectivity_speed__avg']:
-            country_weekly.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
-        country_weekly.save()
+        country.latest_status = [country_weekly]
+        update_country_weekly_status(country, force=True)
 
 
 def update_country_weekly_status(country: Country, force=False):
@@ -150,47 +132,56 @@ def update_country_weekly_status(country: Country, force=False):
         # entry should be already updated
         return
 
-    statistics = {
-        'schools_total': 0,
-        'schools_connected': 0,
-        'schools_connectivity_no': 0,
-        'schools_connectivity_unknown': 0,
-        'schools_connectivity_moderate': 0,
-        'schools_connectivity_good': 0,
-    }
-    country_schools = country.schools.all().prefetch_related(
-        Prefetch(
-            'weekly_status',
-            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
-            to_attr='latest_status',
+    country_status.schools_total = country.schools.count()
+
+    schools_stats = SchoolWeeklyStatus.objects.filter(
+        year=country_status.year, week=country_status.week, school__country=country,
+    ).aggregate(
+        connectivity_no=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no),
         ),
+        connectivity_unknown=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown),
+        ),
+        connectivity_moderate=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate),
+        ),
+        connectivity_good=Count(
+            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
+        ),
+        connectivity_speed=Avg('connectivity_speed', filter=Q(connectivity_speed__gt=0)),
+        connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
 
-    # slower but much easier to work with
-    for school in country_schools:
-        statistics['schools_total'] += 1
-        if not school.latest_status:
-            statistics['schools_connectivity_unknown'] += 1
-            continue
+    country_status.connectivity_speed = schools_stats['connectivity_speed'] or 0
+    country_status.connectivity_latency = schools_stats['connectivity_latency'] or 0
 
-        latest_status = school.latest_status[0]
-        connectivity_status = latest_status.get_connectivity_status()
-        if connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no:
-            statistics['schools_connectivity_no'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown:
-            statistics['schools_connectivity_unknown'] += 1
-            statistics['schools_connected'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate:
-            statistics['schools_connectivity_moderate'] += 1
-            statistics['schools_connected'] += 1
-        elif connectivity_status == SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good:
-            statistics['schools_connectivity_good'] += 1
-            statistics['schools_connected'] += 1
+    overall_connected_schools = SchoolWeeklyStatus.objects.filter(
+        school__country=country,
+    ).order_by('school_id').distinct('school_id').count()
+    current_week_statuses = (
+        schools_stats['connectivity_no'] +
+        + schools_stats['connectivity_unknown']
+        + schools_stats['connectivity_moderate']
+        + schools_stats['connectivity_good']
+    )
 
-    for field, value in statistics.items():
-        setattr(country_status, field, value)
+    country_status.connectivity_no = schools_stats['connectivity_no']
+    country_status.connectivity_unknown = (
+        schools_stats['connectivity_unknown']
+        + (overall_connected_schools - current_week_statuses)
+    )
+    country_status.connectivity_moderate = schools_stats['connectivity_moderate']
+    country_status.connectivity_good = schools_stats['connectivity_good']
+    country_status.schools_connected = country_status.connectivity_moderate + country_status.connectivity_good
+    country_status.schools_with_data_percentage = 1.0 * overall_connected_schools / country_status.schools_total
 
-    schools_points = country.schools.all().annotate(
+    if country_status.integration_status == CountryWeeklyStatus.SCHOOL_MAPPED and country_status.connectivity_speed:
+        country_status.integration_status = CountryWeeklyStatus.STATIC_MAPPED
+    if country_status.integration_status == CountryWeeklyStatus.STATIC_MAPPED and country.daily_status.exists():
+        country_status.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
+
+    schools_points = list(country.schools.all().annotate(
         lon=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
         lat=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
     ).values_list('lat', 'lon')
@@ -199,8 +190,9 @@ def update_country_weekly_status(country: Country, force=False):
     earth_radius = 6371.0088
     dist = DistanceMetric.get_metric('haversine')
     distances = earth_radius * dist.pairwise(np.radians(schools_points))
-    indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
-    country_status.avg_distance_school = np.mean(distances[indexes])
+    indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1]))
+    if schools_points:
+        country_status.avg_distance_school = np.mean(distances[indexes])
 
     country_status.save()
 
@@ -215,3 +207,21 @@ def update_countries_weekly_statuses(force=False):
     )
     for country in countries:
         update_country_weekly_status(country, force=force)
+
+
+def update_specific_country_weekly_status(country: Country):
+    country_weekly = CountryWeeklyStatus.objects.filter(
+        country=country,
+    ).order_by(
+        'country_id', '-year', '-week',
+    ).first()
+
+    if not (country_weekly.year == get_current_year() and country_weekly.week == get_current_week()):
+        # copy latest available one
+        country.id = None
+        country_weekly.year = get_current_year()
+        country_weekly.week = get_current_week()
+        country_weekly.save()
+
+    country.latest_status = [country_weekly]
+    update_country_weekly_status(country, force=True)

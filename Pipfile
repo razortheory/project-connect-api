@@ -59,6 +59,7 @@ django-modeladmin-reorder = "*"
 django-redis = "*"
 numpy = "1.18"
 sklearn = "*"
+django-mptt-admin = "*"
 
 [requires]
 python_version = "3.8"

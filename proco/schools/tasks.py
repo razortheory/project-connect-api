@@ -1,7 +1,9 @@
 import traceback
 
+from django.core.cache import cache
 from django.db import transaction
 
+from proco.connection_statistics.utils import update_specific_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
 from proco.schools.loaders.ingest import load_data
@@ -44,6 +46,13 @@ def process_loaded_file(country_pk: int, pk: int):
             imported_file.status = FileImport.STATUSES.completed
 
         imported_file.save()
+
+        if not errors:
+            def update_stats():
+                update_specific_country_weekly_status(country)
+                cache.clear()
+
+            transaction.on_commit(update_stats)
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
