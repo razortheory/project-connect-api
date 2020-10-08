@@ -28,7 +28,7 @@ flake8-mutable = "*"
 [packages]
 django-environ = "*"
 psycopg2 = "*"
-celery = "*"
+celery = "<5.0"
 ipython = "*"
 django-templated-email = "*"
 sentry-sdk = "*"
@@ -58,7 +58,7 @@ django-cors-headers = "*"
 django-modeladmin-reorder = "*"
 django-redis = "*"
 scipy = ">=1.5,<1.6"
-numpy = "1.18"
+numpy = "==1.18"
 django-mptt-admin = "*"
 
 [requires]
