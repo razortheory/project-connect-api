@@ -27,6 +27,17 @@ class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CountryWeeklyStatusGraphSerializer(CountryWeeklyStatusSerializer):
+    previous_week_exists = serializers.SerializerMethodField()
+
+    class Meta(CountryWeeklyStatusSerializer.Meta):
+        fields = CountryWeeklyStatusSerializer.Meta.fields + ('previous_week_exists',)
+
+    def get_previous_week_exists(self, obj):
+        if hasattr(obj, 'previous_week_exists'):
+            return obj.previous_week_exists
+
+
 class SchoolWeeklyStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolWeeklyStatus

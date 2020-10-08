@@ -114,7 +114,7 @@ class CountryWeekStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.data['integration_status'], self.stat_one.integration_status)
 
     def test_country_weekly_stats_queries(self):
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(2):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-weekly-stat', kwargs={
