@@ -1,10 +1,14 @@
+import math
+
 from django.contrib.gis.db.models import MultiPolygonField
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import models
 from django.utils.translation import ugettext as _
 
+import numpy as np
 from model_utils.models import TimeStampedModel
 from mptt.models import MPTTModel, TreeForeignKey
+from sklearn.neighbors import DistanceMetric
 
 from proco.locations.utils import get_random_name_image
 
@@ -64,6 +68,48 @@ class Country(GeometryMixin, TimeStampedModel):
 
     def __str__(self):
         return f'{self.name}'
+
+    def _calculate_avg_distance_school_for_batch(self, points):
+        # mean Earth radius
+        earth_radius = 6371.0088
+        dist = DistanceMetric.get_metric('haversine')
+        distances = dist.pairwise(np.radians(points))
+        indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
+        return np.mean(distances[indexes]) * earth_radius
+
+    def calculate_avg_distance_school(self):
+        schools_count = self.schools.count()
+
+        if schools_count < 2:
+            return None
+        elif schools_count <= 10000:
+            return self._calculate_avg_distance_school_for_batch(
+                self.schools.annotate(
+                    lon=models.Func(models.F('geopoint'), function='ST_X', output_field=models.FloatField()),
+                    lat=models.Func(models.F('geopoint'), function='ST_Y', output_field=models.FloatField()),
+                ).values_list('lat', 'lon'),
+            )
+        else:
+            cluster_number = math.ceil(schools_count / 5000.)
+
+            avg_distances = []
+            weights = []
+            for cluster in range(0, cluster_number):
+                schools = self.schools.raw(
+                    """
+                        SELECT a.id, a.cluster, a.lat, a.lon FROM (
+                            SELECT *, ST_ClusterKMeans(geopoint, {0}) over () AS cluster,
+                                   ST_X(geopoint) AS lon, ST_Y(geopoint) AS lat
+                            FROM schools_school
+                        ) as a WHERE cluster = {1} AND country_id = {2} ORDER BY cluster;
+                    """.format(cluster_number, cluster, self.id),
+                )
+                schools_points = list(map(lambda x: (x.lat, x.lon), schools))
+
+                if len(schools_points) > 1:
+                    avg_distances.append(self._calculate_avg_distance_school_for_batch(schools_points))
+                    weights.append(len(schools_points))
+            return np.average(avg_distances, weights=weights)
 
 
 class Location(GeometryMixin, TimeStampedModel, MPTTModel):
