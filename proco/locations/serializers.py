@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.connection_statistics.serializers import CountryWeeklyStatusGraphSerializer
 from proco.locations.models import Country
 
