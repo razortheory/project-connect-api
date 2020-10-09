@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from rest_framework import serializers
 
 from proco.connection_statistics.models import (
@@ -34,8 +36,14 @@ class CountryWeeklyStatusGraphSerializer(CountryWeeklyStatusSerializer):
         fields = CountryWeeklyStatusSerializer.Meta.fields + ('previous_week_exists',)
 
     def get_previous_week_exists(self, obj):
+        if not obj:
+            return False
+
         if hasattr(obj, 'previous_week_exists'):
             return obj.previous_week_exists
+
+        return CountryWeeklyStatus.objects.filter(country_id=obj.country.id,
+                                                  date__lte=obj.date - timedelta(days=7)).exists()
 
 
 class SchoolWeeklyStatusSerializer(serializers.ModelSerializer):

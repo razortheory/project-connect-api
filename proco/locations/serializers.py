@@ -71,4 +71,4 @@ class DetailCountrySerializer(BaseCountrySerializer):
         status = instance.latest_status[0] if instance.latest_status else None
         if status:
             status.previous_week_exists = CountryWeeklyStatus.objects.filter(country=instance).count() > 1
-        return CountryWeeklyStatusGraphSerializer(instance.latest_status[0] if instance.latest_status else None).data
+        return CountryWeeklyStatusGraphSerializer(status).data

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.http import Http404
@@ -65,8 +65,6 @@ class CountryWeekStatsAPIView(RetrieveAPIView):
         if not instance:
             raise Http404
 
-        instance.previous_week_exists = CountryWeeklyStatus.objects.filter(country_id=self.kwargs['country_id'],
-                                                                           date__lte=date - timedelta(days=7)).exists()
         return instance
 
 
