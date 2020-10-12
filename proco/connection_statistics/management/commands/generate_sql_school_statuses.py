@@ -10,8 +10,8 @@ from proco.schools.models import School
 
 AREA_COEFF = 223.4267  # coefficient of the average number of schools per unit area (250к/USA area)
 
-NUMBER_DAYS_WEEKLY_STATISTICS = 365
-NUMBER_DAYS_DAILY_STATISTICS = 365
+NUMBER_DAYS_WEEKLY_STATISTICS = 90
+NUMBER_DAYS_DAILY_STATISTICS = 90
 NUMBER_DAYS_REALTIME_STATISTICS = 30
 
 
