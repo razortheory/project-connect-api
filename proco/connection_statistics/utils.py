@@ -1,10 +1,7 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Avg, Count, F, FloatField, Func, Prefetch, Q
+from django.db.models import Avg, Count, Prefetch, Q
 from django.utils import timezone
-
-import numpy as np
-from sklearn.neighbors import DistanceMetric
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -181,18 +178,7 @@ def update_country_weekly_status(country: Country, force=False):
     if country_status.integration_status == CountryWeeklyStatus.STATIC_MAPPED and country.daily_status.exists():
         country_status.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
 
-    schools_points = list(country.schools.all().annotate(
-        lon=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
-        lat=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
-    ).values_list('lat', 'lon'))
-
-    if len(schools_points) > 1:
-        # mean Earth radius
-        earth_radius = 6371.0088
-        dist = DistanceMetric.get_metric('haversine')
-        distances = dist.pairwise(np.radians(schools_points))
-        indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
-        country_status.avg_distance_school = earth_radius * np.mean(distances[indexes])
+    country_status.avg_distance_school = country.calculate_avg_distance_school()
 
     country_status.save()
 
