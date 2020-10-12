@@ -44,7 +44,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_connectivity_moderate = models.PositiveIntegerField(blank=True, default=0)
     schools_connectivity_good = models.PositiveIntegerField(blank=True, default=0)
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
-    avg_distance_school = models.FloatField(blank=True, default=0.0)
+    avg_distance_school = models.FloatField(blank=True, default=None, null=True)
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
