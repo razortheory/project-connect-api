@@ -27,13 +27,20 @@ class BrasilSimnetLoader(object):
         required_fields = {'LNG', 'LAT', 'CO_ENTIDADE', 'NO_ENTIDADE'}
 
         if required_fields - set(school_data.keys()) == set():
+            brasil_environment_map = {
+                'urbana': 'urban',
+                'rural': 'rural',
+            }
+            environment = school_data.get('TP_LOCALIZACAO', '').lower()
+            environment = brasil_environment_map.get(environment, environment)
+
             school, created = School.objects.update_or_create(
                 external_id=school_data['CO_ENTIDADE'],
                 country=self.country,
                 defaults={
                     'name': school_data['NO_ENTIDADE'],
                     'geopoint': Point(x=school_data['LNG'], y=school_data['LAT']),
-                    'environment': school_data.get('TP_LOCALIZACAO', ''),
+                    'environment': environment,
                     'admin_1_name': school_data.get('NM_ESTADO', ''),
                     'admin_4_name': school_data.get('NM_MUNICIP', ''),
                 },
