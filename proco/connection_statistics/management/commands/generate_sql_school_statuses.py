@@ -96,35 +96,38 @@ class Command(BaseCommand):
                             schools_weekly_list = []
                     print('added', school.name)
 
-                query = """INSERT INTO connection_statistics_realtimeconnectivity (school_id, created,
-                        modified, connectivity_speed, connectivity_latency) VALUES """
-                for obj in realtime_list:
-                    query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}',
-                                 {obj.connectivity_speed}, {obj.connectivity_latency}),"""
-                query = query[:-1] + ';'
-                file.write(query)
+                if realtime_count:
+                    query = """INSERT INTO connection_statistics_realtimeconnectivity (school_id, created,
+                            modified, connectivity_speed, connectivity_latency) VALUES """
+                    for obj in realtime_list:
+                        query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}',
+                                     {obj.connectivity_speed}, {obj.connectivity_latency}),"""
+                    query = query[:-1] + ';'
+                    file.write(query)
 
-                query = """INSERT INTO connection_statistics_schooldailystatus (school_id, created,
-                            modified, date, connectivity_speed, connectivity_latency) VALUES """
-                for obj in schools_daily_list:
-                    query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}', '{obj.date}',
-                                {obj.connectivity_speed}, {obj.connectivity_latency}),"""
-                query = query[:-1] + ';'
-                file.write(query)
+                if schools_daily_count:
+                    query = """INSERT INTO connection_statistics_schooldailystatus (school_id, created,
+                                modified, date, connectivity_speed, connectivity_latency) VALUES """
+                    for obj in schools_daily_list:
+                        query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}', '{obj.date}',
+                                    {obj.connectivity_speed}, {obj.connectivity_latency}),"""
+                    query = query[:-1] + ';'
+                    file.write(query)
 
-                query = """INSERT INTO connection_statistics_schoolweeklystatus (school_id, created,
-                            modified, year, week, num_students, num_teachers, num_classroom,
-                            num_latrines, running_water, electricity_availability,
-                            computer_lab, num_computers, connectivity_type,
-                            connectivity_availability, connectivity, connectivity_status,
-                            connectivity_speed, connectivity_latency, date) VALUES """
-                for obj in schools_weekly_list:
-                    query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}', {obj.year},
-                             {obj.week}, {obj.num_students}, {obj.num_teachers}, {obj.num_classroom},
-                             {obj.num_latrines}, {obj.running_water}, {obj.electricity_availability},
-                             {obj.computer_lab}, {obj.num_computers}, '{obj.connectivity_type}',
-                             {obj.connectivity_availability}, {obj.connectivity},
-                             '{obj.connectivity_status}', {obj.connectivity_speed},
-                             {obj.connectivity_latency}, '{obj.date}'),"""
-                query = query[:-1] + ';'
-                file.write(query)
+                if schools_weekly_count:
+                    query = """INSERT INTO connection_statistics_schoolweeklystatus (school_id, created,
+                                modified, year, week, num_students, num_teachers, num_classroom,
+                                num_latrines, running_water, electricity_availability,
+                                computer_lab, num_computers, connectivity_type,
+                                connectivity_availability, connectivity, connectivity_status,
+                                connectivity_speed, connectivity_latency, date) VALUES """
+                    for obj in schools_weekly_list:
+                        query += f"""({obj.school.id}, '{obj.created}', '{obj.modified}', {obj.year},
+                                 {obj.week}, {obj.num_students}, {obj.num_teachers}, {obj.num_classroom},
+                                 {obj.num_latrines}, {obj.running_water}, {obj.electricity_availability},
+                                 {obj.computer_lab}, {obj.num_computers}, '{obj.connectivity_type}',
+                                 {obj.connectivity_availability}, {obj.connectivity},
+                                 '{obj.connectivity_status}', {obj.connectivity_speed},
+                                 {obj.connectivity_latency}, '{obj.date}'),"""
+                    query = query[:-1] + ';'
+                    file.write(query)
