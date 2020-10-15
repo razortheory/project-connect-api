@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from django.db import connection
+from django.db import connection, IntegrityError
 
 
 class Command(BaseCommand):
@@ -14,5 +14,9 @@ class Command(BaseCommand):
         for sql_file in sql_files_list:
             with open(sql_file + '.sql', 'r') as sql:
                 sql_commands = ' '.join(sql.readlines())
-                cursor = connection.cursor()
-                cursor.execute(sql_commands)
+                try:
+                    cursor = connection.cursor()
+                    cursor.execute(sql_commands)
+                except IntegrityError as e:
+                    print(e)
+                    continue

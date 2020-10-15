@@ -7,7 +7,7 @@ from proco.connection_statistics.tests.factories import (
     SchoolWeeklyStatusFactory,
 )
 from proco.schools.models import School
-
+from proco.connection_statistics.models import RealTimeConnectivity
 AREA_COEFF = 223.4267  # coefficient of the average number of schools per unit area (250к/USA area)
 
 NUMBER_DAYS_WEEKLY_STATISTICS = 90
@@ -32,7 +32,10 @@ class Command(BaseCommand):
                 realtime_count = 0
                 schools_daily_count = 0
                 schools_weekly_count = 0
-                for school in School.objects.filter(country_id=country_id).iterator():
+                for idx, school in enumerate(School.objects.filter(country_id=country_id).iterator()):
+                    if idx < 300000:
+                        print('pass', idx)
+                        continue
                     for day in range(NUMBER_DAYS_REALTIME_STATISTICS):
                         for hour in range(0, 20, 5):
                             date = timezone.now() - timezone.timedelta(days=day, hours=hour)
