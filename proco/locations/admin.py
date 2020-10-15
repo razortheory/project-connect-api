@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.gis.admin import GeoModelAdmin
 from django.utils.safestring import mark_safe
 
 from proco.locations.filters import CountryFilterList
@@ -7,7 +8,9 @@ from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
 @admin.register(Country)
-class CountryAdmin(admin.ModelAdmin):
+class CountryAdmin(GeoModelAdmin):
+    modifiable = False
+
     list_display = ('name', 'code', 'flag_preview')
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
@@ -21,7 +24,8 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
+class LocationAdmin(CountryNameDisplayAdminMixin, GeoModelAdmin):
+    modifiable = False
     show_full_result_count = False
 
     list_display = ('name', 'get_country_name')
