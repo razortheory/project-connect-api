@@ -32,10 +32,7 @@ class Command(BaseCommand):
                 realtime_count = 0
                 schools_daily_count = 0
                 schools_weekly_count = 0
-                for idx, school in enumerate(School.objects.filter(country_id=country_id).iterator()):
-                    if idx < 300000:
-                        print('pass', idx)
-                        continue
+                for school in School.objects.filter(country_id=country_id).iterator():
                     for day in range(NUMBER_DAYS_REALTIME_STATISTICS):
                         for hour in range(0, 20, 5):
                             date = timezone.now() - timezone.timedelta(days=day, hours=hour)
