@@ -16,7 +16,7 @@ from proco.connection_statistics.filters import DateMonthFilter, DateWeekNumberF
 from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus, SchoolDailyStatus
 from proco.connection_statistics.serializers import (
     CountryDailyStatusSerializer,
-    CountryWeeklyStatusGraphSerializer,
+    CountryWeeklyStatusSerializer,
     SchoolDailyStatusSerializer,
 )
 from proco.locations.models import Country
@@ -54,7 +54,7 @@ class GlobalStatsAPIView(APIView):
 
 class CountryWeekStatsAPIView(RetrieveAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = CountryWeeklyStatusGraphSerializer
+    serializer_class = CountryWeeklyStatusSerializer
 
     def get_object(self, *args, **kwargs):
         week = self.kwargs['week']

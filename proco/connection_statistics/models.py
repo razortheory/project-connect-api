@@ -48,6 +48,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
+    date_of_data_exist = models.DateField(null=True, blank=True, default=None)
 
     objects = CountryWeeklyStatusManager()
 

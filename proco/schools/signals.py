@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -23,7 +25,11 @@ def change_integration_status_country(instance, created=False, **kwargs):
     country_weekly.save()
 
     if created:
+        if not country_weekly.schools_total:
+            country_weekly.date_of_data_exist = datetime.strptime(
+                f'{country_weekly.year}-W{country_weekly.week}-1', '%Y-W%W-%w')
+
         country_weekly.schools_total = F('schools_total') + 1
         country_weekly.schools_connectivity_unknown = F('schools_connectivity_unknown') + 1
 
-        country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown'))
+        country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown', 'date_of_data_exist'))

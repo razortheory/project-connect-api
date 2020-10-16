@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.serializers import CountryWeeklyStatusGraphSerializer
+from proco.connection_statistics.serializers import CountryWeeklyStatusSerializer
 from proco.locations.models import Country
 
 
@@ -67,4 +67,4 @@ class DetailCountrySerializer(BaseCountrySerializer):
         fields = BaseCountrySerializer.Meta.fields + ('statistics', 'geometry')
 
     def get_statistics(self, instance):
-        return CountryWeeklyStatusGraphSerializer(instance.latest_status[0] if instance.latest_status else None).data
+        return CountryWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
