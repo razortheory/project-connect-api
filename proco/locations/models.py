@@ -3,8 +3,11 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import models
 from django.utils.translation import ugettext as _
 
+import numpy as np
 from model_utils.models import TimeStampedModel
 from mptt.models import MPTTModel, TreeForeignKey
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.neighbors import DistanceMetric
 
 from proco.locations.utils import get_random_name_image
 
@@ -64,6 +67,28 @@ class Country(GeometryMixin, TimeStampedModel):
 
     def __str__(self):
         return f'{self.name}'
+
+    def _calculate_batch_avg_distance_school(self, points):
+        earth_radius = 6371.0088
+        dist = DistanceMetric.get_metric('haversine')
+        distances = dist.pairwise(np.radians(points))
+        indexes = np.tril_indices(n=distances.shape[0], k=-1, m=distances.shape[1])
+        return earth_radius * np.mean(distances[indexes])
+
+    def calculate_avg_distance_school(self):
+        schools_count = self.schools.count()
+        schools_point = self.schools.annotate(
+            lon=models.Func(models.F('geopoint'), function='ST_X', output_field=models.FloatField()),
+            lat=models.Func(models.F('geopoint'), function='ST_Y', output_field=models.FloatField()),
+        ).values_list('lat', 'lon')
+
+        if schools_count < 2:
+            return None
+        elif schools_count < 5000:
+            return self._calculate_batch_avg_distance_school(schools_point)
+        else:
+            kmeans = MiniBatchKMeans(n_clusters=5000, batch_size=250, random_state=0).fit(schools_point)
+            return self._calculate_batch_avg_distance_school(kmeans.cluster_centers_)
 
 
 class Location(GeometryMixin, TimeStampedModel, MPTTModel):

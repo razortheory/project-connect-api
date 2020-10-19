@@ -25,6 +25,11 @@ class SchoolManager(models.Manager):
 
 
 class School(TimeStampedModel):
+    ENVIRONMENT_STATUSES = Choices(
+        ('rural', _('Rural')),
+        ('urban', _('Urban')),
+    )
+
     external_id = models.CharField(max_length=50, blank=True, db_index=True)
     name = models.CharField(max_length=255)
 
@@ -43,7 +48,7 @@ class School(TimeStampedModel):
     postal_code = models.CharField(blank=True, max_length=128)
     email = models.EmailField(max_length=128, null=True, blank=True, default=None)
     education_level = models.CharField(blank=True, max_length=64)
-    environment = models.CharField(blank=True, max_length=64)
+    environment = models.CharField(choices=ENVIRONMENT_STATUSES, blank=True, max_length=64)
     school_type = models.CharField(blank=True, max_length=64)
 
     objects = SchoolManager()

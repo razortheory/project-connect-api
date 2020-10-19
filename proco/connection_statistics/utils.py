@@ -1,10 +1,7 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Avg, Count, F, FloatField, Func, Prefetch, Q
+from django.db.models import Avg, Count, Prefetch, Q
 from django.utils import timezone
-
-import numpy as np
-from scipy.spatial.distance import pdist
 
 from proco.connection_statistics.models import (
     CountryDailyStatus,
@@ -149,8 +146,8 @@ def update_country_weekly_status(country: Country, force=False):
         connectivity_good=Count(
             'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
         ),
-        connectivity_speed=Avg('connectivity_speed'),
-        connectivity_latency=Avg('connectivity_latency'),
+        connectivity_speed=Avg('connectivity_speed', filter=Q(connectivity_speed__gt=0)),
+        connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
 
     country_status.connectivity_speed = schools_stats['connectivity_speed'] or 0
@@ -181,12 +178,7 @@ def update_country_weekly_status(country: Country, force=False):
     if country_status.integration_status == CountryWeeklyStatus.STATIC_MAPPED and country.daily_status.exists():
         country_status.integration_status = CountryWeeklyStatus.REALTIME_MAPPED
 
-    schools_points = list(country.schools.all().annotate(
-        x=Func(F('geopoint'), function='ST_X', output_field=FloatField()),
-        y=Func(F('geopoint'), function='ST_Y', output_field=FloatField()),
-    ).values_list('x', 'y'))
-    if schools_points:
-        country_status.avg_distance_school = np.mean(pdist(schools_points))
+    country_status.avg_distance_school = country.calculate_avg_distance_school()
 
     country_status.save()
 

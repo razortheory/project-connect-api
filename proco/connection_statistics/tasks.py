@@ -17,7 +17,7 @@ def aggregate_real_time_data(*args):
     aggregate_school_daily_to_country_daily()
 
 
-@app.task(soft_time_limit=10 * 60, time_limit=20 * 60)
+@app.task(soft_time_limit=10 * 60, time_limit=60 * 60)
 def aggregate_daily_statistics(*args):
     aggregate_school_daily_status_to_school_weekly_status()
     aggregate_country_daily_status_to_country_weekly_status()
