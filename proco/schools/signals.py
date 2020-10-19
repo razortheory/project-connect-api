@@ -26,10 +26,11 @@ def change_integration_status_country(instance, created=False, **kwargs):
 
     if created:
         if not country_weekly.schools_total:
-            country_weekly.date_of_data_exist = datetime.strptime(
+            instance.country.date_schools_mapped = datetime.strptime(
                 f'{country_weekly.year}-W{country_weekly.week}-1', '%Y-W%W-%w')
+            instance.country.save(update_fields=('date_schools_mapped',))
 
         country_weekly.schools_total = F('schools_total') + 1
         country_weekly.schools_connectivity_unknown = F('schools_connectivity_unknown') + 1
 
-        country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown', 'date_of_data_exist'))
+        country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown'))

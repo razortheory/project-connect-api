@@ -11,7 +11,7 @@ class BaseCountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = (
             'id', 'name', 'code', 'flag',
-            'map_preview', 'description', 'data_source',
+            'map_preview', 'description', 'data_source', 'date_schools_mapped',
         )
         read_only_fields = fields
 

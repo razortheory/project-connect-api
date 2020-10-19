@@ -23,7 +23,6 @@ class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
             'avg_distance_school',
             'created',
             'modified',
-            'date_of_data_exist',
         )
         read_only_fields = fields
 
