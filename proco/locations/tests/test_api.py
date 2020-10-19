@@ -34,12 +34,11 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertIn('integration_status', response.data[0])
 
     def test_country_detail(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = self._test_retrieve(
                 user=None, instance=self.country_one,
             )
         self.assertIn('statistics', response.data)
-        self.assertEqual(response.data['statistics']['previous_week_exists'], True)
 
     def test_country_list_cached(self):
         with self.assertNumQueries(2):

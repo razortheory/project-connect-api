@@ -59,6 +59,7 @@ class Country(GeometryMixin, TimeStampedModel):
     data_source = models.TextField(max_length=500, blank=True, default='')
 
     date_of_join = models.DateField(null=True)
+    date_schools_mapped = models.DateField(null=True, blank=True, default=None)
 
     class Meta:
         ordering = ('name',)
