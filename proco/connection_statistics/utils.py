@@ -52,27 +52,24 @@ def aggregate_school_daily_to_country_daily(date=None):
         })
 
 
-def aggregate_school_daily_status_to_school_weekly_status(date=None):
+def aggregate_school_daily_status_to_school_weekly_status(country_id, date=None):
     date = date or timezone.now().date()
     week_ago = date - timedelta(days=7)
-    schools = SchoolDailyStatus.objects.filter(date__gte=week_ago).values_list(
+    schools = SchoolDailyStatus.objects.filter(school__country_id=country_id, date__gte=week_ago).values_list(
         'school', flat=True,
-    ).order_by('school_id').distinct('school_id')
+    ).order_by('school_id').distinct('school_id').iterator()
     for school in schools:
-        qs_school_weekly = SchoolWeeklyStatus.objects.filter(
+        school_weekly = SchoolWeeklyStatus.objects.filter(
             school=school, week=week_ago.isocalendar()[1],
             year=week_ago.isocalendar()[0],
-        )
-        if qs_school_weekly.exists():
-            school_weekly = qs_school_weekly.last()
-        else:
+        ).last()
+        if not school_weekly:
             school_weekly = SchoolWeeklyStatus.objects.filter(school=school).last()
             if school_weekly:
-                if not (school_weekly.year == get_current_year() and school_weekly.week == get_current_week()):
-                    # copy latest available one
-                    school_weekly.id = None
-                    school_weekly.year = get_current_year()
-                    school_weekly.week = get_current_week()
+                # copy latest available one
+                school_weekly.id = None
+                school_weekly.year = get_current_year()
+                school_weekly.week = get_current_week()
             else:
                 school_weekly = SchoolWeeklyStatus.objects.create(
                     school_id=school,
@@ -97,15 +94,16 @@ def _get_start_and_end_date_from_calendar_week(year, calendar_week):
     return monday, monday + timedelta(days=6.9)
 
 
-def aggregate_country_daily_status_to_country_weekly_status(date=None):
+def aggregate_country_daily_status_to_country_weekly_status(country_id, date=None):
     date = date or timezone.now().date()
     week_ago = date - timedelta(days=7)
-    countries = Country.objects.filter(
+    country = Country.objects.filter(
+        id=country_id,
         id__in=CountryDailyStatus.objects.filter(
             date__gte=week_ago,
         ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id'),
-    )
-    for country in countries:
+    ).last()
+    if country:
         country_weekly = CountryWeeklyStatus.objects.filter(
             country=country, year=get_current_year(), week=get_current_week(),
         ).first()

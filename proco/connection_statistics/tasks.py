@@ -7,6 +7,7 @@ from proco.connection_statistics.utils import (
     aggregate_school_daily_to_country_daily,
     update_countries_weekly_statuses,
 )
+from proco.locations.models import Country
 from proco.schools.loaders.brasil_loader import brasil_statistic_loader
 from proco.taskapp import app
 
@@ -18,9 +19,13 @@ def aggregate_real_time_data(*args):
 
 
 @app.task(soft_time_limit=10 * 60, time_limit=60 * 60)
-def aggregate_daily_statistics(*args):
-    aggregate_school_daily_status_to_school_weekly_status()
-    aggregate_country_daily_status_to_country_weekly_status()
+def aggregate_daily_statistics(country_id, *args):
+    aggregate_school_daily_status_to_school_weekly_status(country_id)
+    aggregate_country_daily_status_to_country_weekly_status(country_id)
+
+
+@app.task(soft_time_limit=10 * 60, time_limit=60 * 60)
+def update_countries_weekly_statuses_task(*args):
     update_countries_weekly_statuses()
 
 
@@ -43,11 +48,19 @@ def load_data_from_unicef_db(*args):
 
 @app.task
 def update_real_time_data():
-    chain(
-        # it would be better to use group, but we need result backend to be configured
-        # group(load_data_from_unicef_db.s(), load_brasil_daily_statistics.s()),
+    countries_aggregate_daily_statistics_tasks_chain = [
+        aggregate_daily_statistics.s(country_id)
+        for country_id in Country.objects.values_list('id', flat=True)
+    ]
+    tasks_chain = [
         load_data_from_unicef_db.s(),
         load_brasil_daily_statistics.s(),
         aggregate_real_time_data.s(),
-        aggregate_daily_statistics.s(),
+    ] + countries_aggregate_daily_statistics_tasks_chain + [
+        update_countries_weekly_statuses_task.s(),
+    ]
+    chain(
+        # it would be better to use group, but we need result backend to be configured
+        # group(load_data_from_unicef_db.s(), load_brasil_daily_statistics.s()),
+        tasks_chain,
     ).delay()
