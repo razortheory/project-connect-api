@@ -154,7 +154,7 @@ def update_country_weekly_status(country: Country, force=False):
     country_status.connectivity_latency = schools_stats['connectivity_latency'] or 0
 
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
-        school__country=country,
+        school__country=country, connectivity=True,
     ).order_by('school_id').distinct('school_id').count()
     current_week_statuses = (
         schools_stats['connectivity_no'] +
