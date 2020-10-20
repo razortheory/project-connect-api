@@ -330,11 +330,11 @@
         },
         "drf-nested-routers": {
             "hashes": [
-                "sha256:46e5c3abc15c782cafafd7d75028e8f9121bbc6228e3599bbb48a3daa4585034",
-                "sha256:60c1e1f5cc801e757d26a8138e61c44419ef800c213c3640c5b6138e77d46762"
+                "sha256:52be428b046078ed21e9137167035cc2eb8daad036900fd2235ce026306e143a",
+                "sha256:e043fc937f94ac462a92d2d9fc9a7e55710a67164b558442adfe9634fc519c3b"
             ],
             "index": "pypi",
-            "version": "==0.91"
+            "version": "==0.92.1"
         },
         "drf-secure-token": {
             "hashes": [
