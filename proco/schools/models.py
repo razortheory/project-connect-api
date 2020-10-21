@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db.models import PointField
 from django.db import models
-from django.db.models import OuterRef, Subquery
 from django.utils.translation import ugettext as _
 
 from model_utils import Choices
@@ -41,7 +40,7 @@ class School(TimeStampedModel):
 
     last_weekly_status = models.ForeignKey(
         'connection_statistics.SchoolWeeklyStatus', null=True,
-        on_delete=models.SET_NULL, related_name='_school'
+        on_delete=models.SET_NULL, related_name='_school',
     )
 
     class Meta:
