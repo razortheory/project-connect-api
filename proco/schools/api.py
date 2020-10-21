@@ -24,7 +24,7 @@ class SchoolsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = School.objects.all()
+    queryset = School.objects.all().select_related('last_weekly_status')
     pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (
