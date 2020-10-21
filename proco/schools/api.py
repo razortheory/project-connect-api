@@ -26,13 +26,7 @@ class SchoolsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = School.objects.prefetch_related(
-        Prefetch(
-            'weekly_status',
-            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
-            to_attr='latest_status',
-        ),
-    )
+    queryset = School.objects.all()
     pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (

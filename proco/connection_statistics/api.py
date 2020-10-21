@@ -29,12 +29,12 @@ class GlobalStatsAPIView(APIView):
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
         countries_qs = Country.objects.all()
-        schools_qs = School.objects.annotate_status_connectivity()
+        schools_qs = School.objects.all()
 
         countries_joined = countries_qs.count()
         total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
-        schools_without_connectivity = schools_qs.filter(connectivity=False).count()
+        schools_without_connectivity = schools_qs.filter(last_weekly_status__connectivity=False).count()
         percent_schools_without_connectivity = schools_without_connectivity / total_schools
         aggregate_statuses = CountryWeeklyStatus.objects.aggregate_integration_statuses()
         last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
