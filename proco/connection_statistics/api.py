@@ -19,7 +19,6 @@ from proco.connection_statistics.serializers import (
     CountryWeeklyStatusSerializer,
     SchoolDailyStatusSerializer,
 )
-from proco.locations.models import Country
 from proco.schools.models import School
 
 
@@ -28,10 +27,14 @@ class GlobalStatsAPIView(APIView):
 
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
-        countries_qs = Country.objects.all()
         schools_qs = School.objects.annotate_status_connectivity()
 
-        countries_joined = countries_qs.count()
+        countries_joined = CountryWeeklyStatus.objects.filter(
+            integration_status__in=[
+                CountryWeeklyStatus.SCHOOL_MAPPED,
+                CountryWeeklyStatus.STATIC_MAPPED,
+                CountryWeeklyStatus.REALTIME_MAPPED,
+            ]).order_by('country_id').distinct('country_id').count()
         total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
         schools_without_connectivity = schools_qs.filter(connectivity=False).count()
