@@ -95,27 +95,19 @@ def _get_start_and_end_date_from_calendar_week(year, calendar_week):
 
 
 def aggregate_country_daily_status_to_country_weekly_status(country_id, date=None):
-    date = date or timezone.now().date()
-    week_ago = date - timedelta(days=7)
-    country = Country.objects.filter(
-        id=country_id,
-        id__in=CountryDailyStatus.objects.filter(
-            date__gte=week_ago,
-        ).order_by('country__name').values_list('country', flat=True).order_by('country_id').distinct('country_id'),
-    ).last()
-    if country:
-        country_weekly = CountryWeeklyStatus.objects.filter(
-            country=country, year=get_current_year(), week=get_current_week(),
-        ).first()
-        if not country_weekly:
-            country_weekly = CountryWeeklyStatus.objects.filter(country=country).order_by('year', 'week').last()
-            # copy latest available one
-            country_weekly.id = None
-            country_weekly.year = get_current_year()
-            country_weekly.week = get_current_week()
+    country = Country.objects.get(pk=country_id)
+    country_weekly = CountryWeeklyStatus.objects.filter(
+        country=country, year=get_current_year(), week=get_current_week(),
+    ).first()
+    if not country_weekly:
+        country_weekly = CountryWeeklyStatus.objects.filter(country=country).order_by('year', 'week').last()
+        # copy latest available one
+        country_weekly.id = None
+        country_weekly.year = get_current_year()
+        country_weekly.week = get_current_week()
 
-        country.latest_status = [country_weekly]
-        update_country_weekly_status(country, force=True)
+    country.latest_status = [country_weekly]
+    update_country_weekly_status(country, force=True)
 
 
 def update_country_weekly_status(country: Country, force=False):
