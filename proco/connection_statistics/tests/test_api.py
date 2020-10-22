@@ -218,7 +218,11 @@ class AggregateConnectivityDataTestCase(TestCase):
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=4000000, date=today - timedelta(days=1))
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=6000000, date=today)
 
+        self.school.last_weekly_status = None
+        self.school.save()
         aggregate_school_daily_status_to_school_weekly_status(self.country.id)
+        self.school.refresh_from_db()
+        self.assertNotEqual(self.school.last_weekly_status, None)
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity_speed, 5000000)
 

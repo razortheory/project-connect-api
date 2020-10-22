@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -9,7 +8,6 @@ from rest_framework.generics import ListAPIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.locations.backends.csv import SchoolsCSVWriterBackend
 from proco.locations.models import Country
 from proco.schools.models import School
@@ -26,13 +24,7 @@ class SchoolsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = School.objects.prefetch_related(
-        Prefetch(
-            'weekly_status',
-            SchoolWeeklyStatus.objects.order_by('school_id', '-year', '-week').distinct('school_id'),
-            to_attr='latest_status',
-        ),
-    )
+    queryset = School.objects.all().select_related('last_weekly_status')
     pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (
