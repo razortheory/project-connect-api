@@ -231,7 +231,7 @@ class AggregateConnectivityDataTestCase(TestCase):
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity, None)
         self.assertEqual(
-            SchoolWeeklyStatus.objects.last().connectivity_status, SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
+            SchoolWeeklyStatus.objects.last().connectivity_status, SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown,
         )
 
 
