@@ -19,6 +19,7 @@ from proco.connection_statistics.serializers import (
     CountryWeeklyStatusSerializer,
     SchoolDailyStatusSerializer,
 )
+from proco.locations.models import Country
 from proco.schools.models import School
 
 
@@ -28,27 +29,20 @@ class GlobalStatsAPIView(APIView):
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
         schools_qs = School.objects.all()
-
-        countries_joined = CountryWeeklyStatus.objects.filter(
-            integration_status__in=[
-                CountryWeeklyStatus.SCHOOL_MAPPED,
-                CountryWeeklyStatus.STATIC_MAPPED,
-                CountryWeeklyStatus.REALTIME_MAPPED,
-            ]).order_by('country_id').distinct('country_id').count()
+        countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
         total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
         schools_without_connectivity = schools_qs.filter(last_weekly_status__connectivity=False).count()
         percent_schools_without_connectivity = schools_without_connectivity / total_schools
-        aggregate_statuses = CountryWeeklyStatus.objects.aggregate_integration_statuses()
         last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
 
         data = {
             'total_schools': total_schools,
             'schools_mapped': schools_mapped,
             'percent_schools_without_connectivity': percent_schools_without_connectivity,
-            'countries_joined': countries_joined,
-            'countries_connected_to_realtime': aggregate_statuses['countries_connected_to_realtime'],
-            'countries_with_static_data': aggregate_statuses['countries_with_static_data'],
+            'countries_joined': countries_statuses_aggregated['countries_joined'],
+            'countries_connected_to_realtime': countries_statuses_aggregated['countries_connected_to_realtime'],
+            'countries_with_static_data': countries_statuses_aggregated['countries_with_static_data'],
             'last_date_updated': last_date_updated.strftime('%B %Y'),
         }
 

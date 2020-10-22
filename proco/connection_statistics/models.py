@@ -7,7 +7,6 @@ from django.utils.translation import ugettext as _
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 
-from proco.connection_statistics.managers import CountryWeeklyStatusManager
 from proco.locations.models import Country
 from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
@@ -48,8 +47,6 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
-
-    objects = CountryWeeklyStatusManager()
 
     class Meta:
         verbose_name = _('Country Summary')

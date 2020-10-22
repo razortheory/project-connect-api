@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models import BooleanField, F, Func, Prefetch
+from django.db.models import BooleanField, F, Func
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -7,7 +7,6 @@ from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
 
-from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.models import Country
 from proco.locations.serializers import (
     BoundaryListCountrySerializer,
@@ -26,13 +25,7 @@ class CountryViewSet(
     pagination_class = None
     queryset = Country.objects.all().annotate(
         geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
-    ).prefetch_related(
-        Prefetch(
-            'weekly_status',
-            CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
-            to_attr='latest_status',
-        ),
-    ).filter(geometry_empty=False)
+    ).select_related('last_weekly_status').filter(geometry_empty=False)
     serializer_class = CountrySerializer
     filter_backends = (
         NullsAlwaysLastOrderingFilter, SearchFilter,
