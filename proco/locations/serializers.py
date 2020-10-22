@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.serializers import CountryWeeklyStatusGraphSerializer
+from proco.connection_statistics.serializers import CountryWeeklyStatusSerializer
 from proco.locations.models import Country
 
 
@@ -11,7 +11,7 @@ class BaseCountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = (
             'id', 'name', 'code', 'flag',
-            'map_preview', 'description', 'data_source',
+            'map_preview', 'description', 'data_source', 'date_schools_mapped',
         )
         read_only_fields = fields
 
@@ -48,16 +48,14 @@ class ListCountrySerializer(BaseCountrySerializer):
         )
 
     def get_integration_status(self, instance):
-        return instance.latest_status[0].integration_status if instance.latest_status else None
+        return instance.last_weekly_status.integration_status
 
     def get_schools_total(self, instance):
-        return instance.latest_status[0].schools_total if instance.latest_status else None
-
-    def get_date_of_join(self, instance):
-        return instance.first_status[0].created if instance.first_status else None
+        return instance.last_weekly_status.schools_total if instance.last_weekly_status.schools_total else None
 
     def get_schools_with_data_percentage(self, instance):
-        return instance.latest_status[0].schools_with_data_percentage if instance.latest_status else None
+        return (instance.last_weekly_status.schools_with_data_percentage
+                if instance.last_weekly_status.schools_with_data_percentage else None)
 
 
 class DetailCountrySerializer(BaseCountrySerializer):
@@ -67,4 +65,4 @@ class DetailCountrySerializer(BaseCountrySerializer):
         fields = BaseCountrySerializer.Meta.fields + ('statistics', 'geometry')
 
     def get_statistics(self, instance):
-        return CountryWeeklyStatusGraphSerializer(instance.latest_status[0] if instance.latest_status else None).data
+        return CountryWeeklyStatusSerializer(instance.last_weekly_status if instance.last_weekly_status else None).data

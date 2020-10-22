@@ -7,7 +7,6 @@ from django.utils.translation import ugettext as _
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 
-from proco.connection_statistics.managers import CountryWeeklyStatusManager
 from proco.locations.models import Country
 from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
@@ -48,8 +47,6 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
-
-    objects = CountryWeeklyStatusManager()
 
     class Meta:
         verbose_name = _('Country Summary')
@@ -95,7 +92,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     electricity_availability = models.BooleanField(default=False)
     computer_lab = models.BooleanField(default=False)
     num_computers = models.PositiveSmallIntegerField(blank=True, default=0)
-    connectivity = models.BooleanField(default=False)
+    connectivity = models.NullBooleanField(default=None)
     connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
                                            choices=CONNECTIVITY_STATUSES)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
@@ -116,13 +113,13 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         super().save(**kwargs)
 
     def get_date(self):
-        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w').date()
 
     def get_connectivity_status(self):
-        if not self.connectivity:
+        if self.connectivity is False:
             return self.CONNECTIVITY_STATUSES.no
 
-        if not self.connectivity_speed:
+        if self.connectivity is None:
             return self.CONNECTIVITY_STATUSES.unknown
 
         if self.connectivity_speed > 5 * (10 ** 6):

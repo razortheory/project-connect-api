@@ -86,7 +86,7 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
         if not school:
             school = School.objects.filter(
-                name=data['name'], distance__lte=(school_data['geopoint'], D(m=500)),
+                name=data['name'], geopoint__distance_lte=(school_data['geopoint'], D(m=500)),
                 education_level=school_data['education_level'],
             ).first()
 
