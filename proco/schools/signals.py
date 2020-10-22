@@ -40,7 +40,6 @@ def update_school_last_weekly_status(instance, created=False, **kwargs):
     if not school_last_status:
         school.last_weekly_status = instance
         school.save()
-    elif (school_last_status.year > instance.year and school_last_status.week > instance.week
-            and instance.id > school_last_status.id):
+    elif school_last_status.date < instance.date:
         school.last_weekly_status = instance
         school.save()
