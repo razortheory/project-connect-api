@@ -53,7 +53,7 @@ if CELERY_ENABLED:
     # --------------------------------------------------------------------------
 
     CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='amqp://guest@localhost//')
-
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_ALWAYS_EAGER = False
 
 
