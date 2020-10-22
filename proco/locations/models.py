@@ -9,6 +9,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.neighbors import DistanceMetric
 
+from proco.locations.managers import CountryManager
 from proco.locations.utils import get_random_name_image
 
 
@@ -60,6 +61,15 @@ class Country(GeometryMixin, TimeStampedModel):
 
     date_of_join = models.DateField(null=True)
     date_schools_mapped = models.DateField(null=True, blank=True, default=None)
+
+    last_weekly_status = models.ForeignKey(
+        'connection_statistics.CountryWeeklyStatus',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='_country',
+    )
+
+    objects = CountryManager()
 
     class Meta:
         ordering = ('name',)
