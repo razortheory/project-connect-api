@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db.models import PointField
 from django.db import models
-from django.db.models import OuterRef, Subquery
 from django.utils.translation import ugettext as _
 
 from model_utils import Choices
@@ -10,18 +9,6 @@ from timezone_field import TimeZoneField
 
 from proco.locations.models import Country, Location
 from proco.schools.utils import get_imported_file_path
-
-
-class SchoolManager(models.Manager):
-    def annotate_status_connectivity(self):
-        from proco.connection_statistics.models import SchoolWeeklyStatus
-        return self.get_queryset().annotate(
-            connectivity=Subquery(
-                SchoolWeeklyStatus.objects.filter(
-                    school=OuterRef('id'),
-                ).order_by('-id')[:1].values('connectivity'),
-            ),
-        )
 
 
 class School(TimeStampedModel):
@@ -51,7 +38,10 @@ class School(TimeStampedModel):
     environment = models.CharField(choices=ENVIRONMENT_STATUSES, blank=True, max_length=64)
     school_type = models.CharField(blank=True, max_length=64)
 
-    objects = SchoolManager()
+    last_weekly_status = models.ForeignKey(
+        'connection_statistics.SchoolWeeklyStatus', null=True,
+        on_delete=models.SET_NULL, related_name='_school',
+    )
 
     class Meta:
         ordering = ('id',)

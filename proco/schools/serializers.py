@@ -28,9 +28,9 @@ class CSVSchoolsListSerializer(BaseSchoolSerializer):
         fields = ('name', 'geopoint', 'connectivity_status')
 
     def get_connectivity_status(self, obj):
-        if not obj.latest_status:
+        if not obj.last_weekly_status:
             return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.latest_status[0].connectivity_status
+        return obj.last_weekly_status.connectivity_status
 
 
 class ListSchoolSerializer(BaseSchoolSerializer):
@@ -43,9 +43,9 @@ class ListSchoolSerializer(BaseSchoolSerializer):
         )
 
     def get_connectivity_status(self, obj):
-        if not obj.latest_status:
+        if not obj.last_weekly_status:
             return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.latest_status[0].connectivity_status
+        return obj.last_weekly_status.connectivity_status
 
     def get_coverage_status(self, obj):
         return 'unknown'
@@ -64,7 +64,7 @@ class SchoolSerializer(BaseSchoolSerializer):
         )
 
     def get_statistics(self, instance):
-        return SchoolWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
+        return SchoolWeeklyStatusSerializer(instance.last_weekly_status).data
 
     def get_coverage_status(self, obj):
         return 'unknown'
