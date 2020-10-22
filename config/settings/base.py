@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'admin_reorder',
     'django_filters',
+    'django_mptt_admin',
 ]
 
 LOCAL_APPS = [

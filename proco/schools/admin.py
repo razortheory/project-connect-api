@@ -7,6 +7,7 @@ from django.utils.safestring import mark_safe
 from mapbox_location_field.admin import MapAdmin
 from mapbox_location_field.widgets import MapAdminInput
 
+from proco.locations.filters import CountryFilterList
 from proco.schools.forms import ImportSchoolsCSVForm
 from proco.schools.models import FileImport, School
 from proco.schools.tasks import process_loaded_file
@@ -19,8 +20,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
         PointField: {'widget': MapAdminInput},
     }
     list_display = ('name', 'get_country_name', 'address', 'education_level', 'school_type')
-    list_select_related = ('country', 'location')
-    list_filter = ('country', 'education_level', 'environment', 'school_type')
+    list_filter = (CountryFilterList, 'education_level', 'environment', 'school_type')
     search_fields = ('name', 'country__name', 'location__name')
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
@@ -38,7 +38,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
             qs = qs.filter(country__in=request.user.countries_available.all())
-        return qs
+        return qs.prefetch_related('country').defer('location')
 
     def import_csv(self, request):
         if request.method == 'GET':
