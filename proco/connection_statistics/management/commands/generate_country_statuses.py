@@ -4,9 +4,8 @@ from proco.connection_statistics.models import CountryDailyStatus, CountryWeekly
 from proco.connection_statistics.tests.factories import CountryDailyStatusFactory, CountryWeeklyStatusFactory
 from proco.locations.models import Country
 
-NUMBER_DAYS_WEEKLY_STATISTICS = 365
-NUMBER_DAYS_DAILY_STATISTICS = 365
-NUMBER_DAYS_REALTIME_STATISTICS = 30
+NUMBER_DAYS_WEEKLY_STATISTICS = 90
+NUMBER_DAYS_DAILY_STATISTICS = 90
 
 
 print('Countries statuses generate started')
