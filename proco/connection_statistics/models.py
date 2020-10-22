@@ -116,7 +116,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         super().save(**kwargs)
 
     def get_date(self):
-        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w').date()
 
     def get_connectivity_status(self):
         if self.connectivity is False:
