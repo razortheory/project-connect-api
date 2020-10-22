@@ -28,8 +28,8 @@ def aggregate_real_time_data_to_school_daily_status(date=None):
             Avg('connectivity_latency'),
         )
         school_daily_status, _ = SchoolDailyStatus.objects.get_or_create(school_id=school, date=date)
-        school_daily_status.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
-        school_daily_status.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
+        school_daily_status.connectivity_speed = aggregate['connectivity_speed__avg']
+        school_daily_status.connectivity_latency = aggregate['connectivity_latency__avg']
         school_daily_status.save()
 
 
@@ -47,8 +47,8 @@ def aggregate_school_daily_to_country_daily(date=None):
             continue
 
         CountryDailyStatus.objects.update_or_create(country=country, date=date, defaults={
-            'connectivity_speed': aggregate['connectivity_speed__avg'] or 0,
-            'connectivity_latency': aggregate['connectivity_latency__avg'] or 0,
+            'connectivity_speed': aggregate['connectivity_speed__avg'],
+            'connectivity_latency': aggregate['connectivity_latency__avg'],
         })
 
 
@@ -83,9 +83,12 @@ def aggregate_school_daily_status_to_school_weekly_status(country_id, date=None)
         ).aggregate(
             Avg('connectivity_speed'), Avg('connectivity_latency'),
         )
-        school_weekly.connectivity = bool(aggregate['connectivity_speed__avg'])
-        school_weekly.connectivity_speed = aggregate['connectivity_speed__avg'] or 0
-        school_weekly.connectivity_latency = aggregate['connectivity_latency__avg'] or 0
+        school_weekly.connectivity_speed = aggregate['connectivity_speed__avg']
+        if school_weekly.connectivity_speed is None:
+            school_weekly.connectivity = None
+        else:
+            school_weekly.connectivity = bool(school_weekly.connectivity_speed)
+        school_weekly.connectivity_latency = aggregate['connectivity_latency__avg']
         school_weekly.save()
 
 
@@ -140,8 +143,8 @@ def update_country_weekly_status(country: Country, force=False):
         connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
 
-    country_status.connectivity_speed = schools_stats['connectivity_speed'] or 0
-    country_status.connectivity_latency = schools_stats['connectivity_latency'] or 0
+    country_status.connectivity_speed = schools_stats['connectivity_speed']
+    country_status.connectivity_latency = schools_stats['connectivity_latency']
 
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
         school__country=country, connectivity=True,
