@@ -222,6 +222,18 @@ class AggregateConnectivityDataTestCase(TestCase):
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity_speed, 5000000)
 
+    def test_aggregate_school_daily_status_to_school_weekly_status_connectivity(self):
+        today = datetime.now().date()
+        SchoolDailyStatusFactory(school=self.school, connectivity_speed=None, date=today - timedelta(days=1))
+        SchoolDailyStatusFactory(school=self.school, connectivity_speed=None, date=today)
+
+        aggregate_school_daily_status_to_school_weekly_status(self.country.id)
+        self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
+        self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity, None)
+        self.assertEqual(
+            SchoolWeeklyStatus.objects.last().connectivity_status, SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
+        )
+
 
 class TestBrazilParser(TestCase):
     @classmethod
