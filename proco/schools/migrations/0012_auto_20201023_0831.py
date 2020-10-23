@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def remove_schools_outside_countries(apps, schema_editor):
     School = apps.get_model("schools", "School")
-    School.objects.exclude(geopoint__within=models.F('country__geometry'))
+    School.objects.exclude(geopoint__within=models.F('country__geometry')).delete()
 
 
 class Migration(migrations.Migration):
