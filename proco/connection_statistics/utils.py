@@ -164,7 +164,10 @@ def update_country_weekly_status(country: Country, force=False):
     country_status.connectivity_moderate = schools_stats['connectivity_moderate']
     country_status.connectivity_good = schools_stats['connectivity_good']
     country_status.schools_connected = country_status.connectivity_moderate + country_status.connectivity_good
-    country_status.schools_with_data_percentage = 1.0 * overall_connected_schools / country_status.schools_total
+    if country_status.schools_total:
+        country_status.schools_with_data_percentage = 1.0 * overall_connected_schools / country_status.schools_total
+    else:
+        country_status.schools_with_data_percentage = 0
 
     if country_status.integration_status == CountryWeeklyStatus.SCHOOL_MAPPED and country_status.connectivity_speed:
         country_status.integration_status = CountryWeeklyStatus.STATIC_MAPPED
