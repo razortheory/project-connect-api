@@ -74,6 +74,9 @@ class FileImportAdmin(admin.ModelAdmin):
     readonly_fields = ('status', 'errors', 'uploaded_by', 'modified')
     ordering = ('-id',)
 
+    def has_add_permission(self, request):
+        return False
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
