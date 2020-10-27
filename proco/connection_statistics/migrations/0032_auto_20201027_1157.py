@@ -10,8 +10,9 @@ def set_coverage_statuses(apps, schema_editor):
     for sw in sw_qs:
         if sw.connectivity_type and sw.connectivity_type.lower() != 'unknown':
             sw.coverage_availability = True
-            if sw.connectivity_type.lower() in ['2g', '3g', '4g']:
-                sw.coverage_type = sw.connectivity_type.lower()
+            for coverage in ['2g', '3g', '4g']:
+                if coverage in sw.connectivity_type.lower():
+                    sw.coverage_type = coverage
 
         if sw.connectivity_type and sw.connectivity_type.lower() in ['no covered', 'no', 'no service']:
             sw.coverage_type = 'no'

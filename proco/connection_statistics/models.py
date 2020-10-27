@@ -119,7 +119,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     def save(self, **kwargs):
         self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
-        self.get_coverage_statuses()
+        self.update_coverage_statuses()
         super().save(**kwargs)
 
     def get_date(self):
@@ -137,14 +137,15 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         else:
             return self.CONNECTIVITY_STATUSES.moderate
 
-    def get_coverage_statuses(self):
+    def update_coverage_statuses(self):
         coverage_type = self.COVERAGE_TYPES.unknown
         coverage_availability = None
 
         if self.connectivity_type and self.connectivity_type.lower() != self.CONNECTIVITY_TYPES.unknown:
             coverage_availability = True
-            if self.connectivity_type.lower() in (_[0] for _ in SchoolWeeklyStatus.COVERAGE_TYPES):
-                coverage_type = self.connectivity_type.lower()
+            for coverage in ['2g', '3g', '4g']:
+                if coverage in self.connectivity_type.lower():
+                    coverage_type = coverage
 
         if self.connectivity_type and self.connectivity_type.lower() in ['no covered', 'no', 'no service']:
             coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
