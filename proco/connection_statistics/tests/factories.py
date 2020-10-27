@@ -69,7 +69,6 @@ class SchoolWeeklyStatusFactory(django_factory.DjangoModelFactory):
     connectivity_type = fuzzy.FuzzyChoice(dict(SchoolWeeklyStatus.CONNECTIVITY_TYPES).keys())
     connectivity_speed = fuzzy.FuzzyInteger(1, 1000000)
     connectivity_latency = fuzzy.FuzzyInteger(1, 100)
-    connectivity_availability = fuzzy.FuzzyFloat(0.0, 100.0)
 
     class Meta:
         model = SchoolWeeklyStatus
