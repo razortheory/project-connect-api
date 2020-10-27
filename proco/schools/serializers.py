@@ -17,7 +17,7 @@ class BaseSchoolSerializer(serializers.ModelSerializer):
 
 class SchoolPointSerializer(BaseSchoolSerializer):
     class Meta(BaseSchoolSerializer.Meta):
-        fields = ('geopoint',)
+        fields = ('geopoint', 'country_id')
 
 
 class CSVSchoolsListSerializer(BaseSchoolSerializer):
