@@ -79,6 +79,13 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         ('moderate', _('Moderate')),
         ('good', _('Good')),
     )
+    COVERAGE_TYPES = Choices(
+        ('unknown', _('Unknown')),
+        ('no', _('No')),
+        ('2g', _('2G')),
+        ('3g', _('3G')),
+        ('4g', _('4G')),
+    )
 
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
@@ -96,7 +103,9 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
                                            choices=CONNECTIVITY_STATUSES)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
-    connectivity_availability = models.FloatField(blank=True, default=0.0)
+    coverage_availability = models.NullBooleanField(default=None)
+    coverage_type = models.CharField(max_length=8, default=COVERAGE_TYPES.unknown,
+                                     choices=COVERAGE_TYPES)
 
     class Meta:
         verbose_name = _('School Summary')
@@ -110,6 +119,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     def save(self, **kwargs):
         self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
+        self.update_coverage_statuses()
         super().save(**kwargs)
 
     def get_date(self):
@@ -126,6 +136,23 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
             return self.CONNECTIVITY_STATUSES.good
         else:
             return self.CONNECTIVITY_STATUSES.moderate
+
+    def update_coverage_statuses(self):
+        coverage_type = self.COVERAGE_TYPES.unknown
+        coverage_availability = None
+
+        if self.connectivity_type and self.connectivity_type.lower() != self.CONNECTIVITY_TYPES.unknown:
+            coverage_availability = True
+            for coverage in ['2g', '3g', '4g']:
+                if coverage in self.connectivity_type.lower():
+                    coverage_type = coverage
+
+        if self.connectivity_type and self.connectivity_type.lower() in ['no covered', 'no', 'no service']:
+            coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
+            coverage_availability = False
+
+        self.coverage_type = coverage_type
+        self.coverage_availability = coverage_availability
 
 
 class CountryDailyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):

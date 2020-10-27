@@ -44,7 +44,8 @@ class SchoolWeeklyStatusSerializer(serializers.ModelSerializer):
             'connectivity_type',
             'connectivity_speed',
             'connectivity_latency',
-            'connectivity_availability',
+            'coverage_availability',
+            'coverage_type',
             'created',
             'modified',
         )
