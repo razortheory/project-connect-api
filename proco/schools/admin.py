@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.gis.db.models import PointField
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
@@ -25,6 +25,7 @@ class ImportFormMixin(object):
         extra_context['import_form'] = ImportSchoolsCSVForm()
 
         return super(ImportFormMixin, self).changelist_view(request, extra_context)
+
 
 @admin.register(School)
 class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
