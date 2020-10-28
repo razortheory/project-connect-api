@@ -85,10 +85,12 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             school_data['education_level'] = data['educ_level']
 
         if not school:
-            school = School.objects.filter(
+            school_qs = School.objects.filter(
                 name=data['name'], geopoint__distance_lte=(school_data['geopoint'], D(m=500)),
-                education_level=school_data['education_level'],
-            ).first()
+            )
+            if school_data.get('education_level'):
+                school_qs = school_qs.filter(education_level=school_data['education_level'])
+            school = school_qs.first()
 
         if school and school.id in updated_schools:
             warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
