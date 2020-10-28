@@ -30,7 +30,7 @@ def process_loaded_file(pk: int, force: bool = False):
         # todo: rewrite with transaction savepoint
         try:
             with transaction.atomic():
-                warnings, errors = ingest.save_data(imported_file.uploaded_file, force=force)
+                warnings, errors = ingest.save_data(imported_file.uploaded_file)
                 if errors:
                     raise FailedImportError
         except FailedImportError:
@@ -41,14 +41,16 @@ def process_loaded_file(pk: int, force: bool = False):
             imported_file.errors += '\nWarnings:\n'
             imported_file.errors += '\n'.join(warnings)
 
-        if errors:
+        if errors and not force:
             imported_file.status = FileImport.STATUSES.failed
+        elif errors and force:
+            imported_file.status = FileImport.STATUSES.completed_with_errors
         else:
             imported_file.status = FileImport.STATUSES.completed
 
         imported_file.save()
 
-        if not errors:
+        if not errors or force:
             def update_stats():
                 # TODO: update country status
                 countries = SchoolWeeklyStatus.objects.filter(

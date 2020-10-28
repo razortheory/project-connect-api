@@ -54,7 +54,7 @@ def clean_number(num: [int, str]):
     return num
 
 
-def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
+def save_data(file: File) -> Tuple[List[str], List[str]]:
     warnings = []
     errors = []
 
@@ -225,9 +225,5 @@ def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
     if len(schools_weekly_status_list) > 0:
         SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
-
-    if force:
-        warnings = errors + warnings
-        errors = []
 
     return warnings, errors
