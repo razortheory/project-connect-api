@@ -62,6 +62,15 @@ class RandomSchoolsListAPIView(ListAPIView):
     serializer_class = SchoolPointSerializer
     pagination_class = None
 
+    def get_serializer(self, *args, **kwargs):
+        countries_statuses = Country.objects.all().defer('geometry', 'geometry_simplified').select_related(
+            'last_weekly_status',
+        ).values_list(
+            'id', 'last_weekly_status__integration_status',
+        )
+        kwargs['countries_statuses'] = dict(countries_statuses)
+        return super(RandomSchoolsListAPIView, self).get_serializer(*args, **kwargs)
+
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
