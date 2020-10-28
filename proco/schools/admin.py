@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.contrib.admin.options import csrf_protect_m
 from django.contrib.gis.db.models import PointField
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
@@ -56,6 +57,15 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
                 return redirect('admin:schools_fileimport_change', imported_file.id)
 
         return render(request, 'admin/schools/import_csv.html', {'form': form})
+
+    @csrf_protect_m
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+
+        extra_context['import_form'] = ImportSchoolsCSVForm()
+
+        return super(SchoolAdmin, self).changelist_view(request, extra_context)
 
     def get_weekly_stats_url(self, obj):
         stats_url = reverse('admin:connection_statistics_schoolweeklystatus_changelist')
