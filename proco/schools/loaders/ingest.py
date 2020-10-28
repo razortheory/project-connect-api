@@ -64,10 +64,7 @@ def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
 
     country = _find_country(file)
     if not country:
-        errors.append(
-            _("Inconsistent data: country can't be defined"),
-        )
-        return warnings, errors
+        errors.append(str(_("Inconsistent data: common country can't be found")))
 
     loaded = load_data(file)
     for i, data in enumerate(loaded):
@@ -106,9 +103,8 @@ def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
             if school_data['geopoint'] == Point(x=0, y=0):
                 errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
                 continue
-            elif not country.geometry.contains(school_data['geopoint']):
-                errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
-                continue
+            elif school_data['country'] is None:
+                school_data['country'] = Country.objects.filter(geometry__contains=school_data['geopoint']).first()
         except (TypeError, ValueError):
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
@@ -229,5 +225,9 @@ def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
     if len(schools_weekly_status_list) > 0:
         SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools, year=year, week=week_number).delete()
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list)
+
+    if force:
+        warnings = errors + warnings
+        errors = []
 
     return warnings, errors
