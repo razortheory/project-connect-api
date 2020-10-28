@@ -16,8 +16,18 @@ from proco.schools.tasks import process_loaded_file
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
+class ImportFormMixin(object):
+    @csrf_protect_m
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+
+        extra_context['import_form'] = ImportSchoolsCSVForm()
+
+        return super(ImportFormMixin, self).changelist_view(request, extra_context)
+
 @admin.register(School)
-class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
+class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
     formfield_overrides = {
         PointField: {'widget': MapAdminInput},
     }
@@ -57,15 +67,6 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
 
         raise PermissionDenied()
 
-    @csrf_protect_m
-    def changelist_view(self, request, extra_context=None):
-        if extra_context is None:
-            extra_context = {}
-
-        extra_context['import_form'] = ImportSchoolsCSVForm()
-
-        return super(SchoolAdmin, self).changelist_view(request, extra_context)
-
     def get_weekly_stats_url(self, obj):
         stats_url = reverse('admin:connection_statistics_schoolweeklystatus_changelist')
         return mark_safe(f'<a href="{stats_url}?school={obj.id}" target="_blank">Here</a>')  # noqa: S703,S308
@@ -74,7 +75,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
 
 
 @admin.register(FileImport)
-class FileImportAdmin(admin.ModelAdmin):
+class FileImportAdmin(ImportFormMixin, admin.ModelAdmin):
     change_form_template = 'admin/schools/file_imports_change_form.html'
 
     list_display = ('id', 'uploaded_file', 'status', 'uploaded_by', 'modified')
