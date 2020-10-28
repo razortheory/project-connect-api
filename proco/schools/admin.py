@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.gis.db.models import PointField
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
@@ -42,9 +43,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
         return qs.prefetch_related('country').defer('location')
 
     def import_csv(self, request):
-        if request.method == 'GET':
-            form = ImportSchoolsCSVForm()
-        else:
+        if request.method == 'POST':
             form = ImportSchoolsCSVForm(data=request.POST, files=request.FILES)
             if form.is_valid():
                 cleaned_data = form.clean()
@@ -56,7 +55,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
                 messages.success(request, 'Your file was uploaded and will be processed soon.')
                 return redirect('admin:schools_fileimport_change', imported_file.id)
 
-        return render(request, 'admin/schools/import_csv.html', {'form': form})
+        raise PermissionDenied()
 
     @csrf_protect_m
     def changelist_view(self, request, extra_context=None):

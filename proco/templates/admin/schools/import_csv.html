@@ -1,9 +1,0 @@
-{% extends "admin/base_site.html" %}
-{% load i18n admin_urls static admin_list crispy_forms_tags %}
-
-{% block content %}
-  <div id="content-main">
-  {% crispy form %}
-  <a href="{% url 'admin:schools_school_changelist' %}">Back</a>
-  </div>
-{% endblock %}
