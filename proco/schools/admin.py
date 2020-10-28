@@ -50,7 +50,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
                 imported_file = FileImport.objects.create(
                     uploaded_file=cleaned_data['csv_file'], uploaded_by=request.user,
                 )
-                process_loaded_file.delay(cleaned_data['country'].id, imported_file.id)
+                process_loaded_file.delay(imported_file.id, force=cleaned_data['force'])
 
                 messages.success(request, 'Your file was uploaded and will be processed soon.')
                 return redirect('admin:schools_fileimport_change', imported_file.id)

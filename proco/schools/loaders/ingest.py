@@ -2,11 +2,13 @@ from datetime import date
 from re import findall
 from typing import Dict, Iterable, List, Tuple
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPoint, Point
 from django.contrib.gis.measure import D
+from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
+from proco.locations.models import Country
 from proco.schools.loaders import csv as csv_loader
 from proco.schools.loaders import xls as xls_loader
 from proco.schools.models import School
@@ -25,20 +27,51 @@ def load_data(uploaded_file):
     return loader.load_file(uploaded_file)
 
 
+def _find_country(file: File) -> Country:
+    loaded = load_data(file)
+
+    points = MultiPoint()
+    for i, data in enumerate(loaded):
+        try:
+            point = Point(x=float(data['lon']), y=float(data['lat']))
+
+            if point == Point(x=0, y=0):
+                continue
+            else:
+                points.append(point)
+        except (TypeError, ValueError):
+            continue
+
+    countries = Country.objects.filter(geometry__contains=points)
+    if countries.count() > 1:
+        return None
+    return countries.first()
+
+
 def clean_number(num: [int, str]):
     if isinstance(num, str):
         num = ''.join(findall(r'[0-9]+', num))
     return num
 
 
-def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
+def save_data(file: File, force: bool=False) -> Tuple[List[str], List[str]]:
     warnings = []
     errors = []
 
     year, week_number, week_day = date.today().isocalendar()
     schools_weekly_status_list = []
     updated_schools = []
+
+    country = _find_country(file)
+    if not country:
+        errors.append(
+            _("Inconsistent data: country can't be defined"),
+        )
+        return warnings, errors
+
+    loaded = load_data(file)
     for i, data in enumerate(loaded):
+        print (i, data)
         row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
         data = {key.encode('ascii', 'ignore').decode(): value for key, value in data.items() if value != ''}
@@ -55,7 +88,7 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
         school = None
         school_data = {
-            'country': country,  # todo: calculate from point
+            'country': country,
         }
         history_data = {}
 

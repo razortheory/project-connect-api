@@ -7,8 +7,8 @@ from proco.locations.models import Country
 
 
 class ImportSchoolsCSVForm(forms.Form):
-    country = forms.ModelChoiceField(Country.objects.all())
     csv_file = forms.FileField()
+    force = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,8 +17,8 @@ class ImportSchoolsCSVForm(forms.Form):
         self.helper.form_method = 'post'
         self.helper.form_action = ''
         self.helper.layout = Layout(
-            Field('country'),
             Field('csv_file'),
+            Field('force'),
             ButtonHolder(
                 Submit('submit', 'Submit', css_class='button'),
             ),

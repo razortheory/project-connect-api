@@ -2,11 +2,12 @@ import traceback
 
 from django.core.cache import cache
 from django.db import transaction
+from django.utils import timezone
 
+from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.connection_statistics.utils import update_specific_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
-from proco.schools.loaders.ingest import load_data
 from proco.schools.models import FileImport
 from proco.taskapp import app
 
@@ -16,8 +17,7 @@ class FailedImportError(Exception):
 
 
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
-def process_loaded_file(country_pk: int, pk: int):
-    country = Country.objects.get(pk=country_pk)
+def process_loaded_file(pk: int, force: bool=False):
     imported_file = FileImport.objects.filter(pk=pk).first()
     if not imported_file:
         return
@@ -25,11 +25,13 @@ def process_loaded_file(country_pk: int, pk: int):
     imported_file.status = FileImport.STATUSES.started
     imported_file.save()
 
+    begin_time = timezone.now()
+
     try:
         # todo: rewrite with transaction savepoint
         try:
             with transaction.atomic():
-                warnings, errors = ingest.save_data(country, load_data(imported_file.uploaded_file))
+                warnings, errors = ingest.save_data(imported_file.uploaded_file, force=force)
                 if errors:
                     raise FailedImportError
         except FailedImportError:
@@ -49,7 +51,14 @@ def process_loaded_file(country_pk: int, pk: int):
 
         if not errors:
             def update_stats():
-                update_specific_country_weekly_status(country)
+                # TODO: update country status
+                countries = SchoolWeeklyStatus.objects.filter(
+                    created__gt=begin_time,
+                ).order_by('school__country_id').values_list('school__country_id').distinct()
+                countries = Country.objects.filter(id__in=countries)
+                print (countries)
+                for country in countries:
+                    update_specific_country_weekly_status(country)
                 cache.clear()
 
             transaction.on_commit(update_stats)
