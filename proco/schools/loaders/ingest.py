@@ -71,7 +71,6 @@ def save_data(file: File, force: bool=False) -> Tuple[List[str], List[str]]:
 
     loaded = load_data(file)
     for i, data in enumerate(loaded):
-        print (i, data)
         row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
         data = {key.encode('ascii', 'ignore').decode(): value for key, value in data.items() if value != ''}

@@ -58,7 +58,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         return f'{self.year} {self.country.name} Week {self.week} Speed - {self.connectivity_speed}'
 
     def save(self, **kwargs):
-        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w')
+        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w').date()
         super().save(**kwargs)
 
 
