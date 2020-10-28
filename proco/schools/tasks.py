@@ -24,7 +24,6 @@ def process_loaded_file(pk: int, force: bool=False):
 
     imported_file.status = FileImport.STATUSES.started
     imported_file.save()
-
     begin_time = timezone.now()
 
     try:
@@ -56,7 +55,6 @@ def process_loaded_file(pk: int, force: bool=False):
                     created__gt=begin_time,
                 ).order_by('school__country_id').values_list('school__country_id').distinct()
                 countries = Country.objects.filter(id__in=countries)
-                print (countries)
                 for country in countries:
                     update_specific_country_weekly_status(country)
                 cache.clear()
