@@ -1,6 +1,6 @@
 from datetime import date
 from re import findall
-from typing import Dict, Iterable, List, Tuple
+from typing import List, Tuple
 
 from django.contrib.gis.geos import MultiPoint, Point
 from django.contrib.gis.measure import D
@@ -31,7 +31,7 @@ def _find_country(file: File) -> Country:
     loaded = load_data(file)
 
     points = MultiPoint()
-    for i, data in enumerate(loaded):
+    for _i, data in enumerate(loaded):
         try:
             point = Point(x=float(data['lon']), y=float(data['lat']))
 
@@ -54,7 +54,7 @@ def clean_number(num: [int, str]):
     return num
 
 
-def save_data(file: File, force: bool=False) -> Tuple[List[str], List[str]]:
+def save_data(file: File, force: bool = False) -> Tuple[List[str], List[str]]:
     warnings = []
     errors = []
 

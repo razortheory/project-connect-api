@@ -17,7 +17,7 @@ class FailedImportError(Exception):
 
 
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
-def process_loaded_file(pk: int, force: bool=False):
+def process_loaded_file(pk: int, force: bool = False):
     imported_file = FileImport.objects.filter(pk=pk).first()
     if not imported_file:
         return
