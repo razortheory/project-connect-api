@@ -32,8 +32,10 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
                 user=None,
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertTrue(response.data[0]['coverage_availability'])
-            self.assertTrue(response.data[0]['coverage_type'])
+            self.assertIn('connectivity', response.data[0])
+            self.assertIn('connectivity_status', response.data[0])
+            self.assertIn('coverage_availability', response.data[0])
+            self.assertIn('coverage_type', response.data[0])
 
     def test_authorization_user(self):
         response = self.forced_auth_req(
