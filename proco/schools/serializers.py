@@ -43,14 +43,20 @@ class CSVSchoolsListSerializer(BaseSchoolSerializer):
 
 
 class ListSchoolSerializer(BaseSchoolSerializer):
+    connectivity = serializers.SerializerMethodField()
     connectivity_status = serializers.SerializerMethodField()
     coverage_availability = serializers.SerializerMethodField()
     coverage_type = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'connectivity_status', 'coverage_availability', 'coverage_type',
+            'connectivity', 'connectivity_status', 'coverage_availability', 'coverage_type',
         )
+
+    def get_connectivity(self, obj):
+        if not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.connectivity
 
     def get_connectivity_status(self, obj):
         if not obj.last_weekly_status:
