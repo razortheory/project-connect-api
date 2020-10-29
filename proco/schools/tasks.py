@@ -31,7 +31,7 @@ def process_loaded_file(pk: int, force: bool = False):
         try:
             with transaction.atomic():
                 warnings, errors = ingest.save_data(imported_file.uploaded_file)
-                if errors:
+                if errors and not force:
                     raise FailedImportError
         except FailedImportError:
             pass
