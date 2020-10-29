@@ -57,7 +57,7 @@ def _find_country(file: File) -> Country:
                 countries_counter[country] = 1
             else:
                 countries_counter[country] = len(instersections)
-    return countries_counter.most_common()[0][0]
+        return countries_counter.most_common()[0][0]
 
 
 def clean_number(num: [int, str]):
