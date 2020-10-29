@@ -44,11 +44,12 @@ class CSVSchoolsListSerializer(BaseSchoolSerializer):
 
 class ListSchoolSerializer(BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
-    coverage_status = serializers.SerializerMethodField()
+    coverage_availability = serializers.SerializerMethodField()
+    coverage_type = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'connectivity_status', 'coverage_status',
+            'connectivity_status', 'coverage_availability', 'coverage_type',
         )
 
     def get_connectivity_status(self, obj):
@@ -56,24 +57,27 @@ class ListSchoolSerializer(BaseSchoolSerializer):
             return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
         return obj.last_weekly_status.connectivity_status
 
-    def get_coverage_status(self, obj):
-        return 'unknown'
+    def get_coverage_availability(self, obj):
+        if not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.coverage_availability
+
+    def get_coverage_type(self, obj):
+        if not obj.last_weekly_status:
+            return SchoolWeeklyStatus.COVERAGE_TYPES.unknown
+        return obj.last_weekly_status.coverage_type
 
 
 class SchoolSerializer(BaseSchoolSerializer):
     statistics = serializers.SerializerMethodField()
-    coverage_status = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
             'statistics',
             'gps_confidence', 'address', 'postal_code',
             'admin_1_name', 'admin_2_name', 'admin_3_name', 'admin_4_name',
-            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type', 'coverage_status',
+            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type',
         )
 
     def get_statistics(self, instance):
         return SchoolWeeklyStatusSerializer(instance.last_weekly_status).data
-
-    def get_coverage_status(self, obj):
-        return 'unknown'
