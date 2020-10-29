@@ -38,7 +38,7 @@ class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
     change_list_template = 'admin/schools/change_list.html'
     ordering = ('country', 'name')
     readonly_fields = ('get_weekly_stats_url',)
-    raw_id_fields = ('country', 'location')
+    raw_id_fields = ('country', 'location', 'last_weekly_status')
 
     def get_urls(self):
         urls = super().get_urls()
