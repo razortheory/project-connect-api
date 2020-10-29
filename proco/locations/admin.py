@@ -14,6 +14,7 @@ class CountryAdmin(GeoModelAdmin):
     list_display = ('name', 'code', 'flag_preview')
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
+    raw_id_fields = ('last_weekly_status',)
 
     def flag_preview(self, obj):
         if not obj.flag:
