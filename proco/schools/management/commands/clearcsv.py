@@ -86,7 +86,6 @@ class Command(BaseCommand):
                     if data['environment'] not in dict(School.ENVIRONMENT_STATUSES).keys():
                         continue
                 if 'num_students' in data:
-                    print(type(data['num_students']))
                     if not data['num_students'].isdigit():
                         continue
                 if 'num_teachers' in data:
