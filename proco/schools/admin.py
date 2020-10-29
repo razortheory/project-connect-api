@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
+from django.contrib.admin.options import csrf_protect_m
 from django.contrib.gis.db.models import PointField
-from django.shortcuts import redirect, render
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
@@ -14,8 +16,19 @@ from proco.schools.tasks import process_loaded_file
 from proco.utils.admin import CountryNameDisplayAdminMixin
 
 
+class ImportFormMixin(object):
+    @csrf_protect_m
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+
+        extra_context['import_form'] = ImportSchoolsCSVForm()
+
+        return super(ImportFormMixin, self).changelist_view(request, extra_context)
+
+
 @admin.register(School)
-class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
+class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
     formfield_overrides = {
         PointField: {'widget': MapAdminInput},
     }
@@ -41,21 +54,19 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
         return qs.prefetch_related('country').defer('location')
 
     def import_csv(self, request):
-        if request.method == 'GET':
-            form = ImportSchoolsCSVForm()
-        else:
+        if request.method == 'POST':
             form = ImportSchoolsCSVForm(data=request.POST, files=request.FILES)
             if form.is_valid():
                 cleaned_data = form.clean()
                 imported_file = FileImport.objects.create(
                     uploaded_file=cleaned_data['csv_file'], uploaded_by=request.user,
                 )
-                process_loaded_file.delay(cleaned_data['country'].id, imported_file.id)
+                process_loaded_file.delay(imported_file.id, force=cleaned_data['force'])
 
                 messages.success(request, 'Your file was uploaded and will be processed soon.')
                 return redirect('admin:schools_fileimport_change', imported_file.id)
 
-        return render(request, 'admin/schools/import_csv.html', {'form': form})
+        raise PermissionDenied()
 
     def get_weekly_stats_url(self, obj):
         stats_url = reverse('admin:connection_statistics_schoolweeklystatus_changelist')
@@ -65,7 +76,7 @@ class SchoolAdmin(CountryNameDisplayAdminMixin, MapAdmin):
 
 
 @admin.register(FileImport)
-class FileImportAdmin(admin.ModelAdmin):
+class FileImportAdmin(ImportFormMixin, admin.ModelAdmin):
     change_form_template = 'admin/schools/file_imports_change_form.html'
 
     list_display = ('id', 'uploaded_file', 'status', 'uploaded_by', 'modified')

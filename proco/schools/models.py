@@ -56,12 +56,13 @@ class FileImport(TimeStampedModel):
         ('started', _('Started')),
         ('completed', _('Completed')),
         ('failed', _('Failed')),
+        ('completed_with_errors', _('Completed with errors')),
     )
     PROCESS_STATUSES = [STATUSES.pending, STATUSES.started]
 
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     uploaded_file = models.FileField(upload_to=get_imported_file_path)
-    status = models.CharField(max_length=10, choices=STATUSES, default=STATUSES.pending)
+    status = models.CharField(max_length=21, choices=STATUSES, default=STATUSES.pending)
     errors = models.TextField(blank=True)
 
     def __str__(self):

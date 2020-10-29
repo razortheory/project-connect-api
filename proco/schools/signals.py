@@ -31,11 +31,13 @@ def change_integration_status_country(instance, created=False, **kwargs):
                     country_weekly.save()
 
         if created:
-            country_weekly.schools_total = F('schools_total') + 1
-            country_weekly.schools_connectivity_unknown = F('schools_connectivity_unknown') + 1
             if country_weekly.id:
+                country_weekly.schools_total = F('schools_total') + 1
+                country_weekly.schools_connectivity_unknown = F('schools_connectivity_unknown') + 1
                 country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown'))
             else:
+                country_weekly.schools_connectivity_unknown = 1
+                country_weekly.schools_total = 1
                 country_weekly.save()
 
 
