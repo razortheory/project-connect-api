@@ -16,8 +16,17 @@ class BaseSchoolSerializer(serializers.ModelSerializer):
 
 
 class SchoolPointSerializer(BaseSchoolSerializer):
+    country_integration_status = serializers.SerializerMethodField()
+
     class Meta(BaseSchoolSerializer.Meta):
-        fields = ('geopoint',)
+        fields = ('geopoint', 'country_id', 'country_integration_status')
+
+    def __init__(self, *args, **kwargs):
+        self.countries_statuses = kwargs.pop('countries_statuses', None)
+        super(SchoolPointSerializer, self).__init__(*args, **kwargs)
+
+    def get_country_integration_status(self, obj):
+        return self.countries_statuses[obj.country_id]
 
 
 class CSVSchoolsListSerializer(BaseSchoolSerializer):
