@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import date
 from re import findall
 from typing import List, Tuple
@@ -42,10 +43,21 @@ def _find_country(file: File) -> Country:
         except (TypeError, ValueError):
             continue
 
-    countries = Country.objects.filter(geometry__contains=points)
-    if countries.count() > 1:
+    countries = list(Country.objects.filter(geometry__intersects=points))
+
+    if not countries:
         return None
-    return countries.first()
+    elif len(countries) == 1:
+        return countries[0]
+    else:
+        countries_counter = Counter()
+        for country in countries:
+            instersections = country.geometry.intersection(points)
+            if isinstance(instersections, Point):
+                countries_counter[country] = 1
+            else:
+                countries_counter[country] = len(instersections)
+    return countries_counter.most_common()[0][0]
 
 
 def clean_number(num: [int, str]):
@@ -63,8 +75,6 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
     updated_schools = []
 
     country = _find_country(file)
-    if not country:
-        errors.append(str(_("Inconsistent data: common country can't be found")))
 
     loaded = load_data(file)
     for i, data in enumerate(loaded):
@@ -103,8 +113,9 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
             if school_data['geopoint'] == Point(x=0, y=0):
                 errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
                 continue
-            elif school_data['country'] is None:
-                school_data['country'] = Country.objects.filter(geometry__contains=school_data['geopoint']).first()
+            elif not country.geometry.contains(school_data['geopoint']):
+                errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
+                continue
         except (TypeError, ValueError):
             errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
             continue
