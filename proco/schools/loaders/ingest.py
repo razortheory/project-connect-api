@@ -3,6 +3,7 @@ from re import findall
 from typing import Dict, Iterable, List, Tuple
 
 from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
@@ -67,8 +68,29 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
             school = School.objects.filter(external_id=data['school_id']).first()
             school_data['external_id'] = data['school_id']
 
+        try:
+            school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
+
+            if school_data['geopoint'] == Point(x=0, y=0):
+                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
+                continue
+            elif not country.geometry.contains(school_data['geopoint']):
+                errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
+                continue
+        except (TypeError, ValueError):
+            errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
+            continue
+
+        if 'educ_level' in data:
+            school_data['education_level'] = data['educ_level']
+
         if not school:
-            school = School.objects.filter(name=data['name']).first()
+            school_qs = School.objects.filter(
+                name=data['name'], geopoint__distance_lte=(school_data['geopoint'], D(m=500)),
+            )
+            if school_data.get('education_level'):
+                school_qs = school_qs.filter(education_level=school_data['education_level'])
+            school = school_qs.first()
 
         if school and school.id in updated_schools:
             warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
@@ -85,20 +107,15 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
         school_data['name'] = data['name']
 
-        try:
-            school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
-
-            if school_data['geopoint'] == Point(x=0, y=0):
-                errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
-                continue
-        except (TypeError, ValueError):
-            errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
-            continue
-
         # static data
-        if 'educ_level' in data:
-            school_data['education_level'] = data['educ_level']
         if 'environment' in data:
+            if data['environment'] not in dict(School.ENVIRONMENT_STATUSES).keys():
+                errors.append(
+                    _('Row {0}: Bad data provided for environment: should be in {1}').format(
+                        row_index, ', '.join(dict(School.ENVIRONMENT_STATUSES).keys()),
+                    ),
+                )
+                continue
             school_data['environment'] = data['environment']
         if 'address' in data:
             school_data['address'] = data['address']
@@ -107,12 +124,24 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
 
         # historical data
         if 'num_students' in data:
+            if data['num_students'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_students').format(row_index))
+                continue
             history_data['num_students'] = clean_number(data['num_students'])
         if 'num_teachers' in data:
+            if data['num_teachers'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_teachers').format(row_index))
+                continue
             history_data['num_teachers'] = clean_number(data['num_teachers'])
         if 'num_classroom' in data:
+            if data['num_classroom'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_classroom').format(row_index))
+                continue
             history_data['num_classroom'] = clean_number(data['num_classroom'])
         if 'num_latrines' in data:
+            if data['num_latrines'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_latrines').format(row_index))
+                continue
             history_data['num_latrines'] = clean_number(data['num_latrines'])
 
         if 'electricity' in data:
@@ -121,6 +150,9 @@ def save_data(country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
         if 'computer_lab' in data:
             history_data['computer_lab'] = data['computer_lab'].lower() in ['true', 'yes', '1']
         if 'num_computers' in data:
+            if data['num_computers'] < 0:
+                errors.append(_('Row {0}: Bad data provided for num_computers').format(row_index))
+                continue
             history_data['num_computers'] = clean_number(data['num_computers'])
             history_data['computer_lab'] = True
 

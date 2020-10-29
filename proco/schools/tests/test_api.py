@@ -25,13 +25,15 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         super().setUp()
 
     def test_schools_list(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             response = self.forced_auth_req(
                 'get',
                 reverse('schools:schools-list', args=[self.country.id]),
                 user=None,
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertTrue(response.data[0]['coverage_availability'])
+            self.assertTrue(response.data[0]['coverage_type'])
 
     def test_authorization_user(self):
         response = self.forced_auth_req(
@@ -41,7 +43,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_schools_detail(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             response = self.forced_auth_req(
                 'get',
                 reverse('schools:schools-detail', args=[self.country.id, self.school_one.id]),

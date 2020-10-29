@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from rest_framework import status
 
+from proco.connection_statistics.tests.factories import CountryWeeklyStatusFactory
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.tests.factories import SchoolFactory
 from proco.utils.tests import TestAPIViewSetMixin
@@ -19,27 +20,28 @@ class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
         cls.country_two = CountryFactory()
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
         SchoolFactory(country=cls.country_one, location__country=cls.country_one)
+        CountryWeeklyStatusFactory(country=cls.country_one)
 
     def setUp(self):
         cache.clear()
         super().setUp()
 
     def test_countries_list(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             response = self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
             )
         self.assertIn('integration_status', response.data[0])
 
     def test_country_detail(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             response = self._test_retrieve(
                 user=None, instance=self.country_one,
             )
         self.assertIn('statistics', response.data)
 
     def test_country_list_cached(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self._test_list(
                 user=None, expected_objects=[self.country_one, self.country_two],
             )

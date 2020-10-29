@@ -16,8 +16,17 @@ class BaseSchoolSerializer(serializers.ModelSerializer):
 
 
 class SchoolPointSerializer(BaseSchoolSerializer):
+    country_integration_status = serializers.SerializerMethodField()
+
     class Meta(BaseSchoolSerializer.Meta):
-        fields = ('geopoint',)
+        fields = ('geopoint', 'country_id', 'country_integration_status')
+
+    def __init__(self, *args, **kwargs):
+        self.countries_statuses = kwargs.pop('countries_statuses', None)
+        super(SchoolPointSerializer, self).__init__(*args, **kwargs)
+
+    def get_country_integration_status(self, obj):
+        return self.countries_statuses[obj.country_id]
 
 
 class CSVSchoolsListSerializer(BaseSchoolSerializer):
@@ -28,27 +37,35 @@ class CSVSchoolsListSerializer(BaseSchoolSerializer):
         fields = ('name', 'geopoint', 'connectivity_status')
 
     def get_connectivity_status(self, obj):
-        if not obj.latest_status:
+        if not obj.last_weekly_status:
             return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.latest_status[0].connectivity_status
+        return obj.last_weekly_status.connectivity_status
 
 
 class ListSchoolSerializer(BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
-    coverage_status = serializers.SerializerMethodField()
+    coverage_availability = serializers.SerializerMethodField()
+    coverage_type = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'connectivity_status', 'coverage_status',
+            'connectivity_status', 'coverage_availability', 'coverage_type',
         )
 
     def get_connectivity_status(self, obj):
-        if not obj.latest_status:
+        if not obj.last_weekly_status:
             return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.latest_status[0].connectivity_status
+        return obj.last_weekly_status.connectivity_status
 
-    def get_coverage_status(self, obj):
-        return 'unknown'
+    def get_coverage_availability(self, obj):
+        if not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.coverage_availability
+
+    def get_coverage_type(self, obj):
+        if not obj.last_weekly_status:
+            return SchoolWeeklyStatus.COVERAGE_TYPES.unknown
+        return obj.last_weekly_status.coverage_type
 
 
 class SchoolSerializer(BaseSchoolSerializer):
@@ -63,4 +80,4 @@ class SchoolSerializer(BaseSchoolSerializer):
         )
 
     def get_statistics(self, instance):
-        return SchoolWeeklyStatusSerializer(instance.latest_status[0] if instance.latest_status else None).data
+        return SchoolWeeklyStatusSerializer(instance.last_weekly_status).data
