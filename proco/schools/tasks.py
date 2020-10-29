@@ -52,7 +52,6 @@ def process_loaded_file(pk: int, force: bool = False):
 
         if not errors or force:
             def update_stats():
-                # TODO: update country status
                 countries = SchoolWeeklyStatus.objects.filter(
                     created__gt=begin_time,
                 ).order_by('school__country_id').values_list('school__country_id').distinct()
