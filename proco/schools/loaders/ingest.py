@@ -163,6 +163,12 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
 
         # historical data
         if 'num_students' in data:
+            try:
+                data['num_students'] = int(data['num_students'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for num_students').format(row_index))
+                continue
+
             if data['num_students'] < 0:
                 errors.append(_('Row {0}: Bad data provided for num_students').format(row_index))
                 continue
