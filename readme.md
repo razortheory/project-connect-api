@@ -17,7 +17,7 @@ Standard installation.
 ## 1. Create virtual environment
 
 
-1. Clone repository: ``git clone https://bitbucket.org/razortheory/project-connect-api.git``
+1. Clone repository: ``git clone https://github.com/razortheory/project-connect-api.git``
 2. Create virtual environment: ``mkvirtualenv proco -p python3``
 3. Install requirements ``pip install -r requirements/dev.txt``
 4. Edit ``$VIRTUAL_ENV/bin/postactivate`` to contain the following lines:
@@ -45,7 +45,7 @@ Standard installation.
 
 # Alternative project initialization
 
-1. Clone repository: ``git clone https://bitbucket.org/razortheory/project-connect-api.git``
+1. Clone repository: ``git clone https://github.com/razortheory/project-connect-api.git``
 2. Create project database
 3. Execute the following command to setup database credentials:
 
