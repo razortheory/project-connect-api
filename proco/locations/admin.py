@@ -23,6 +23,9 @@ class CountryAdmin(GeoModelAdmin):
 
     flag_preview.short_description = 'Flag'
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).defer('geometry', 'geometry_simplified')
+
 
 @admin.register(Location)
 class LocationAdmin(CountryNameDisplayAdminMixin, GeoModelAdmin):

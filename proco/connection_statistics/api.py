@@ -13,7 +13,12 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 
 from proco.connection_statistics.filters import DateMonthFilter, DateWeekNumberFilter, DateYearFilter
-from proco.connection_statistics.models import CountryDailyStatus, CountryWeeklyStatus, SchoolDailyStatus
+from proco.connection_statistics.models import (
+    CountryDailyStatus,
+    CountryWeeklyStatus,
+    SchoolDailyStatus,
+    SchoolWeeklyStatus,
+)
 from proco.connection_statistics.serializers import (
     CountryDailyStatusSerializer,
     CountryWeeklyStatusSerializer,
@@ -30,9 +35,11 @@ class GlobalStatsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         schools_qs = School.objects.all()
         countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
-        total_schools = schools_qs.count()
+        total_schools = School.estimated_count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
-        schools_without_connectivity = schools_qs.filter(last_weekly_status__connectivity=False).count()
+        schools_without_connectivity = schools_qs.filter(
+            last_weekly_status__connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no,
+        ).count()
         percent_schools_without_connectivity = schools_without_connectivity / total_schools
         last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
 

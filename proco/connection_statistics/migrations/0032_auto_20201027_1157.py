@@ -6,19 +6,14 @@ from django.db import migrations
 def set_coverage_statuses(apps, schema_editor):
     SchoolWeeklyStatus = apps.get_model('connection_statistics', 'SchoolWeeklyStatus')
 
-    sw_qs = SchoolWeeklyStatus.objects.exclude(connectivity_type='unknown')
-    for sw in sw_qs:
-        if sw.connectivity_type and sw.connectivity_type.lower() != 'unknown':
-            sw.coverage_availability = True
-            for coverage in ['2g', '3g', '4g']:
-                if coverage in sw.connectivity_type.lower():
-                    sw.coverage_type = coverage
-
-        if sw.connectivity_type and sw.connectivity_type.lower() in ['no covered', 'no', 'no service']:
-            sw.coverage_type = 'no'
-            sw.coverage_availability = False
-
-        sw.save()
+    base_sw_qs = SchoolWeeklyStatus.objects.exclude(connectivity_type='unknown')
+    base_sw_qs.update(coverage_availability=True)
+    base_sw_qs.filter(connectivity_type__iregex=r'.*2g.*').update(coverage_availability=True, coverage_type='2g')
+    base_sw_qs.filter(connectivity_type__iregex=r'.*3g.*').update(coverage_availability=True, coverage_type='4g')
+    base_sw_qs.filter(connectivity_type__iregex=r'.*4g.*').update(coverage_availability=True, coverage_type='3g')
+    base_sw_qs.filter(connectivity_type__iexact='no covered').update(coverage_availability=False, coverage_type='no')
+    base_sw_qs.filter(connectivity_type__iexact='no').update(coverage_availability=False, coverage_type='no')
+    base_sw_qs.filter(connectivity_type__iexact='no service').update(coverage_availability=False, coverage_type='no')
 
 
 class Migration(migrations.Migration):

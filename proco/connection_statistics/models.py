@@ -101,7 +101,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     num_computers = models.PositiveSmallIntegerField(blank=True, default=0)
     connectivity = models.NullBooleanField(default=None)
     connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
-                                           choices=CONNECTIVITY_STATUSES)
+                                           choices=CONNECTIVITY_STATUSES, db_index=True)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
     coverage_availability = models.NullBooleanField(default=None)
     coverage_type = models.CharField(max_length=8, default=COVERAGE_TYPES.unknown,
