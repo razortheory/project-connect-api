@@ -62,10 +62,10 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
         history_data = {}
 
         if 'school_id' in data:
-            if len(data['school_id']) > School._meta.get_field('external_id').max_length:
+            if len(data['school_id']) > (field_max_length := School._meta.get_field('external_id').max_length):
                 errors.append(_(
-                    'Row {0}: Bad data provided for school identifier: exceeded the allowed number of characters',
-                ).format(row_index))
+                    'Row {0}: Bad data provided for school identifier: max length of {1} characters exceeded',
+                ).format(row_index, field_max_length))
                 continue
             school = School.objects.filter(external_id=data['school_id']).first()
             school_data['external_id'] = data['school_id']
@@ -84,7 +84,21 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
             continue
 
         if 'educ_level' in data:
+            if data['educ_level'] > (field_max_length := School._meta.get_field('education_level').max_length):
+                errors.append(
+                    _('Row {0}: Bad data provided for name: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
             school_data['education_level'] = data['educ_level']
+
+        if 'name' in data:
+            if data['name'] > (field_max_length := School._meta.get_field('name').max_length):
+                errors.append(
+                    _('Row {0}: Bad data provided for name: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
 
         if not school:
             school_qs = School.objects.filter(
@@ -98,13 +112,38 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
             warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
             continue
 
+        admin_name_max_length = School._meta.get_field('admin1').max_length
         if 'admin1' in data:
+            if data['admin1'] > admin_name_max_length:
+                errors.append(
+                    _('Row {0}: Bad data provided for admin1: max length of {1} characters exceeded').format(
+                        row_index, admin_name_max_length,
+                    ))
+                continue
             school_data['admin_1_name'] = data['admin1']
         if 'admin2' in data:
+            if data['admin2'] > admin_name_max_length:
+                errors.append(
+                    _('Row {0}: Bad data provided for admin2: max length of {1} characters exceeded').format(
+                        row_index, admin_name_max_length,
+                    ))
+                continue
             school_data['admin_2_name'] = data['admin2']
         if 'admin3' in data:
+            if data['admin3'] > admin_name_max_length:
+                errors.append(
+                    _('Row {0}: Bad data provided for admin3: max length of {1} characters exceeded').format(
+                        row_index, admin_name_max_length,
+                    ))
+                continue
             school_data['admin_3_name'] = data['admin3']
         if 'admin4' in data:
+            if data['admin4'] > admin_name_max_length:
+                errors.append(
+                    _('Row {0}: Bad data provided for admin4: max length of {1} characters exceeded').format(
+                        row_index, admin_name_max_length,
+                    ))
+                continue
             school_data['admin_4_name'] = data['admin4']
 
         school_data['name'] = data['name']
@@ -118,10 +157,28 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                     ),
                 )
                 continue
+            if data['environment'] > (field_max_length := School._meta.get_field('environment').max_length):
+                errors.append(
+                    _('Row {0}: Bad data provided for environment: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
             school_data['environment'] = data['environment']
         if 'address' in data:
+            if data['address'] > (field_max_length := School._meta.get_field('address').max_length):
+                errors.append(
+                    _('Row {0}: Bad data provided for address: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
             school_data['address'] = data['address']
         if 'type_school' in data:
+            if data['type_school'] > (field_max_length := School._meta.get_field('school_type').max_length):
+                errors.append(
+                    _('Row {0}: Bad data provided for type_school: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
             school_data['school_type'] = data['type_school']
 
         # historical data
@@ -191,6 +248,14 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
         if 'connectivity' in data:
             history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
         if 'type_connectivity' in data:
+            if data['type_connectivity'] > (
+                field_max_length := SchoolWeeklyStatus._meta.get_field('connectivity_type').max_length
+            ):
+                errors.append(
+                    _('Row {0}: Bad data provided for type_connectivity: max length of {1} characters exceeded').format(
+                        row_index, field_max_length,
+                    ))
+                continue
             history_data['connectivity_type'] = data['type_connectivity']
         if 'speed_connectivity' in data:
             try:

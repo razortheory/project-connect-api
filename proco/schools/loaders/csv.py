@@ -5,5 +5,5 @@ from typing import Dict, Iterable
 
 def load_file(csvfile) -> Iterable[Dict]:
     csvfile.seek(0)
-    reader = csv.DictReader(codecs.iterdecode(csvfile, 'utf-8'))
+    reader = csv.DictReader(codecs.iterdecode(csvfile, 'utf-8', errors='ignore'))
     return reader
