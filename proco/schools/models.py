@@ -64,6 +64,7 @@ class FileImport(TimeStampedModel):
     )
     PROCESS_STATUSES = [STATUSES.pending, STATUSES.started]
 
+    country = models.ForeignKey(Country, null=True, on_delete=models.CASCADE)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     uploaded_file = models.FileField(upload_to=get_imported_file_path)
     status = models.CharField(max_length=21, choices=STATUSES, default=STATUSES.pending)

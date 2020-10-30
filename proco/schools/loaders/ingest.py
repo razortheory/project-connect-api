@@ -1,11 +1,9 @@
-from collections import Counter
 from datetime import date
 from re import findall
-from typing import List, Tuple
+from typing import Dict, Iterable, List, Tuple
 
-from django.contrib.gis.geos import MultiPoint, Point
+from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
@@ -28,45 +26,13 @@ def load_data(uploaded_file):
     return loader.load_file(uploaded_file)
 
 
-def _find_country(file: File) -> Country:
-    loaded = load_data(file)
-
-    points = MultiPoint()
-    for _i, data in enumerate(loaded):
-        try:
-            point = Point(x=float(data['lon']), y=float(data['lat']))
-
-            if point == Point(x=0, y=0):
-                continue
-            else:
-                points.append(point)
-        except (TypeError, ValueError):
-            continue
-
-    countries = list(Country.objects.filter(geometry__intersects=points))
-
-    if not countries:
-        return None
-    elif len(countries) == 1:
-        return countries[0]
-    else:
-        countries_counter = Counter()
-        for country in countries:
-            instersections = country.geometry.intersection(points)
-            if isinstance(instersections, Point):
-                countries_counter[country] = 1
-            else:
-                countries_counter[country] = len(instersections)
-        return countries_counter.most_common()[0][0]
-
-
 def clean_number(num: [int, str]):
     if isinstance(num, str):
         num = ''.join(findall(r'[0-9]+', num))
     return num
 
 
-def save_data(file: File) -> Tuple[List[str], List[str]]:
+def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List[str]]:
     warnings = []
     errors = []
 
@@ -74,9 +40,6 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
     schools_weekly_status_list = []
     updated_schools = []
 
-    country = _find_country(file)
-
-    loaded = load_data(file)
     for i, data in enumerate(loaded):
         row_index = i + 2  # enumerate starts from zero plus header
         # remove empty strings from data; ignore unicode from keys
