@@ -1,5 +1,6 @@
 from django import forms
 from django.urls import reverse
+from django.utils.translation import ugettext as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Field, Layout, Submit
@@ -7,7 +8,7 @@ from crispy_forms.layout import ButtonHolder, Field, Layout, Submit
 
 class ImportSchoolsCSVForm(forms.Form):
     csv_file = forms.FileField()
-    force = forms.BooleanField(required=False)
+    force = forms.BooleanField(label=_('Skip rows with bad data'), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
