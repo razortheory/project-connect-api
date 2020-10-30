@@ -53,7 +53,7 @@
 
         .import-csv-form label {
             font-weight: bold;
-            width: 75px;
+            width: 175px;
         }
 
         .import-csv-form .fieldWrapper {
@@ -75,10 +75,10 @@
                     var popup_id = $('#' + $(this).attr("rel"));
                     $(popup_id).show();
                     $('.overlay_popup').show();
-                })
+                });
                 $('.overlay_popup').click(function() {
                     $('.overlay_popup, .popup').hide();
-                })
+                });
             });
         })(django.jQuery);
     </script>
@@ -100,7 +100,7 @@
         <h2>CSV Import</h2>
         <div class="popup-body">
 
-            <form enctype="multipart/form-data" action="{% url 'admin:schools_school_import_csv' %}" method="post" class="import-csv-form" novalidate="">
+            <form enctype="multipart/form-data" action="{% url 'admin:schools_school_import_csv' %}" method="post" class="import-csv-form">
                 {% csrf_token %}
 
                 {% for field in import_form %}
@@ -110,11 +110,6 @@
                             {{ field }}
                             <div class="input-background"></div>
                         </div>
-
-                        <span class="help-text">{{ field.help_text }}</span>
-                        {% for error in field.errors %}
-                            <span class="error-text">{{ error }}</span>
-                        {% endfor %}
                     </div>
                 {% endfor %}
 
