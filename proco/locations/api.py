@@ -41,6 +41,12 @@ class CountryViewSet(
             serializer_class = DetailCountrySerializer
         return serializer_class
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.defer('geometry', 'geometry_simplified')
+        return qs
+
     @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -53,7 +59,7 @@ class CountryViewSet(
 class CountryBoundaryListAPIView(ListAPIView):
     queryset = Country.objects.all().annotate(
         geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
-    ).filter(geometry_empty=False)
+    ).filter(geometry_empty=False).only('id', 'geometry_simplified')
     serializer_class = BoundaryListCountrySerializer
     pagination_class = None
 
