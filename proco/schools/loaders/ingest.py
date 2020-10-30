@@ -174,16 +174,34 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
                 continue
             history_data['num_students'] = clean_number(data['num_students'])
         if 'num_teachers' in data:
+            try:
+                data['num_teachers'] = int(data['num_teachers'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for num_teachers').format(row_index))
+                continue
+
             if data['num_teachers'] < 0:
                 errors.append(_('Row {0}: Bad data provided for num_teachers').format(row_index))
                 continue
             history_data['num_teachers'] = clean_number(data['num_teachers'])
         if 'num_classroom' in data:
+            try:
+                data['num_classroom'] = int(data['num_classroom'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for num_classroom').format(row_index))
+                continue
+
             if data['num_classroom'] < 0:
                 errors.append(_('Row {0}: Bad data provided for num_classroom').format(row_index))
                 continue
             history_data['num_classroom'] = clean_number(data['num_classroom'])
         if 'num_latrines' in data:
+            try:
+                data['num_latrines'] = int(data['num_latrines'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for num_latrines').format(row_index))
+                continue
+
             if data['num_latrines'] < 0:
                 errors.append(_('Row {0}: Bad data provided for num_latrines').format(row_index))
                 continue
@@ -195,6 +213,12 @@ def save_data(file: File) -> Tuple[List[str], List[str]]:
         if 'computer_lab' in data:
             history_data['computer_lab'] = data['computer_lab'].lower() in ['true', 'yes', '1']
         if 'num_computers' in data:
+            try:
+                data['num_computers'] = int(data['num_computers'])
+            except ValueError:
+                errors.append(_('Row {0}: Bad data provided for num_computers').format(row_index))
+                continue
+
             if data['num_computers'] < 0:
                 errors.append(_('Row {0}: Bad data provided for num_computers').format(row_index))
                 continue
