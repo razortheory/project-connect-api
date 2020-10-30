@@ -56,8 +56,7 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         cache.clear()
         super().setUp()
 
-    @patch('proco.connection_statistics.api.School.estimated_count', return_value=2)
-    def test_global_stats(self, _count_mock):
+    def test_global_stats(self):
         response = self.forced_auth_req(
             'get',
             reverse('connection_statistics:global-stat'),
@@ -74,8 +73,7 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, correct_response)
 
-    @patch('proco.connection_statistics.api.School.estimated_count', return_value=2)
-    def test_global_stats_queries(self, _count_mock):
+    def test_global_stats_queries(self):
         with self.assertNumQueries(4):
             self.forced_auth_req(
                 'get',

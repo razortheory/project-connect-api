@@ -35,7 +35,7 @@ class GlobalStatsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         schools_qs = School.objects.all()
         countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
-        total_schools = School.estimated_count()
+        total_schools = schools_qs.count()
         schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
         schools_without_connectivity = schools_qs.filter(
             last_weekly_status__connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no,

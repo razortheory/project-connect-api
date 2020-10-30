@@ -53,15 +53,6 @@ class School(TimeStampedModel):
         self.geopoint_exists = bool(self.geopoint)
         super().save(**kwargs)
 
-    @classmethod
-    def estimated_count(cls):
-        # not exact count, but close to.
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT reltuples FROM pg_class WHERE relname = %s', [cls._meta.db_table])
-            row = cursor.fetchone()
-
-        return int(row[0])
-
 
 class FileImport(TimeStampedModel):
     STATUSES = Choices(
