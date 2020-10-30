@@ -80,10 +80,11 @@ class FileImportAdmin(ImportFormMixin, admin.ModelAdmin):
     change_form_template = 'admin/schools/file_imports_change_form.html'
 
     list_display = ('id', 'country', 'uploaded_file', 'status', 'uploaded_by', 'modified')
-    list_select_related = ('uploaded_by',)
+    list_select_related = ('uploaded_by', 'country')
     list_filter = ('status',)
     readonly_fields = ('country', 'uploaded_file', 'status', 'errors', 'uploaded_by', 'modified')
     ordering = ('-id',)
+    raw_id_fields = ('country',)
 
     def has_add_permission(self, request):
         return False
