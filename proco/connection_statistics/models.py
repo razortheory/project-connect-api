@@ -129,7 +129,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         if self.connectivity is False:
             return self.CONNECTIVITY_STATUSES.no
 
-        if self.connectivity is None:
+        if self.connectivity is None or not self.connectivity_speed:
             return self.CONNECTIVITY_STATUSES.unknown
 
         if self.connectivity_speed > 5 * (10 ** 6):

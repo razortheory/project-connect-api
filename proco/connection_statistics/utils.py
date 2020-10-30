@@ -35,7 +35,7 @@ def aggregate_real_time_data_to_school_daily_status(date=None):
 
 def aggregate_school_daily_to_country_daily(date=None):
     date = date or timezone.now().date()
-    for country in Country.objects.all():
+    for country in Country.objects.all().defer('geometry', 'geometry_simplified'):
         aggregate = SchoolDailyStatus.objects.filter(
             school__country=country, date=date,
         ).aggregate(
@@ -186,7 +186,7 @@ def update_countries_weekly_statuses(force=False):
             CountryWeeklyStatus.objects.order_by('country_id', '-year', '-week').distinct('country_id'),
             to_attr='latest_status',
         ),
-    )
+    ).defer('geometry', 'geometry_simplified')
     for country in countries:
         update_country_weekly_status(country, force=force)
 

@@ -51,7 +51,6 @@ def update_brasil_schools():
 
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def load_brasil_daily_statistics(*args):
-    # would be good to separate schools loading from statistics and run once a day
     brasil_statistic_loader.update_statistic()
 
 
