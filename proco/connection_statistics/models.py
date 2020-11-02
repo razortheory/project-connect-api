@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext as _
 
+from isoweek import Week
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 
@@ -58,7 +57,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         return f'{self.year} {self.country.name} Week {self.week} Speed - {self.connectivity_speed}'
 
     def save(self, **kwargs):
-        self.date = datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w').date()
+        self.date = Week(self.year, self.week).monday()
         super().save(**kwargs)
 
 
@@ -123,7 +122,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         super().save(**kwargs)
 
     def get_date(self):
-        return datetime.strptime(f'{self.year}-W{self.week}-1', '%Y-W%W-%w').date()
+        return Week(self.year, self.week).monday()
 
     def get_connectivity_status(self):
         if self.connectivity is False:

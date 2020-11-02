@@ -59,6 +59,7 @@ class CountryDailyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
     search_fields = ('country__name',)
     ordering = ('-id',)
     date_hierarchy = 'date'
+    raw_id_fields = ('country',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

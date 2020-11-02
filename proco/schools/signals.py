@@ -13,11 +13,13 @@ from proco.schools.models import School
 def change_integration_status_country(instance, created=False, **kwargs):
     if created or instance.geopoint:
         country_weekly = CountryWeeklyStatus.objects.filter(country_id=instance.country.id).last()
+        country_weekly_exists = bool(country_weekly)
         year, week, weekday = timezone.now().isocalendar()
         if not (country_weekly.year == year and country_weekly.week == week):
             country_weekly.id = None
             country_weekly.year = year
             country_weekly.week = week
+            country_weekly.save()
 
         if instance.geopoint:
             if country_weekly.integration_status == CountryWeeklyStatus.JOINED:
@@ -31,7 +33,7 @@ def change_integration_status_country(instance, created=False, **kwargs):
                     country_weekly.save()
 
         if created:
-            if country_weekly.id:
+            if country_weekly_exists:
                 country_weekly.schools_total = F('schools_total') + 1
                 country_weekly.schools_connectivity_unknown = F('schools_connectivity_unknown') + 1
                 country_weekly.save(update_fields=('schools_total', 'schools_connectivity_unknown'))

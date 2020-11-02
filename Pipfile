@@ -57,9 +57,10 @@ django-mapbox-location-field = "*"
 django-cors-headers = "*"
 django-modeladmin-reorder = "*"
 django-redis = "*"
-numpy = "1.18"
+numpy = "==1.18"
 sklearn = "*"
 django-mptt-admin = "*"
+isoweek = "*"
 
 [requires]
 python_version = "3.8"
