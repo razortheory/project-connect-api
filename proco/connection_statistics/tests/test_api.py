@@ -29,7 +29,8 @@ from proco.connection_statistics.tests.factories import (
 from proco.connection_statistics.utils import (
     aggregate_real_time_data_to_school_daily_status,
     aggregate_school_daily_status_to_school_weekly_status,
-    aggregate_school_daily_to_country_daily, update_country_weekly_status,
+    aggregate_school_daily_to_country_daily,
+    update_country_weekly_status,
 )
 from proco.locations.tests.factories import CountryFactory
 from proco.schools.loaders.brasil_loader import brasil_statistic_loader
@@ -227,7 +228,7 @@ class AggregateConnectivityDataTestCase(TestCase):
         today = datetime.now().date()
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=None, date=today - timedelta(days=8))
         SchoolWeeklyStatusFactory(
-            school=self.school, week=get_current_week(), year=get_current_year(), connectivity=None
+            school=self.school, week=get_current_week(), year=get_current_year(), connectivity=None,
         )
 
         aggregate_school_daily_status_to_school_weekly_status(self.country)
@@ -241,7 +242,7 @@ class AggregateConnectivityDataTestCase(TestCase):
         today = datetime.now().date()
         SchoolDailyStatusFactory(school=self.school, connectivity_speed=None, date=today - timedelta(days=8))
         SchoolWeeklyStatusFactory(
-            school=self.school, week=get_current_week(), year=get_current_year(), connectivity=False
+            school=self.school, week=get_current_week(), year=get_current_year(), connectivity=False,
         )
 
         aggregate_school_daily_status_to_school_weekly_status(self.country)
