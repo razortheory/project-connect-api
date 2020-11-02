@@ -44,7 +44,7 @@ def finalize_task():
 
 @app.task
 def update_real_time_data():
-    countries_ids = Country.objects.filter(id=144).values_list('id', flat=True)
+    countries_ids = Country.objects.values_list('id', flat=True)
 
     chain(
         load_data_from_unicef_db.s(),
