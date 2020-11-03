@@ -32,8 +32,6 @@ celery --app=proco.taskapp multi start 3 --concurrency=3 -l INFO \
 trap teardown SIGINT SIGTERM
 
 # tail all the logs continuously to console for `docker logs` to see
-#ls /code/docker/logs/
-#find / -name 'celery-%n.log'
 tail -f /code/docker/logs/celeryd-*.log &
 
 # capture process id of `tail` for tear down
