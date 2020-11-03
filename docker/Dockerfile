@@ -47,4 +47,7 @@ ADD . /code/
 # cleanup env files if any
 RUN find . -type f -name '.env' -delete
 
+#entrypoint
+ENTRYPOINT ["/code/scripts/entrypoint_docker"]
+
 EXPOSE 8000
