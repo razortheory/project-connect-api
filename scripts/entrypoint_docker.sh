@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-echo "  ------------- THIS ----------------  "
 
 set -ex
 
