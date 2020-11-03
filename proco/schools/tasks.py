@@ -1,5 +1,6 @@
 import traceback
 from collections import Counter
+from random import randint  # noqa
 
 from django.contrib.gis.geos import MultiPoint, Point
 from django.core.cache import cache
@@ -19,6 +20,12 @@ class FailedImportError(Exception):
 
 def _find_country(loaded) -> [Country]:
     points = MultiPoint()
+    loaded = list(loaded)
+
+    # choose random points to increase speed
+    if len(loaded) > 1000:
+        loaded = [loaded[randint(0, len(loaded))] for _i in range(1000)]  # noqa
+
     for _i, data in enumerate(loaded):
         try:
             point = Point(x=float(data['lon']), y=float(data['lat']))

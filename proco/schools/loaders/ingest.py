@@ -112,7 +112,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
             warnings.append(_('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
             continue
 
-        admin_name_max_length = School._meta.get_field('admin1').max_length
+        admin_name_max_length = School._meta.get_field('admin_1_name').max_length
         if 'admin1' in data:
             if len(data['admin1']) > admin_name_max_length:
                 errors.append(
