@@ -84,7 +84,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
             continue
 
         if 'educ_level' in data:
-            if data['educ_level'] > (field_max_length := School._meta.get_field('education_level').max_length):
+            if len(data['educ_level']) > (field_max_length := School._meta.get_field('education_level').max_length):
                 errors.append(
                     _('Row {0}: Bad data provided for name: max length of {1} characters exceeded').format(
                         row_index, field_max_length,
@@ -93,7 +93,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
             school_data['education_level'] = data['educ_level']
 
         if 'name' in data:
-            if data['name'] > (field_max_length := School._meta.get_field('name').max_length):
+            if len(data['name']) > (field_max_length := School._meta.get_field('name').max_length):
                 errors.append(
                     _('Row {0}: Bad data provided for name: max length of {1} characters exceeded').format(
                         row_index, field_max_length,
@@ -114,7 +114,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
 
         admin_name_max_length = School._meta.get_field('admin1').max_length
         if 'admin1' in data:
-            if data['admin1'] > admin_name_max_length:
+            if len(data['admin1']) > admin_name_max_length:
                 errors.append(
                     _('Row {0}: Bad data provided for admin1: max length of {1} characters exceeded').format(
                         row_index, admin_name_max_length,
@@ -122,7 +122,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                 continue
             school_data['admin_1_name'] = data['admin1']
         if 'admin2' in data:
-            if data['admin2'] > admin_name_max_length:
+            if len(data['admin2']) > admin_name_max_length:
                 errors.append(
                     _('Row {0}: Bad data provided for admin2: max length of {1} characters exceeded').format(
                         row_index, admin_name_max_length,
@@ -130,7 +130,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                 continue
             school_data['admin_2_name'] = data['admin2']
         if 'admin3' in data:
-            if data['admin3'] > admin_name_max_length:
+            if len(data['admin3']) > admin_name_max_length:
                 errors.append(
                     _('Row {0}: Bad data provided for admin3: max length of {1} characters exceeded').format(
                         row_index, admin_name_max_length,
@@ -138,7 +138,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                 continue
             school_data['admin_3_name'] = data['admin3']
         if 'admin4' in data:
-            if data['admin4'] > admin_name_max_length:
+            if len(data['admin4']) > admin_name_max_length:
                 errors.append(
                     _('Row {0}: Bad data provided for admin4: max length of {1} characters exceeded').format(
                         row_index, admin_name_max_length,
@@ -157,7 +157,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                     ),
                 )
                 continue
-            if data['environment'] > (field_max_length := School._meta.get_field('environment').max_length):
+            if len(data['environment']) > (field_max_length := School._meta.get_field('environment').max_length):
                 errors.append(
                     _('Row {0}: Bad data provided for environment: max length of {1} characters exceeded').format(
                         row_index, field_max_length,
@@ -165,7 +165,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                 continue
             school_data['environment'] = data['environment']
         if 'address' in data:
-            if data['address'] > (field_max_length := School._meta.get_field('address').max_length):
+            if len(data['address']) > (field_max_length := School._meta.get_field('address').max_length):
                 errors.append(
                     _('Row {0}: Bad data provided for address: max length of {1} characters exceeded').format(
                         row_index, field_max_length,
@@ -173,7 +173,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
                 continue
             school_data['address'] = data['address']
         if 'type_school' in data:
-            if data['type_school'] > (field_max_length := School._meta.get_field('school_type').max_length):
+            if len(data['type_school']) > (field_max_length := School._meta.get_field('school_type').max_length):
                 errors.append(
                     _('Row {0}: Bad data provided for type_school: max length of {1} characters exceeded').format(
                         row_index, field_max_length,
@@ -248,7 +248,7 @@ def save_data(country: Country, loaded: Iterable[Dict]) -> Tuple[List[str], List
         if 'connectivity' in data:
             history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
         if 'type_connectivity' in data:
-            if data['type_connectivity'] > (
+            if len(data['type_connectivity']) > (
                 field_max_length := SchoolWeeklyStatus._meta.get_field('connectivity_type').max_length
             ):
                 errors.append(
