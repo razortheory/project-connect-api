@@ -19,6 +19,7 @@ class School(TimeStampedModel):
 
     external_id = models.CharField(max_length=50, blank=True, db_index=True)
     name = models.CharField(max_length=255)
+    name_lower = models.CharField(max_length=255, blank=True, editable=False, db_index=True)
 
     country = models.ForeignKey(Country, related_name='schools', on_delete=models.CASCADE)
     location = models.ForeignKey(Location, null=True, blank=True, related_name='schools', on_delete=models.CASCADE)
@@ -50,7 +51,8 @@ class School(TimeStampedModel):
         return f'{self.country} - {self.name}'
 
     def save(self, **kwargs):
-        self.geopoint_exists = bool(self.geopoint)
+        self.name_lower = self.name.lower()
+        self.external_id = self.external_id.lower()
         super().save(**kwargs)
 
 

@@ -118,7 +118,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     def save(self, **kwargs):
         self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
-        self.update_coverage_statuses()
+        self.coverage_type, self.coverage_status = self.get_coverage_type_and_status()
         super().save(**kwargs)
 
     def get_date(self):
@@ -136,7 +136,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         else:
             return self.CONNECTIVITY_STATUSES.moderate
 
-    def update_coverage_statuses(self):
+    def get_coverage_type_and_status(self):
         coverage_type = self.COVERAGE_TYPES.unknown
         coverage_availability = None
 
@@ -150,8 +150,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
             coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
             coverage_availability = False
 
-        self.coverage_type = coverage_type
-        self.coverage_availability = coverage_availability
+        return coverage_type, coverage_availability
 
 
 class CountryDailyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
