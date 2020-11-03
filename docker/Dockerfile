@@ -48,6 +48,6 @@ ADD . /code/
 RUN find . -type f -name '.env' -delete
 
 #entrypoint
-ENTRYPOINT ["/code/scripts/entrypoint_docker"]
+ENTRYPOINT ["/code/scripts/entrypoint_docker.sh"]
 
 EXPOSE 8000
