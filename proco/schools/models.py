@@ -52,7 +52,7 @@ class School(TimeStampedModel):
 
     def save(self, **kwargs):
         self.name_lower = self.name.lower()
-        self.external_id = self.external_id.lower()
+        self.external_id = str(self.external_id).lower()
         super().save(**kwargs)
 
 

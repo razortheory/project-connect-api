@@ -61,6 +61,8 @@ numpy = "==1.18"
 sklearn = "*"
 django-mptt-admin = "*"
 isoweek = "*"
+geopy = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.8"

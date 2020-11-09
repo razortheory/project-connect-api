@@ -1,15 +1,22 @@
+import logging
 from datetime import date
 from re import findall
 from typing import Dict, Iterable, List, Tuple
 
 from django.contrib.gis.geos import Point
+from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
+
+from scipy.spatial import KDTree
 
 from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.locations.models import Country
 from proco.schools.loaders import csv as csv_loader
 from proco.schools.loaders import xls as xls_loader
 from proco.schools.models import School
+from proco.utils.geometry import cartesian
+
+logger = logging.getLogger('django.' + __name__)
 
 
 def load_data(uploaded_file):
@@ -74,12 +81,6 @@ def validate_school_data(row_index: int, country: Country, data: dict):
         if school_data['geopoint'].x == 0 and school_data['geopoint'].y == 0:
             errors.append(_('Row {0}: Bad data provided for geopoint: zero point').format(row_index))
             return None, None, errors, warnings
-        # todo: this is slow part (30s vs 0.5s commented)
-        # todo: calculate simplified geometry INSIDE original. if not belong, use original
-        # if geometry is simple (don't intersects) and have no holes, we can try to use maximum square first
-        elif not country.geometry.contains(school_data['geopoint']):
-            errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(row_index))
-            return None, None, errors, warnings
     except (TypeError, ValueError):
         errors.append(_('Row {0}: Bad data provided for geopoint').format(row_index))
         return None, None, errors, warnings
@@ -138,20 +139,15 @@ def validate_school_data(row_index: int, country: Country, data: dict):
 
     # static data
     if 'environment' in data:
-        if data['environment'] not in environment_values:
+        environment = data['environment'].lower()
+        if environment not in environment_values:
             errors.append(
                 _('Row {0}: Bad data provided for environment: should be in {1}').format(
                     row_index, ', '.join(environment_values),
                 ),
             )
             return None, None, errors, warnings
-        if len(data['environment']) > environment_max_length:
-            errors.append(
-                _('Row {0}: Bad data provided for environment: max length of {1} characters exceeded').format(
-                    row_index, environment_max_length,
-                ))
-            return None, None, errors, warnings
-        school_data['environment'] = data['environment']
+        school_data['environment'] = environment
     if 'address' in data:
         if len(data['address']) > address_max_length:
             errors.append(
@@ -278,10 +274,15 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
 
     for i, data in enumerate(loaded):
         row_index = i + 2  # enumerate starts from zero plus header
-        # remove empty strings from data; ignore unicode from keys
+        # remove non-unicode symbols from keys and empty suffixes/prefixes
+        data = {
+            key.encode('ascii', 'ignore').decode(): value.strip()
+            for key, value in data.items()
+        }
+        # remove empty strings from data
         # empty values check is ugly; should be refactored (like validation in overall, it has lot of duplicated code)
         data = {
-            key.encode('ascii', 'ignore').decode(): value
+            key: value
             for key, value in data.items()
             if value != '' and ((not key.startswith('admin') and value not in ['na', 'nd']) or key.startswith('admin'))
         }
@@ -289,21 +290,9 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
             continue
 
         if i % 1000 == 0:
-            print(f'validated {i}')
+            logger.info(f'validated {i}')
 
         school_data, history_data, row_errors, row_warnings = validate_school_data(row_index, country, data)
-        if 'external_id' in school_data:
-            if school_data['external_id'] in csv_external_ids:
-                row_warnings.append(
-                    _('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
-            csv_external_ids.append(school_data['external_id'])
-
-        if 'name' in school_data:
-            if school_data['name'] in csv_names:
-                row_warnings.append(
-                    _('Row {0}: Bad data provided for school name: duplicate entry').format(row_index))
-            csv_names.append(school_data['name'])
-
         if row_errors:
             errors.extend(row_errors)
             continue
@@ -312,13 +301,25 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
             warnings.extend(row_warnings)
             continue
 
+        if 'external_id' in school_data:
+            if school_data['external_id'].lower() in csv_external_ids:
+                warnings.append(
+                    _('Row {0}: Bad data provided for school identifier: duplicate entry').format(row_index))
+                continue
+            csv_external_ids.append(school_data['external_id'].lower())
+
+        if 'name' in school_data:
+            if school_data['name'].lower() in csv_names:
+                warnings.append(
+                    _('Row {0}: Bad data provided for school name: duplicate entry').format(row_index))
+                continue
+            csv_names.append(school_data['name'].lower())
+
         schools_data.append({
             'row_index': row_index,
             'school_data': school_data,
             'history_data': history_data,
         })
-
-    print(f'validated data, {len(errors)} errors')
 
     if errors and not ignore_errors:
         return warnings, errors
@@ -337,7 +338,7 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
                 external_id__in=external_ids[i:min(i + 500, len(external_ids))],
             )
             for school in schools_by_external_id:
-                schools_with_external_id[school.external_id.lower()]['school'] = school
+                schools_with_external_id[school.external_id]['school'] = school
 
     # search by name
     schools_with_name = {
@@ -353,25 +354,94 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
                 name_lower__in=names[i:min(i + 500, len(names))],
             )
             for school in schools_by_name:
-                schools_with_name[school.name.lower()]['school'] = school
+                schools_with_name[school.name_lower]['school'] = school
 
-    # post validations
-    # check distance here
     # 1. get all possible points from schools table
     # 2. for every changed point, remove it from list and re-check it still valid
     # 3. for every new point, check it's distance from schools of similar type is greater than 500m
+    # P.S. second step missing, kd-trees don't allow insertions.
+    # solutions: don't allow point to be removed. pros: we can skip bad geopoint if school exists
 
-    # todo: we need validation, not fuzzy search
-    # school_qs = School.objects.filter(
-    #     name=data['name'], geopoint__distance_lte=(school_data['geopoint'], D(m=500)),
-    # )
-    # if school_data.get('education_level'):
-    #     school_qs = school_qs.filter(education_level=school_data['education_level'])
-    # school = school_qs.first()
+    school_points = {'all': []}
+
+    for school in School.objects.filter(country=country).values('education_level', 'geopoint'):
+        if school['education_level'] not in school_points:
+            school_points[school['education_level']] = []
+        cartesian_coord = cartesian(school['geopoint'].y, school['geopoint'].x)
+        school_points[school['education_level']].append(cartesian_coord)
+        school_points['all'].append(cartesian_coord)
+
+    # add all points to generate final kdtree
+    for data in [d for d in schools_data if 'school' not in d]:
+        point = data['school_data']['geopoint']
+        cartesian_coord = cartesian(point.y, point.x)
+        education_level = data['school_data'].get('education_level')
+        if education_level:
+            school_points[education_level].append(cartesian_coord)
+        school_points['all'].append(cartesian_coord)
+
+    for key in school_points.keys():
+        school_points[key] = KDTree(school_points[key])
+
+    new_schools = [d for d in schools_data if 'school' not in d]
+
+    def validate_point(tree, point_to_check):
+        # at least two points required. original point always will be closest because all of them already exists
+        distances, indexes = tree.query([point_to_check], p=2, k=2)
+        closest_distance = distances[0][1]
+        if closest_distance < 0.5:
+            # todo: provide human readable reason of failure with information to fix
+            # logger.info(data['school_data']['geopoint'].y, data['school_data']['geopoint'].x)
+            # if isinstance(all_schools[indexes[0][1]], int):
+            #     logger.info(School.objects.get(id=all_schools[indexes[0][1]]))
+            # else:
+            #     logger.info(
+            #         all_schools[indexes[0][1]],
+            #         all_schools[indexes[0][1]]['school_data']['geopoint'].y,
+            #         all_schools[indexes[0][1]]['school_data']['geopoint'].x
+            #     )
+            return False
+        return True
+
+    logger.info(f'started points check, {len(schools_data)} items')
+
+    bad_schools = []
+    for i, data in enumerate(new_schools):
+        point = data['school_data']['geopoint']
+        cartesian_coord = cartesian(point.y, point.x)
+        education_level = data['school_data'].get('education_level')
+
+        if i % 1000 == 0:
+            logger.info(f'processed {i} geopoints')
+
+        if education_level:
+            if not validate_point(school_points[education_level], cartesian_coord):
+                errors.append(_(
+                    'Row {0}: Geopoint is closer than 500m to another with same education level.',
+                ).format(data['row_index']))
+                bad_schools.append(data)
+        else:
+            if not validate_point(school_points['all'], cartesian_coord):
+                errors.append(_(
+                    'Row {0}: Geopoint is closer than 500m to another. '
+                    'Please specify education_level for better search.',
+                ).format(data['row_index']))
+                bad_schools.append(data)
+
+    for bad_data in bad_schools:
+        schools_data.remove(bad_data)
+
+    logger.info(f'finished points check, {len(schools_data)} items left')
+
+    if errors and not ignore_errors:
+        return warnings, errors
 
     # bulk create new schools
     new_schools = []
-    for data in [d for d in schools_data if 'school' not in d]:
+    for data in schools_data:
+        if 'school' in data:
+            continue
+
         school = School(**data['school_data'])
         school.name_lower = school.name.lower()
         school.external_id = school.external_id.lower()
@@ -380,19 +450,33 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
         data['school'] = school
         data['school_created'] = True
 
-    for i in range(0, len(new_schools), 1000):
-        School.objects.bulk_create(new_schools[i:min(i + 1000, len(new_schools))])
+    if new_schools:
+        logger.info(f'{len(new_schools)} schools will be created')
+        School.objects.bulk_create(new_schools, batch_size=1000)
 
     # bulk update existing ones
     all_schools_to_update = [data for data in schools_data if not data.get('school_created', False)]
-    fields_combinations = {tuple(data['school_data'].keys()) for data in all_schools_to_update}
+    logger.info(f'{len(all_schools_to_update)} schools will be updated')
+    fields_combinations = {tuple(sorted(data['school_data'].keys())) for data in all_schools_to_update}
     for fields_combination in fields_combinations:
         schools_to_update = [
             data['school']
             for data in all_schools_to_update
-            if tuple(data.keys()) == fields_combination
+            if tuple(sorted(data['school_data'].keys())) == fields_combination
         ]
+        logger.info(f'{len(schools_to_update)} schools will be updated with {fields_combination}')
         School.objects.bulk_update(schools_to_update, fields_combination, batch_size=1000)
+
+    # check & remove schools not in bounds. this is the fastest way
+    School.objects.filter(country=country).exclude(geopoint__within=F('country__geometry')).delete()
+    logger.info(f'{len(schools_data)} schools before filtering')
+
+    schools_within = School.objects.filter(id__in=[d['school'].id for d in schools_data]).values_list('id', flat=True)
+    for data in schools_data:
+        if data['school'].id not in schools_within:
+            errors.append(_('Row {0}: Bad data provided for geopoint: point outside country').format(data['row_index']))
+
+    schools_data = [d for d in schools_data if d['school'].id in schools_within]
 
     # prepare new values for weekly statuses
     for data in schools_data:
@@ -414,7 +498,9 @@ def save_data(country: Country, loaded: Iterable[Dict], ignore_errors=False) -> 
 
         # set last weekly id to correct one; signals don't work when batch performed
         for status in schools_weekly_status_list:
-            updated_schools[status.school_id].last_weekly_status_id = status.id
-        School.objects.bulk_update(updated_schools.values(), ['last_weekly_status_id'], batch_size=1000)
+            updated_schools[status.school_id].last_weekly_status = status
+        School.objects.bulk_update(updated_schools.values(), ['last_weekly_status'], batch_size=1000)
+
+        logger.info(f'updated weekly statuses for {len(schools_weekly_status_list)} schools')
 
     return warnings, errors
