@@ -26,7 +26,7 @@ def validate_row(country: Country, data: dict):
     missing_fields = required_fields.difference(set(data.keys()))
     if missing_fields:
         errors.append(
-            _('Missing data for required column(s) {1}').format(', '.join(missing_fields)),
+            _('Missing data for required column(s) {0}').format(', '.join(missing_fields)),
         )
         return None, None, errors, warnings
 
@@ -38,7 +38,7 @@ def validate_row(country: Country, data: dict):
     if 'school_id' in data:
         if len(data['school_id']) > external_id_max_length:
             errors.append(_(
-                'Bad data provided for school identifier: max length of {1} characters exceeded',
+                'Bad data provided for school identifier: max length of {0} characters exceeded',
             ).format(external_id_max_length))
             return None, None, errors, warnings
         school_data['external_id'] = data['school_id'].lower()
@@ -56,7 +56,7 @@ def validate_row(country: Country, data: dict):
     if 'educ_level' in data:
         if len(data['educ_level']) > education_level_max_length:
             errors.append(
-                _('Bad data provided for name: max length of {1} characters exceeded').format(
+                _('Bad data provided for name: max length of {0} characters exceeded').format(
                     education_level_max_length,
                 ))
             return None, None, errors, warnings
@@ -65,7 +65,7 @@ def validate_row(country: Country, data: dict):
     if 'name' in data:
         if len(data['name']) > name_max_length:
             errors.append(
-                _('Bad data provided for name: max length of {1} characters exceeded').format(
+                _('Bad data provided for name: max length of {0} characters exceeded').format(
                     name_max_length,
                 ))
             return None, None, errors, warnings
@@ -73,7 +73,7 @@ def validate_row(country: Country, data: dict):
     if 'admin1' in data:
         if len(data['admin1']) > admin_name_max_length:
             errors.append(
-                _('Bad data provided for admin1: max length of {1} characters exceeded').format(
+                _('Bad data provided for admin1: max length of {0} characters exceeded').format(
                     admin_name_max_length,
                 ))
             return None, None, errors, warnings
@@ -81,7 +81,7 @@ def validate_row(country: Country, data: dict):
     if 'admin2' in data:
         if len(data['admin2']) > admin_name_max_length:
             errors.append(
-                _('Bad data provided for admin2: max length of {1} characters exceeded').format(
+                _('Bad data provided for admin2: max length of {0} characters exceeded').format(
                     admin_name_max_length,
                 ))
             return None, None, errors, warnings
@@ -89,7 +89,7 @@ def validate_row(country: Country, data: dict):
     if 'admin3' in data:
         if len(data['admin3']) > admin_name_max_length:
             errors.append(
-                _('Bad data provided for admin3: max length of {1} characters exceeded').format(
+                _('Bad data provided for admin3: max length of {0} characters exceeded').format(
                     admin_name_max_length,
                 ))
             return None, None, errors, warnings
@@ -97,7 +97,7 @@ def validate_row(country: Country, data: dict):
     if 'admin4' in data:
         if len(data['admin4']) > admin_name_max_length:
             errors.append(
-                _('Bad data provided for admin4: max length of {1} characters exceeded').format(
+                _('Bad data provided for admin4: max length of {0} characters exceeded').format(
                     admin_name_max_length,
                 ))
             return None, None, errors, warnings
@@ -110,7 +110,7 @@ def validate_row(country: Country, data: dict):
         environment = data['environment'].lower()
         if environment not in environment_values:
             errors.append(
-                _('Bad data provided for environment: should be in {1}').format(
+                _('Bad data provided for environment: should be in {0}').format(
                     ', '.join(environment_values),
                 ),
             )
@@ -119,7 +119,7 @@ def validate_row(country: Country, data: dict):
     if 'address' in data:
         if len(data['address']) > address_max_length:
             errors.append(
-                _('Bad data provided for address: max length of {1} characters exceeded').format(
+                _('Bad data provided for address: max length of {0} characters exceeded').format(
                     address_max_length,
                 ))
             return None, None, errors, warnings
@@ -127,7 +127,7 @@ def validate_row(country: Country, data: dict):
     if 'type_school' in data:
         if len(data['type_school']) > school_type_max_length:
             errors.append(
-                _('Bad data provided for type_school: max length of {1} characters exceeded').format(
+                _('Bad data provided for type_school: max length of {0} characters exceeded').format(
                     school_type_max_length,
                 ))
             return None, None, errors, warnings
@@ -204,7 +204,7 @@ def validate_row(country: Country, data: dict):
             field_max_length := SchoolWeeklyStatus._meta.get_field('connectivity_type').max_length
         ):
             errors.append(
-                _('Bad data provided for type_connectivity: max length of {1} characters exceeded').format(
+                _('Bad data provided for type_connectivity: max length of {0} characters exceeded').format(
                     field_max_length,
                 ))
             return None, None, errors, warnings
