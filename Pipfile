@@ -28,7 +28,7 @@ flake8-mutable = "*"
 [packages]
 django-environ = "*"
 psycopg2 = "*"
-celery = "<5.0"
+celery = "<6.0"
 ipython = "*"
 django-templated-email = "*"
 sentry-sdk = "*"
