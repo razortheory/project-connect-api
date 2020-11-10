@@ -22,9 +22,9 @@ def _find_country(loaded) -> [Country]:
     points = MultiPoint()
     loaded = list(loaded)
 
-    # choose random points to increase speed
-    if len(loaded) > 1000:
-        loaded = [loaded[randint(0, len(loaded))] for _i in range(1000)]  # noqa
+    maximum_points_threshold = 2000
+    if len(loaded) > maximum_points_threshold:
+        loaded = [loaded[randint(0, len(loaded) - 1)] for _i in range(maximum_points_threshold)]  # noqa
 
     for _i, data in enumerate(loaded):
         try:
@@ -71,10 +71,11 @@ def process_loaded_file(pk: int, force: bool = False):
             imported_file.save()
             return
 
-        # todo: rewrite with transaction savepoint
         try:
             with transaction.atomic():
-                warnings, errors = ingest.save_data(imported_file.country, load_data(imported_file.uploaded_file))
+                warnings, errors = ingest.save_data(
+                    imported_file.country, load_data(imported_file.uploaded_file), ignore_errors=force,
+                )
                 if errors and not force:
                     raise FailedImportError
         except FailedImportError:
