@@ -84,7 +84,7 @@ def process_loaded_file(pk: int, force: bool = False):
         imported_file.errors = '\n'.join(errors)
         if warnings:
             imported_file.errors += '\nWarnings:\n'
-            imported_file.errors += '\n'.join(warnings)
+            imported_file.errors += '\n'.join(map(str, warnings))
 
         if errors and not force:
             imported_file.status = FileImport.STATUSES.failed
