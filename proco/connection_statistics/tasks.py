@@ -1,4 +1,5 @@
 from celery import chain, chord, group
+
 from proco.connection_statistics.utils import (
     aggregate_real_time_data_to_school_daily_status,
     aggregate_school_daily_status_to_school_weekly_status,
