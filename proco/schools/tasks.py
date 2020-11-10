@@ -1,6 +1,7 @@
 import traceback
 from collections import Counter
 from random import randint  # noqa
+from typing import List
 
 from django.contrib.gis.geos import MultiPoint, Point
 from django.core.cache import cache
@@ -18,9 +19,8 @@ class FailedImportError(Exception):
     pass
 
 
-def _find_country(loaded) -> [Country]:
+def _find_country(loaded: List[dict]) -> [Country]:
     points = MultiPoint()
-    loaded = list(loaded)
 
     maximum_points_threshold = 2000
     if len(loaded) > maximum_points_threshold:
@@ -64,7 +64,8 @@ def process_loaded_file(pk: int, force: bool = False):
     imported_file.save()
 
     try:
-        imported_file.country = _find_country(load_data(imported_file.uploaded_file))
+        loaded_data = list(load_data(imported_file.uploaded_file))
+        imported_file.country = _find_country(loaded_data)
         if not imported_file.country:
             imported_file.status = FileImport.STATUSES.failed
             imported_file.errors = 'Error: Country not found'
@@ -73,9 +74,7 @@ def process_loaded_file(pk: int, force: bool = False):
 
         try:
             with transaction.atomic():
-                warnings, errors = ingest.save_data(
-                    imported_file.country, load_data(imported_file.uploaded_file), ignore_errors=force,
-                )
+                warnings, errors = ingest.save_data(imported_file.country, loaded_data, ignore_errors=force)
                 if errors and not force:
                     raise FailedImportError
         except FailedImportError:

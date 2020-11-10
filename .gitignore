@@ -82,3 +82,4 @@ env.config
 .env
 /config/settings/custom.py
 /media/
+rabbitmq

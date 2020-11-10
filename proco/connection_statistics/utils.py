@@ -136,18 +136,9 @@ def update_country_weekly_status(country: Country):
     overall_connected_schools = SchoolWeeklyStatus.objects.filter(
         school__country=country, connectivity=True,
     ).order_by('school_id').distinct('school_id').count()
-    current_week_statuses = (
-        schools_stats['connectivity_no'] +
-        + schools_stats['connectivity_unknown']
-        + schools_stats['connectivity_moderate']
-        + schools_stats['connectivity_good']
-    )
 
+    country_status.schools_connectivity_unknown = schools_stats['connectivity_unknown']
     country_status.schools_connectivity_no = schools_stats['connectivity_no']
-    country_status.schools_connectivity_unknown = (
-        schools_stats['connectivity_unknown']
-        + (overall_connected_schools - current_week_statuses)
-    )
     country_status.schools_connectivity_moderate = schools_stats['connectivity_moderate']
     country_status.schools_connectivity_good = schools_stats['connectivity_good']
     country_status.schools_connected = schools_stats['connectivity_moderate'] + schools_stats['connectivity_good']

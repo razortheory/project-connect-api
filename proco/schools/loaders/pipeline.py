@@ -132,6 +132,8 @@ def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
         cartesian_coord = cartesian(point.y, point.x)
         education_level = data['school_data'].get('education_level')
         if education_level:
+            if education_level not in school_points:
+                school_points[education_level] = []
             school_points[education_level].append(cartesian_coord)
         school_points['all'].append(cartesian_coord)
 
