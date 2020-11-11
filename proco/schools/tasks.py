@@ -1,5 +1,7 @@
+import random
 import traceback
 from collections import Counter
+from copy import copy
 from random import randint  # noqa
 from typing import List
 
@@ -22,20 +24,23 @@ class FailedImportError(Exception):
 def _find_country(loaded: List[dict]) -> [Country]:
     points = MultiPoint()
 
-    maximum_points_threshold = 2000
-    if len(loaded) > maximum_points_threshold:
-        loaded = [loaded[randint(0, len(loaded) - 1)] for _i in range(maximum_points_threshold)]  # noqa
+    shuffled_data = copy(loaded)
+    random.shuffle(shuffled_data)  # noqa
 
-    for _i, data in enumerate(loaded):
+    for data in shuffled_data:
+        if len(points) == 2000:
+            # exit if we already collected optimal number of points to proceed
+            break
+
         try:
             point = Point(x=float(data['lon']), y=float(data['lat']))
-
-            if point == Point(x=0, y=0):
-                continue
-            else:
-                points.append(point)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, KeyError):
             continue
+
+        if point == Point(x=0, y=0):
+            continue
+
+        points.append(point)
 
     countries = list(Country.objects.filter(geometry__intersects=points))
 
