@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 
 from django.db.models import Avg, Count, Q
@@ -157,3 +158,10 @@ def update_country_weekly_status(country: Country):
     country_status.avg_distance_school = country.calculate_avg_distance_school()
 
     country_status.save()
+
+
+def update_country_data_source_by_csv_filename(imported_file):
+    source = re.search(r'\d+-(.*)-\d+', imported_file.filename).group(1)
+    pretty_source = source.replace('_', ' ')
+    imported_file.country.data_source = pretty_source
+    imported_file.country.save()

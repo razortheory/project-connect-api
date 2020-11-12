@@ -31,7 +31,7 @@ def load_data(uploaded_file):
     return loader.load_file(uploaded_file)
 
 
-def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> Tuple[List[str], List[str]]:
+def save_data(country: Country, loaded: Iterable[dict], filename, ignore_errors=False) -> Tuple[List[str], List[str]]:
     schools_data, errors, warnings = get_validated_rows(country, loaded)
     if errors and not ignore_errors:
         return warnings, errors

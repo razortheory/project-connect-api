@@ -9,7 +9,7 @@ from django.contrib.gis.geos import MultiPoint, Point
 from django.core.cache import cache
 from django.db import transaction
 
-from proco.connection_statistics.utils import update_country_weekly_status
+from proco.connection_statistics.utils import update_country_data_source_by_csv_filename, update_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
 from proco.schools.loaders.ingest import load_data
@@ -102,6 +102,7 @@ def process_loaded_file(pk: int, force: bool = False):
         if not errors or force:
             def update_stats():
                 update_country_weekly_status(imported_file.country)
+                update_country_data_source_by_csv_filename(imported_file)
                 cache.clear()
 
             transaction.on_commit(update_stats)
