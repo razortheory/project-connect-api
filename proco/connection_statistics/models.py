@@ -118,7 +118,8 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     def save(self, **kwargs):
         self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
-        self.coverage_type, self.coverage_status = self.get_coverage_type_and_status()
+        if self.coverage_availability is None:
+            self.coverage_type, self.coverage_availability = self.get_coverage_type_and_status()
         super().save(**kwargs)
 
     def get_date(self):

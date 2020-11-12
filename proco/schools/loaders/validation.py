@@ -199,6 +199,8 @@ def validate_row(country: Country, data: dict):
 
     if 'connectivity' in data:
         history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
+    else:
+        history_data['connectivity'] = None
     if 'type_connectivity' in data:
         if len(data['type_connectivity']) > (
             field_max_length := SchoolWeeklyStatus._meta.get_field('connectivity_type').max_length
@@ -219,6 +221,27 @@ def validate_row(country: Country, data: dict):
             errors.append(_('Bad data provided for connectivity_speed'))
             return None, None, errors, warnings
         history_data['connectivity'] = True
+    if 'coverage_availability' in data:
+        history_data['coverage_availability'] = data['coverage_availability'].lower() in ['true', 'yes', '1']
+    else:
+        history_data['coverage_availability'] = None
+    if 'coverage_type' in data:
+        if len(data['coverage_type']) > (
+            field_max_length := SchoolWeeklyStatus._meta.get_field('coverage_type').max_length
+        ):
+            errors.append(
+                _('Bad data provided for coverage_type: max length of {0} characters exceeded').format(
+                    field_max_length,
+                ))
+            return None, None, errors, warnings
+        if data['coverage_type'].lower() not in [type_[0] for type_ in SchoolWeeklyStatus.COVERAGE_TYPES]:
+            errors.append(
+                _('Bad data provided for coverage_type: {0} type does not exist').format(
+                    data['coverage_type'],
+                ))
+            return None, None, errors, warnings
+        history_data['coverage_availability'] = True
+        history_data['coverage_type'] = data['coverage_type']
     if 'latency_connectivity' in data:
         history_data['connectivity_latency'] = data['latency_connectivity']
 
