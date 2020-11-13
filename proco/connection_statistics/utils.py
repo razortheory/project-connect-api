@@ -163,6 +163,10 @@ def update_country_weekly_status(country: Country):
 def update_country_data_source_by_csv_filename(imported_file):
     source = re.search(r'\d+-(.*)-\d+', imported_file.filename).group(1)
     pretty_source = source.replace('_', ' ')
-    if pretty_source.lower() not in imported_file.country.data_source.lower():
-        imported_file.country.data_source += f', {pretty_source}'
-        imported_file.country.save()
+    if imported_file.country.data_source:
+        if pretty_source.lower() not in imported_file.country.data_source.lower():
+            imported_file.country.data_source += f'\n{pretty_source}'
+    else:
+        imported_file.country.data_source = pretty_source
+
+    imported_file.country.save()

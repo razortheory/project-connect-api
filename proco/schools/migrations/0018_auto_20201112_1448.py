@@ -10,9 +10,13 @@ def fill_data_source(apps, schema_editor):
     for file in FileImport.objects.filter(country__isnull=False):
         source = re.search(r'\d+-(.*)-\d+', file.uploaded_file.name.split('/')[-1]).group(1)
         pretty_source = source.replace('_', ' ')
-        if pretty_source.lower() not in file.country.data_source.lower():
-            file.country.data_source += f', {pretty_source}'
-            file.country.save()
+        if file.country.data_source:
+            if pretty_source.lower() not in file.country.data_source.lower():
+                file.country.data_source += f'\n{pretty_source}'
+        else:
+            file.country.data_source = pretty_source
+
+        file.country.save()
 
 
 class Migration(migrations.Migration):
