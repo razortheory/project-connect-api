@@ -77,3 +77,7 @@ class FileImport(TimeStampedModel):
 
     class Meta:
         ordering = ('id',)
+
+    @property
+    def filename(self):
+        return self.uploaded_file.name.split('/')[-1]
