@@ -113,8 +113,8 @@ def update_country_weekly_status(country: Country):
     country_status.schools_total = country.schools.count()
 
     schools_stats = SchoolWeeklyStatus.objects.filter(
-        year=country_status.year, week=country_status.week, school__country=country,
-    ).aggregate(
+        school__country=country,
+    ).order_by('school_id').distinct('school_id').aggregate(
         connectivity_no=Count(
             'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no),
         ),
