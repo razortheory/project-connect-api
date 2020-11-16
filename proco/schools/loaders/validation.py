@@ -241,7 +241,7 @@ def validate_row(country: Country, data: dict):
                 ))
             return None, None, errors, warnings
         history_data['coverage_availability'] = True
-        history_data['coverage_type'] = data['coverage_type']
+        history_data['coverage_type'] = data['coverage_type'].lower()
     if 'latency_connectivity' in data:
         history_data['connectivity_latency'] = data['latency_connectivity']
 

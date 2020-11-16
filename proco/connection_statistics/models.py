@@ -118,8 +118,7 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     def save(self, **kwargs):
         self.date = self.get_date()
         self.connectivity_status = self.get_connectivity_status()
-        if self.coverage_availability is None:
-            self.coverage_type, self.coverage_availability = self.get_coverage_type_and_status()
+        self.coverage_type, self.coverage_availability = self.get_coverage_type_and_status()
         super().save(**kwargs)
 
     def get_date(self):
@@ -138,18 +137,22 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
             return self.CONNECTIVITY_STATUSES.moderate
 
     def get_coverage_type_and_status(self):
-        coverage_type = self.COVERAGE_TYPES.unknown
-        coverage_availability = None
+        coverage_type = self.coverage_type
+        coverage_availability = self.coverage_availability
 
-        if self.connectivity_type and self.connectivity_type.lower() != self.CONNECTIVITY_TYPES.unknown:
-            coverage_availability = True
-            for coverage in ['2g', '3g', '4g']:
-                if coverage in self.connectivity_type.lower():
-                    coverage_type = coverage
+        if coverage_availability is None or coverage_type == self.COVERAGE_TYPES.unknown:
+            if coverage_type and coverage_type != self.COVERAGE_TYPES.unknown:
+                coverage_availability = True
+            else:
+                if self.connectivity_type and self.connectivity_type.lower() != self.CONNECTIVITY_TYPES.unknown:
+                    coverage_availability = True
+                    for coverage in ['2g', '3g', '4g']:
+                        if coverage in self.connectivity_type.lower():
+                            coverage_type = coverage
 
-        if self.connectivity_type and self.connectivity_type.lower() in ['no covered', 'no', 'no service']:
-            coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
-            coverage_availability = False
+                if self.connectivity_type and self.connectivity_type.lower() in ['no covered', 'no', 'no service']:
+                    coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
+                    coverage_availability = False
 
         return coverage_type, coverage_availability
 
