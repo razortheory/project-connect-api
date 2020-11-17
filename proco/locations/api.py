@@ -11,8 +11,8 @@ from proco.locations.serializers import (
     DetailCountrySerializer,
     ListCountrySerializer,
 )
-from proco.utils.mixins import CachedListMixin, CachedRetrieveMixin
 from proco.utils.filters import NullsAlwaysLastOrderingFilter
+from proco.utils.mixins import CachedListMixin, CachedRetrieveMixin
 
 
 class CountryViewSet(
