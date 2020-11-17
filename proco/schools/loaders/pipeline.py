@@ -93,11 +93,15 @@ def map_schools_by_external_id(country: Country, rows: List[dict]):
 
 def map_schools_by_name(country: Country, rows: List[dict]):
     # search by name
-    schools_with_name = {
-        data['school_data']['name'].lower(): data
-        for data in rows
-        if 'school' not in data
-    }
+    schools_with_name = {}
+    for data in rows:
+        if 'school' not in data:
+            if data['school_data'].get('name'):
+                schools_with_name.update({data['school_data']['name'].lower(): data})
+            else:
+                data['school_data']['name'] = School._meta.get_field('name').default
+                continue
+
     if schools_with_name:
         names = list(schools_with_name.keys())
         for i in range(0, len(names), 500):
@@ -107,6 +111,26 @@ def map_schools_by_name(country: Country, rows: List[dict]):
             )
             for school in schools_by_name:
                 schools_with_name[school.name_lower]['school'] = school
+
+
+def map_schools_by_geopoint(country: Country, rows: List[dict]):
+    # search by geopoint
+    schools_with_geopoint = {
+        data['school_data']['geopoint'].wkt: data
+        for data in rows
+        if 'school' not in data
+    }
+    if schools_with_geopoint:
+        geopoints = list(schools_with_geopoint.keys())
+
+        for i in range(0, len(geopoints), 500):
+            schools_by_geopoint = School.objects.filter(
+                country=country,
+                geopoint__in=geopoints[i:min(i + 500, len(geopoints))],
+            )
+
+            for school in schools_by_geopoint:
+                schools_with_geopoint[school.geopoint.wkt]['school'] = school
 
 
 def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
@@ -198,14 +222,17 @@ def create_new_schools(rows: List[dict]):
 def update_existing_schools(rows: List[dict]):
     # bulk update existing ones
     all_schools_to_update = [data for data in rows if not data.get('school_created', False)]
+
     logger.info(f'{len(all_schools_to_update)} schools will be updated')
     fields_combinations = {tuple(sorted(data['school_data'].keys())) for data in all_schools_to_update}
+
+    schools_to_update = []
     for fields_combination in fields_combinations:
-        schools_to_update = [
-            data['school']
-            for data in all_schools_to_update
-            if tuple(sorted(data['school_data'].keys())) == fields_combination
-        ]
+        for data in all_schools_to_update:
+            if tuple(sorted(data['school_data'].keys())) == fields_combination:
+                [setattr(data['school'], field, data['school_data'][field]) for field in fields_combination]
+                schools_to_update.append(data['school'])
+
         logger.info(f'{len(schools_to_update)} schools will be updated with {fields_combination}')
         School.objects.bulk_update(schools_to_update, fields_combination, batch_size=1000)
 
