@@ -6,7 +6,6 @@ from random import randint  # noqa
 from typing import List
 
 from django.contrib.gis.geos import MultiPoint, Point
-from django.core.cache import cache
 from django.db import transaction
 
 from proco.connection_statistics.utils import update_country_data_source_by_csv_filename, update_country_weekly_status

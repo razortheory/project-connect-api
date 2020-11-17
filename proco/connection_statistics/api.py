@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from django.conf import settings
 from django.http import Http404
-from django.utils.decorators import method_decorator
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny

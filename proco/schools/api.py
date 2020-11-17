@@ -1,10 +1,8 @@
 from django.conf import settings
-from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -40,7 +38,7 @@ class SchoolsViewSet(
         return '{0}_{1}_{2}'.format(
             getattr(self.__class__, 'LIST_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
             self.kwargs['country_pk'],
-            "_".join(map(lambda  x: "{0}_{1}".format(x[0], x[1]), sorted(self.request.query_params.items())))
+            '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(self.request.query_params.items()))),
         )
 
     def get_queryset(self):

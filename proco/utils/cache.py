@@ -9,11 +9,13 @@ class SoftCacheManager(object):
     CACHE_PREFIX = 'SOFT_CACHE'
 
     def get(self, key, calculate_func=None, soft_timeout=settings.CACHES['default']['TIMEOUT']):
-        value = cache.get("{0}_{1}".format(self.CACHE_PREFIX, key), None)
+        value = cache.get('{0}_{1}'.format(self.CACHE_PREFIX, key), None)
 
         if value:
-            if ((value['expired_at'] and value['expired_at'] < timezone.now().timestamp())
-                or value.get('invalidated', False)):
+            if (
+                    (value['expired_at'] and value['expired_at'] < timezone.now().timestamp())
+                    or value.get('invalidated', False)
+            ):
 
                 def update_value():
                     value = calculate_func()
@@ -45,7 +47,7 @@ class SoftCacheManager(object):
             self.invalidate_many(key)
 
     def set(self, key, value, soft_timeout=None):
-        cache.set("{0}_{1}".format(self.CACHE_PREFIX, key), {
+        cache.set('{0}_{1}'.format(self.CACHE_PREFIX, key), {
             'value': value,
             'expired_at': timezone.now().timestamp() + soft_timeout if soft_timeout else None,
         }, None)

@@ -1,10 +1,8 @@
 from django.db.models import BooleanField, F, Func
-from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
 
 from proco.locations.models import Country
 from proco.locations.serializers import (

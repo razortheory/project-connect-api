@@ -9,7 +9,7 @@ class CachedListMixin(object):
     def get_list_cache_key(self):
         return '{0}_{1}'.format(
             getattr(self.__class__, 'LIST_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
-            "_".join(map(lambda  x: "{0}_{1}".format(x[0], x[1]), sorted(self.request.query_params.items())))
+            '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(self.request.query_params.items()))),
         )
 
     def list(self, request, *args, **kwargs):
@@ -29,7 +29,7 @@ class CachedRetrieveMixin(object):
     def get_retrieve_cache_key(self):
         return '{0}_{1}'.format(
             getattr(self.__class__, 'RETRIEVE_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
-            "_".join(map(lambda  x: "{0}_{1}".format(x[0], x[1]), sorted(self.kwargs.items())))
+            '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(self.kwargs.items()))),
         )
 
     def retrieve(self, request, *args, **kwargs):
