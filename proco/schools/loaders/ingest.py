@@ -54,4 +54,6 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
 
     update_schools_weekly_statuses(schools_data)
 
+    country.invalidate_country_related_cache()
+
     return warnings, errors

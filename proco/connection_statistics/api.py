@@ -3,7 +3,6 @@ from datetime import datetime
 from django.conf import settings
 from django.http import Http404
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
@@ -26,32 +25,36 @@ from proco.connection_statistics.serializers import (
 )
 from proco.locations.models import Country
 from proco.schools.models import School
+from proco.utils.cache import cache_manager
 
 
 class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
 
-    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
     def get(self, request, *args, **kwargs):
-        schools_qs = School.objects.all()
-        countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
-        total_schools = schools_qs.count()
-        schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
-        schools_without_connectivity = schools_qs.filter(
-            last_weekly_status__connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no,
-        ).count()
-        percent_schools_without_connectivity = schools_without_connectivity / total_schools
-        last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
+        def calculate_global_statistic():
+            schools_qs = School.objects.all()
+            countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
+            total_schools = schools_qs.count()
+            schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
+            schools_without_connectivity = schools_qs.filter(
+                last_weekly_status__connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no,
+            ).count()
+            percent_schools_without_connectivity = schools_without_connectivity / total_schools
+            last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
 
-        data = {
-            'total_schools': total_schools,
-            'schools_mapped': schools_mapped,
-            'percent_schools_without_connectivity': percent_schools_without_connectivity,
-            'countries_joined': countries_statuses_aggregated['countries_joined'],
-            'countries_connected_to_realtime': countries_statuses_aggregated['countries_connected_to_realtime'],
-            'countries_with_static_data': countries_statuses_aggregated['countries_with_static_data'],
-            'last_date_updated': last_date_updated.strftime('%B %Y'),
-        }
+            data = {
+                'total_schools': total_schools,
+                'schools_mapped': schools_mapped,
+                'percent_schools_without_connectivity': percent_schools_without_connectivity,
+                'countries_joined': countries_statuses_aggregated['countries_joined'],
+                'countries_connected_to_realtime': countries_statuses_aggregated['countries_connected_to_realtime'],
+                'countries_with_static_data': countries_statuses_aggregated['countries_with_static_data'],
+                'last_date_updated': last_date_updated.strftime('%B %Y'),
+            }
+            return data
+
+        data = cache_manager.get('GLOBAL_STATS', calculate_func=calculate_global_statistic)
 
         return Response(data=data)
 

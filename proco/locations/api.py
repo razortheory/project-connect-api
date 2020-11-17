@@ -1,11 +1,10 @@
-from django.conf import settings
 from django.db.models import BooleanField, F, Func
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
 
 from proco.locations.models import Country
 from proco.locations.serializers import (
@@ -14,14 +13,20 @@ from proco.locations.serializers import (
     DetailCountrySerializer,
     ListCountrySerializer,
 )
+from proco.utils.mixins import CachedListMixin, CachedRetrieveMixin
 from proco.utils.filters import NullsAlwaysLastOrderingFilter
 
 
 class CountryViewSet(
+    CachedListMixin,
+    CachedRetrieveMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    LIST_CACHE_KEY_PREFIX = 'COUNTRIES_LIST'
+    RETRIEVE_CACHE_KEY_PREFIX = 'COUNTRY_INFO'
+
     pagination_class = None
     queryset = Country.objects.all().annotate(
         geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
@@ -47,22 +52,12 @@ class CountryViewSet(
             qs = qs.defer('geometry', 'geometry_simplified')
         return qs
 
-    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
 
-    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+class CountryBoundaryListAPIView(CachedListMixin, ListAPIView):
+    LIST_CACHE_KEY_PREFIX = 'COUNTRY_BOUNDARY'
 
-
-class CountryBoundaryListAPIView(ListAPIView):
     queryset = Country.objects.all().annotate(
         geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
     ).filter(geometry_empty=False).only('id', 'geometry_simplified')
     serializer_class = BoundaryListCountrySerializer
     pagination_class = None
-
-    @method_decorator(cache_page(timeout=settings.CACHES['default']['TIMEOUT']))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)

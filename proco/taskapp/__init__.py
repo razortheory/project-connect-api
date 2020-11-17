@@ -25,5 +25,10 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=1, minute=0),
         'args': (),
     },
+    'proco.schools.tasks.invalidate_random_schools': {
+        'task': 'proco.schools.tasks.invalidate_random_schools',
+        'schedule': crontab(hour=0, minute=0),
+        'args': (),
+    },
 }
 app.conf.timezone = 'UTC'

@@ -15,6 +15,7 @@ from proco.schools.loaders import ingest
 from proco.schools.loaders.ingest import load_data
 from proco.schools.models import FileImport
 from proco.taskapp import app
+from proco.utils.cache import cache_manager
 
 
 class FailedImportError(Exception):
@@ -103,7 +104,6 @@ def process_loaded_file(pk: int, force: bool = False):
             def update_stats():
                 update_country_weekly_status(imported_file.country)
                 update_country_data_source_by_csv_filename(imported_file)
-                cache.clear()
 
             transaction.on_commit(update_stats)
     except Exception:
@@ -111,3 +111,8 @@ def process_loaded_file(pk: int, force: bool = False):
         imported_file.errors = traceback.format_exc()
         imported_file.save()
         raise
+
+
+@app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
+def invalidate_random_schools():
+    cache_manager.invalidate('RANDOM_SCHOOLS_*')

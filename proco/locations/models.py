@@ -11,6 +11,7 @@ from sklearn.neighbors import DistanceMetric
 
 from proco.locations.managers import CountryManager
 from proco.locations.utils import get_random_name_image
+from proco.utils.cache import cache_manager
 
 
 class GeometryMixin(models.Model):
@@ -78,6 +79,19 @@ class Country(GeometryMixin, TimeStampedModel):
 
     def __str__(self):
         return f'{self.name}'
+
+    def invalidate_country_related_cache(self):
+        cache_manager.invalidate((
+            'GLOBAL_STATS',
+            'COUNTRIES_LIST_*',
+            'COUNTRY_INFO_pk_{}'.format(self.pk),
+            'SCHOOLS_{}_*'.format(self.pk),
+        ))
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.invalidate_country_related_cache()
+        cache_manager.invalidate('COUNTRY_BOUNDARY')
 
     def _calculate_batch_avg_distance_school(self, points):
         earth_radius = 6371.0088
