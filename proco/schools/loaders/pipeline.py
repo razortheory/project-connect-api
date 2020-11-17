@@ -230,7 +230,8 @@ def update_existing_schools(rows: List[dict]):
     for fields_combination in fields_combinations:
         for data in all_schools_to_update:
             if tuple(sorted(data['school_data'].keys())) == fields_combination:
-                [setattr(data['school'], field, data['school_data'][field]) for field in fields_combination]
+                for field in fields_combination:
+                    setattr(data['school'], field, data['school_data'][field])
                 schools_to_update.append(data['school'])
 
         logger.info(f'{len(schools_to_update)} schools will be updated with {fields_combination}')
