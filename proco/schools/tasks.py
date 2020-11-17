@@ -114,4 +114,4 @@ def process_loaded_file(pk: int, force: bool = False):
 
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def invalidate_random_schools():
-    cache_manager.invalidate('RANDOM_SCHOOLS_*')
+    cache_manager.invalidate('RANDOM_SCHOOLS*')

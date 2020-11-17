@@ -83,7 +83,7 @@ class Country(GeometryMixin, TimeStampedModel):
     def invalidate_country_related_cache(self):
         cache_manager.invalidate((
             'GLOBAL_STATS',
-            'COUNTRIES_LIST_*',
+            'COUNTRIES_LIST*',
             'COUNTRY_INFO_pk_{0}'.format(self.pk),
             'SCHOOLS_{0}_*'.format(self.pk),
         ))
