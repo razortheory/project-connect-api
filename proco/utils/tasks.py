@@ -1,4 +1,4 @@
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 
 from django.contrib.sites.models import Site
 from django.urls import reverse
@@ -19,7 +19,7 @@ def update_all_cached_values():
 
     site = Site.objects.get_current()
 
-    url = urlparse("http://" + site.domain)
+    url = urlparse('http://' + site.domain)
 
     url = url._replace(path=reverse('connection_statistics:global-stat'))
     update_cached_value(url.geturl())
