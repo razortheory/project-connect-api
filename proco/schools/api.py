@@ -35,10 +35,12 @@ class SchoolsViewSet(
     related_model = Country
 
     def get_list_cache_key(self):
+        params = dict(self.request.query_params)
+        params.pop(self.CACHE_KEY, None)
         return '{0}_{1}_{2}'.format(
             getattr(self.__class__, 'LIST_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
             self.kwargs['country_pk'],
-            '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(self.request.query_params.items()))),
+            '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(params.items()))),
         )
 
     def get_queryset(self):

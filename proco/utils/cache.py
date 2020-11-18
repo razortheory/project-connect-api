@@ -3,30 +3,23 @@ from django.core.cache import cache
 from django.utils import timezone
 
 from proco.taskapp import app
+from proco.utils.tasks import update_cached_value
 
 
 class SoftCacheManager(object):
     CACHE_PREFIX = 'SOFT_CACHE'
 
-    def get(self, key, calculate_func=None, soft_timeout=settings.CACHES['default']['TIMEOUT']):
+    def get(self, key):
         value = cache.get('{0}_{1}'.format(self.CACHE_PREFIX, key), None)
 
         if value:
             if (
-                    (value['expired_at'] and value['expired_at'] < timezone.now().timestamp())
-                    or value.get('invalidated', False)
-            ):
-
-                def update_value():
-                    value = calculate_func()
-                    self.set(key, value, soft_timeout)
-
-                app.task(update_value).delay()
+                (value['expired_at'] and value['expired_at'] < timezone.now().timestamp())
+                or value.get('invalidated', True)
+            ) and value.get('request_path', None):
+                print ("update_cached_value ", value['request_path'])
+                update_cached_value.delay(value['request_path'])
             return value['value']
-        elif calculate_func:
-            value = calculate_func()
-            self.set(key, value, soft_timeout)
-            return value
 
     def _invalidate(self, key):
         value = cache.get(key, None)
@@ -46,9 +39,11 @@ class SoftCacheManager(object):
         elif isinstance(key, (list, tuple)):
             self.invalidate_many(key)
 
-    def set(self, key, value, soft_timeout=None):
+    # def set(self, key, value, request_path=None, soft_timeout=settings.CACHES['default']['TIMEOUT']):
+    def set(self, key, value, request_path=None, soft_timeout=2):
         cache.set('{0}_{1}'.format(self.CACHE_PREFIX, key), {
             'value': value,
+            'request_path': request_path,
             'expired_at': timezone.now().timestamp() + soft_timeout if soft_timeout else None,
         }, None)
 

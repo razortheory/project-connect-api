@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 
 from proco.utils.cache import cache_manager
+from proco.utils.tasks import update_all_cached_values
 
 
 class CustomAdminSite(admin.AdminSite):
@@ -29,6 +30,7 @@ class CustomAdminSite(admin.AdminSite):
 
     def invalidate_cache(self, request):
         cache_manager.invalidate()
+        update_all_cached_values.delay()
 
         messages.success(request, 'The cache has been invalidated successfully.')
         return redirect('admin:index')
