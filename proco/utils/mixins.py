@@ -22,7 +22,7 @@ class CachedListMixin(UseCachedDataMixin):
             '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(params.items()))),
         )
 
-    def _get_raw_response(self, request, *args, **kwargs):
+    def _get_raw_list_response(self, request, *args, **kwargs):
         cache_key = self.get_list_cache_key()
         response = super(CachedListMixin, self).list(request, *args, **kwargs)
         request_path = remove_query_param(request.build_absolute_uri(), self.CACHE_KEY)
@@ -31,12 +31,12 @@ class CachedListMixin(UseCachedDataMixin):
 
     def list(self, request, *args, **kwargs):
         if not self.use_cached_data():
-            return self._get_raw_response(request, *args, **kwargs)
+            return self._get_raw_list_response(request, *args, **kwargs)
         else:
             cache_key = self.get_list_cache_key()
             data = cache_manager.get(cache_key)
             if not data:
-                return self._get_raw_response(request, *args, **kwargs)
+                return self._get_raw_list_response(request, *args, **kwargs)
             return Response(data=data)
 
 
@@ -49,7 +49,7 @@ class CachedRetrieveMixin(UseCachedDataMixin):
             '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(self.kwargs.items()))),
         )
 
-    def _get_raw_response(self, request, *args, **kwargs):
+    def _get_raw_retrieve_response(self, request, *args, **kwargs):
         cache_key = self.get_retrieve_cache_key()
         response = super(CachedRetrieveMixin, self).retrieve(request, *args, **kwargs)
         request_path = remove_query_param(request.build_absolute_uri(), self.CACHE_KEY)
@@ -58,10 +58,10 @@ class CachedRetrieveMixin(UseCachedDataMixin):
 
     def retrieve(self, request, *args, **kwargs):
         if not self.use_cached_data():
-            return self._get_raw_response(request, *args, **kwargs)
+            return self._get_raw_retrieve_response(request, *args, **kwargs)
         else:
             cache_key = self.get_retrieve_cache_key()
             data = cache_manager.get(cache_key)
             if not data:
-                return self._get_raw_response(request, *args, **kwargs)
+                return self._get_raw_retrieve_response(request, *args, **kwargs)
             return Response(data=data)
