@@ -1,9 +1,9 @@
-import requests
-
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from django.contrib.sites.models import Site
 from django.urls import reverse
+
+import requests
 
 from proco.taskapp import app
 
