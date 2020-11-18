@@ -54,6 +54,7 @@ class GlobalStatsAPIView(APIView):
 
         if not request.query_params.get('cache', 'on').lower() in ['on', 'true']:
             data = calculate_global_statistic()
+            cache_manager.set('GLOBAL_STATS', data, request_path=request.build_absolute_uri())
         else:
             data = cache_manager.get('GLOBAL_STATS')
             if not data:
