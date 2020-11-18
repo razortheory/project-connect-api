@@ -40,8 +40,9 @@ class SoftCacheManager(object):
     def set(self, key, value, request_path=None, soft_timeout=settings.CACHES['default']['TIMEOUT']):
         cache.set('{0}_{1}'.format(self.CACHE_PREFIX, key), {
             'value': value,
+            'invalidated': False,
             'request_path': request_path,
-            'expired_at': timezone.now().timestamp() + soft_timeout if soft_timeout else None,
+            'expired_at': (timezone.now().timestamp() + soft_timeout) if soft_timeout else None,
         }, None)
 
 

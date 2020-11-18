@@ -25,7 +25,7 @@ class CachedListMixin(UseCachedDataMixin):
     def _get_raw_list_response(self, request, *args, **kwargs):
         cache_key = self.get_list_cache_key()
         response = super(CachedListMixin, self).list(request, *args, **kwargs)
-        request_path = remove_query_param(request.build_absolute_uri(), self.CACHE_KEY)
+        request_path = remove_query_param(request.get_full_path(), self.CACHE_KEY)
         cache_manager.set(cache_key, response.data, request_path=request_path)
         return response
 
@@ -52,7 +52,7 @@ class CachedRetrieveMixin(UseCachedDataMixin):
     def _get_raw_retrieve_response(self, request, *args, **kwargs):
         cache_key = self.get_retrieve_cache_key()
         response = super(CachedRetrieveMixin, self).retrieve(request, *args, **kwargs)
-        request_path = remove_query_param(request.build_absolute_uri(), self.CACHE_KEY)
+        request_path = remove_query_param(request.get_full_path(), self.CACHE_KEY)
         cache_manager.set(cache_key, response.data, request_path=request_path)
         return response
 

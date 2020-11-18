@@ -5,6 +5,7 @@ from django.http import Http404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.utils.urls import remove_query_param
 from rest_framework.views import APIView
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -52,14 +53,15 @@ class GlobalStatsAPIView(APIView):
             }
             return data
 
+        request_path = remove_query_param(request.get_full_path(), 'cache')
         if not request.query_params.get('cache', 'on').lower() in ['on', 'true']:
             data = calculate_global_statistic()
-            cache_manager.set('GLOBAL_STATS', data, request_path=request.build_absolute_uri())
+            cache_manager.set('GLOBAL_STATS', data, request_path=request_path)
         else:
             data = cache_manager.get('GLOBAL_STATS')
             if not data:
                 data = calculate_global_statistic()
-                cache_manager.set('GLOBAL_STATS', data, request_path=request.build_absolute_uri())
+                cache_manager.set('GLOBAL_STATS', data, request_path=request_path)
 
         return Response(data=data)
 
