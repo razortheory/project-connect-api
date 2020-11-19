@@ -27,7 +27,7 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
         row_index = i + 2  # enumerate starts from zero plus header
         # remove non-unicode symbols from keys and empty suffixes/prefixes
         data = {
-            key.encode('ascii', 'ignore').decode(): value.strip()
+            key.encode('ascii', 'ignore').decode(): value.strip() if isinstance(value, str) else value
             for key, value in data.items()
         }
         # remove empty strings from data
