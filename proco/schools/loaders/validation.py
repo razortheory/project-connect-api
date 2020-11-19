@@ -16,7 +16,7 @@ address_max_length = School._meta.get_field('address').max_length
 school_type_max_length = School._meta.get_field('school_type').max_length
 admin_name_max_length = School._meta.get_field('admin_1_name').max_length
 environment_values = dict(School.ENVIRONMENT_STATUSES).keys()
-required_fields = {'name', 'lat', 'lon'}
+required_fields = {'lat', 'lon'}
 
 
 def validate_row(country: Country, data: dict):
@@ -69,6 +69,7 @@ def validate_row(country: Country, data: dict):
                     name_max_length,
                 ))
             return None, None, errors, warnings
+        school_data['name'] = data['name']
 
     if 'admin1' in data:
         if len(data['admin1']) > admin_name_max_length:
@@ -102,8 +103,6 @@ def validate_row(country: Country, data: dict):
                 ))
             return None, None, errors, warnings
         school_data['admin_4_name'] = data['admin4']
-
-    school_data['name'] = data['name']
 
     # static data
     if 'environment' in data:
