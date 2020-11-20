@@ -1,6 +1,5 @@
 from django.conf.urls import url
 from django.contrib import admin, messages
-from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 
@@ -17,16 +16,9 @@ class CustomAdminSite(admin.AdminSite):
     def get_urls(self):
         urls = super().get_urls()
         urls += [
-            url(r'^clear-cache/$', self.admin_view(self.clear_cache), name='admin_clear_cache'),
             url(r'^invalidate-cache/$', self.admin_view(self.invalidate_cache), name='admin_invalidate_cache'),
         ]
         return urls
-
-    def clear_cache(self, request):
-        cache.clear()
-
-        messages.success(request, 'The cache has been cleared successfully.')
-        return redirect('admin:index')
 
     def invalidate_cache(self, request):
         cache_manager.invalidate()
