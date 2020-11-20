@@ -165,8 +165,8 @@ def update_country_data_source_by_csv_filename(imported_file):
     pretty_source = source.replace('_', ' ')
     if imported_file.country.data_source:
         if pretty_source.lower() not in imported_file.country.data_source.lower():
-            imported_file.country.data_source += f'\n{pretty_source}'
+            imported_file.country.data_source += f'\n{pretty_source.capitalize()}'
     else:
-        imported_file.country.data_source = pretty_source
+        imported_file.country.data_source = pretty_source.capitalize()
 
     imported_file.country.save()
