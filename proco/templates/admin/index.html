@@ -7,6 +7,12 @@
       <h2>Global actions</h2>
       <ul class="action-list">
         <li>
+          <a href="{% url 'admin:admin_invalidate_cache' %}">
+            <i class="fas fa-trash clear-cache"></i>
+            INVALIDATE CACHE
+          </a>
+        </li>
+        <li>
           <a href="{% url 'admin:admin_clear_cache' %}">
             <i class="fas fa-trash clear-cache"></i>
             CACHE CLEAR
