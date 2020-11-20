@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from proco.connection_statistics.models import SchoolWeeklyStatus
 from proco.connection_statistics.serializers import SchoolWeeklyStatusSerializer
 from proco.locations.fields import GeoPointCSVField
 from proco.schools.models import School
@@ -31,47 +30,45 @@ class SchoolPointSerializer(BaseSchoolSerializer):
 
 class CSVSchoolsListSerializer(BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
+    coverage_status = serializers.SerializerMethodField()
     geopoint = GeoPointCSVField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = ('name', 'geopoint', 'connectivity_status')
 
     def get_connectivity_status(self, obj):
-        if not obj.last_weekly_status:
-            return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.last_weekly_status.connectivity_status
+        availability = obj.country.last_weekly_status.connectivity_availability
+        if not availability or not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.get_connectivity_status(availability)
+
+    def get_coverage_status(self, obj):
+        availability = obj.country.last_weekly_status.connectivity_availability
+        if not availability or not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.get_coverage_status(availability)
 
 
 class ListSchoolSerializer(BaseSchoolSerializer):
-    connectivity = serializers.SerializerMethodField()
     connectivity_status = serializers.SerializerMethodField()
-    coverage_availability = serializers.SerializerMethodField()
-    coverage_type = serializers.SerializerMethodField()
+    coverage_status = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'connectivity', 'connectivity_status', 'coverage_availability', 'coverage_type',
+            'connectivity_status', 'coverage_status',
         )
 
-    def get_connectivity(self, obj):
-        if not obj.last_weekly_status:
-            return None
-        return obj.last_weekly_status.connectivity
-
     def get_connectivity_status(self, obj):
-        if not obj.last_weekly_status:
-            return SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown
-        return obj.last_weekly_status.connectivity_status
-
-    def get_coverage_availability(self, obj):
-        if not obj.last_weekly_status:
+        availability = obj.country.last_weekly_status.connectivity_availability
+        if not availability or not obj.last_weekly_status:
             return None
-        return obj.last_weekly_status.coverage_availability
+        return obj.last_weekly_status.get_connectivity_status(availability)
 
-    def get_coverage_type(self, obj):
-        if not obj.last_weekly_status:
-            return SchoolWeeklyStatus.COVERAGE_TYPES.unknown
-        return obj.last_weekly_status.coverage_type
+    def get_coverage_status(self, obj):
+        availability = obj.country.last_weekly_status.connectivity_availability
+        if not availability or not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.get_coverage_status(availability)
 
 
 class SchoolSerializer(BaseSchoolSerializer):

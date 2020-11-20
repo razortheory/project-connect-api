@@ -240,10 +240,17 @@ def update_schools_weekly_statuses(rows: List[dict]):
         school = data['school']
         history_data = data['history_data']
 
-        status = SchoolWeeklyStatus(year=year, week=week_number, school=school, **history_data)
+        status = SchoolWeeklyStatus.objects.filter(school=school).last()
+        if status:
+            status.id = None
+            for k, v in history_data.items():
+                setattr(status, k, v)
+        else:
+            status = SchoolWeeklyStatus(school=school, **history_data)
+
+        status.year = year
+        status.week = week_number
         status.date = status.get_date()
-        status.connectivity_status = status.get_connectivity_status()
-        status.coverage_type, status.coverage_status = status.get_coverage_type_and_status()
 
         schools_weekly_status_list.append(status)
         updated_schools[school.id] = school

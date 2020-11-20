@@ -196,7 +196,7 @@ def validate_row(country: Country, data: dict):
             return None, None, errors, warnings
         history_data['num_computers'] = clean_number(data['num_computers'])
         history_data['computer_lab'] = True
-
+    # todo: хотим ли мы выставлять None если значений нет?
     if 'connectivity' in data:
         history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
     else:
@@ -221,6 +221,7 @@ def validate_row(country: Country, data: dict):
             errors.append(_('Bad data provided for connectivity_speed'))
             return None, None, errors, warnings
         history_data['connectivity'] = True
+    # todo: аналогично с верхним
     if 'coverage_availability' in data:
         history_data['coverage_availability'] = data['coverage_availability'].lower() in ['true', 'yes', '1']
     else:

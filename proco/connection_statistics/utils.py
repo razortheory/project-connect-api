@@ -12,6 +12,7 @@ from proco.connection_statistics.models import (
     SchoolWeeklyStatus,
 )
 from proco.locations.models import Country
+from proco.schools.constants import statuses_schema
 from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
@@ -95,7 +96,6 @@ def aggregate_school_daily_status_to_school_weekly_status(country) -> bool:
             school_weekly.electricity_availability = prev_weekly.electricity_availability
             school_weekly.computer_lab = prev_weekly.computer_lab
             school_weekly.num_computers = prev_weekly.num_computers
-            school_weekly.connectivity_type = prev_weekly.connectivity_type
 
         school_weekly.save()
 
@@ -116,20 +116,35 @@ def update_country_weekly_status(country: Country):
         year=country_status.year, week=country_status.week, school__country=country,
     ).aggregate(
         connectivity_no=Count(
-            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no),
+            'connectivity', filter=Q(connectivity_speed=0),
         ),
         connectivity_unknown=Count(
-            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown),
+            'connectivity', filter=Q(connectivity_speed__isnull=True),
         ),
         connectivity_moderate=Count(
-            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.moderate),
+            'connectivity', filter=Q(
+                connectivity_speed__gte=statuses_schema.CONNECTIVITY_SPEED_FOR_GOOD_CONNECTIVITY_STATUS,
+            ),
         ),
         connectivity_good=Count(
-            'connectivity_status', filter=Q(connectivity_status=SchoolWeeklyStatus.CONNECTIVITY_STATUSES.good),
+            'connectivity', filter=Q(
+                connectivity_speed__gt=0,
+                connectivity_speed__lt=statuses_schema.CONNECTIVITY_SPEED_FOR_GOOD_CONNECTIVITY_STATUS,
+            ),
+        ),
+        connectivity_available=Count(
+            'connectivity', filter=Q(connectivity__in=[True, False]),
         ),
         connectivity_speed=Avg('connectivity_speed', filter=Q(connectivity_speed__gt=0)),
         connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
+
+    if schools_stats['connectivity_available']:
+        country_status.connectivity_availability = country_status.PART
+    if schools_stats['connectivity_moderate'] or schools_stats['connectivity_good'] or schools_stats['connectivity_no']:
+        country_status.connectivity_availability = country_status.FULL
+    if country_status.schools_total == schools_stats['connectivity_unknown']:
+        country_status.connectivity_availability = country_status.NO
 
     country_status.connectivity_speed = schools_stats['connectivity_speed']
     country_status.connectivity_latency = schools_stats['connectivity_latency']

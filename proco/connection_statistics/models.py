@@ -7,6 +7,7 @@ from model_utils import Choices
 from model_utils.models import TimeStampedModel
 
 from proco.locations.models import Country
+from proco.schools.constants import statuses_schema
 from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
@@ -30,6 +31,14 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         (STATIC_MAPPED, _('Static connectivity mapped')),
         (REALTIME_MAPPED, _('Real time connectivity mapped')),
     )
+    NO = 0
+    PART = 1
+    FULL = 2
+    TYPES_AVAILABILITY = Choices(
+        (NO, _('No data')),
+        (PART, _('Using availability information')),
+        (FULL, _('Using actual speeds')),
+    )
 
     country = models.ForeignKey(Country, related_name='weekly_status', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(default=get_current_year)
@@ -46,6 +55,8 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
+    connectivity_availability = models.PositiveSmallIntegerField(choices=TYPES_AVAILABILITY, default=NO)
+    coverage_availability = models.PositiveSmallIntegerField(choices=TYPES_AVAILABILITY, default=NO)
 
     class Meta:
         verbose_name = _('Country Summary')
@@ -72,12 +83,6 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         ('cable', _('Cable')),
         ('dsl', _('DSL')),
     )
-    CONNECTIVITY_STATUSES = Choices(
-        ('no', _('No connectivity')),
-        ('unknown', _('Data unavailable')),
-        ('moderate', _('Moderate')),
-        ('good', _('Good')),
-    )
     COVERAGE_TYPES = Choices(
         ('unknown', _('Unknown')),
         ('no', _('No')),
@@ -99,8 +104,6 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
     computer_lab = models.BooleanField(default=False)
     num_computers = models.PositiveSmallIntegerField(blank=True, default=0)
     connectivity = models.NullBooleanField(default=None)
-    connectivity_status = models.CharField(max_length=8, default=CONNECTIVITY_STATUSES.unknown,
-                                           choices=CONNECTIVITY_STATUSES, db_index=True)
     connectivity_type = models.CharField(_('Type of internet connection'), max_length=64, default='unknown')
     coverage_availability = models.NullBooleanField(default=None)
     coverage_type = models.CharField(max_length=8, default=COVERAGE_TYPES.unknown,
@@ -117,44 +120,24 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
 
     def save(self, **kwargs):
         self.date = self.get_date()
-        self.connectivity_status = self.get_connectivity_status()
-        self.coverage_type, self.coverage_availability = self.get_coverage_type_and_status()
         super().save(**kwargs)
 
     def get_date(self):
         return Week(self.year, self.week).monday()
 
-    def get_connectivity_status(self):
-        if self.connectivity is False:
-            return self.CONNECTIVITY_STATUSES.no
+    def get_connectivity_status(self, availability):
+        if availability == CountryWeeklyStatus.FULL:
+            return statuses_schema.get_connectivity_status_by_connectivity_speed(self.connectivity_speed)
 
-        if self.connectivity is None or not self.connectivity_speed:
-            return self.CONNECTIVITY_STATUSES.unknown
+        elif availability == CountryWeeklyStatus.PART:
+            return statuses_schema.get_status_by_availability(self.connectivity)
 
-        if self.connectivity_speed > 5 * (10 ** 6):
-            return self.CONNECTIVITY_STATUSES.good
-        else:
-            return self.CONNECTIVITY_STATUSES.moderate
+    def get_coverage_status(self, availability):
+        if availability == CountryWeeklyStatus.FULL:
+            return statuses_schema.get_coverage_status_by_coverage_type(self.coverage_type)
 
-    def get_coverage_type_and_status(self):
-        coverage_type = self.coverage_type
-        coverage_availability = self.coverage_availability
-
-        if coverage_availability is None or coverage_type == self.COVERAGE_TYPES.unknown:
-            if coverage_type and coverage_type != self.COVERAGE_TYPES.unknown:
-                coverage_availability = True
-            else:
-                if self.connectivity_type and self.connectivity_type.lower() != self.CONNECTIVITY_TYPES.unknown:
-                    coverage_availability = True
-                    for coverage in ['2g', '3g', '4g']:
-                        if coverage in self.connectivity_type.lower():
-                            coverage_type = coverage
-
-                if self.connectivity_type and self.connectivity_type.lower() in ['no covered', 'no', 'no service']:
-                    coverage_type = SchoolWeeklyStatus.COVERAGE_TYPES.no
-                    coverage_availability = False
-
-        return coverage_type, coverage_availability
+        elif availability == CountryWeeklyStatus.PART:
+            return statuses_schema.get_status_by_availability(self.coverage_availability)
 
 
 class CountryDailyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
