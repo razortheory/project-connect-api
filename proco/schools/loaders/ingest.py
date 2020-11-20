@@ -9,6 +9,7 @@ from proco.schools.loaders.pipeline import (
     delete_schools_not_in_bounds,
     get_validated_rows,
     map_schools_by_external_id,
+    map_schools_by_geopoint,
     map_schools_by_name,
     remove_too_close_points,
     update_existing_schools,
@@ -38,6 +39,7 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
 
     map_schools_by_external_id(country, schools_data)
     map_schools_by_name(country, schools_data)
+    map_schools_by_geopoint(country, schools_data)
 
     new_errors = remove_too_close_points(country, schools_data)
     errors.extend(new_errors)
@@ -53,5 +55,7 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
         return warnings, errors
 
     update_schools_weekly_statuses(schools_data)
+
+    country.invalidate_country_related_cache()
 
     return warnings, errors

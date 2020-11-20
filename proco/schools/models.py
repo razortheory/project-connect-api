@@ -18,7 +18,7 @@ class School(TimeStampedModel):
     )
 
     external_id = models.CharField(max_length=50, blank=True, db_index=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default='Name unknown')
     name_lower = models.CharField(max_length=255, blank=True, editable=False, db_index=True)
 
     country = models.ForeignKey(Country, related_name='schools', on_delete=models.CASCADE)

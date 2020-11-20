@@ -20,10 +20,14 @@ def aggregate_country_data(_prev_result, country_id, *args):
     if weekly_data_available:
         update_country_weekly_status(country)
 
+    country.invalidate_country_related_cache()
+
 
 @app.task(soft_time_limit=60 * 60, time_limit=60 * 60)
 def update_brasil_schools():
     brasil_statistic_loader.update_schools()
+
+    brasil_statistic_loader.country.invalidate_country_related_cache()
 
 
 @app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
