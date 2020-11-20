@@ -31,13 +31,16 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         (STATIC_MAPPED, _('Static connectivity mapped')),
         (REALTIME_MAPPED, _('Real time connectivity mapped')),
     )
-    NO = 0
-    PART = 1
-    FULL = 2
-    TYPES_AVAILABILITY = Choices(
-        (NO, _('No data')),
-        (PART, _('Using availability information')),
-        (FULL, _('Using actual speeds')),
+    CONNECTIVITY_TYPES_AVAILABILITY = Choices(
+        ('no_connectivity', _('No data')),
+        ('connectivity', _('Using availability information')),
+        ('static_speed', _('Using actual static speeds')),
+        ('realtime_speed', _('Using actual realtime speeds')),
+    )
+    COVERAGE_TYPES_AVAILABILITY = Choices(
+        ('no_coverage', _('No data')),
+        ('coverage_availability', _('Using availability information')),
+        ('coverage_type', _('Using actual coverage type')),
     )
 
     country = models.ForeignKey(Country, related_name='weekly_status', on_delete=models.CASCADE)
@@ -55,8 +58,10 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
     )
-    connectivity_availability = models.PositiveSmallIntegerField(choices=TYPES_AVAILABILITY, default=NO)
-    coverage_availability = models.PositiveSmallIntegerField(choices=TYPES_AVAILABILITY, default=NO)
+    connectivity_availability = models.CharField(max_length=32, choices=CONNECTIVITY_TYPES_AVAILABILITY,
+                                                 default=CONNECTIVITY_TYPES_AVAILABILITY.no_connectivity)
+    coverage_availability = models.CharField(max_length=32, choices=COVERAGE_TYPES_AVAILABILITY,
+                                             default=COVERAGE_TYPES_AVAILABILITY.no_coverage)
 
     class Meta:
         verbose_name = _('Country Summary')
@@ -126,17 +131,18 @@ class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model)
         return Week(self.year, self.week).monday()
 
     def get_connectivity_status(self, availability):
-        if availability == CountryWeeklyStatus.FULL:
+        if availability in [CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.static_speed,
+                            CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.realtime_speed]:
             return statuses_schema.get_connectivity_status_by_connectivity_speed(self.connectivity_speed)
 
-        elif availability == CountryWeeklyStatus.PART:
+        elif availability == CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.connectivity:
             return statuses_schema.get_status_by_availability(self.connectivity)
 
     def get_coverage_status(self, availability):
-        if availability == CountryWeeklyStatus.FULL:
+        if availability == CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.coverage_type:
             return statuses_schema.get_coverage_status_by_coverage_type(self.coverage_type)
 
-        elif availability == CountryWeeklyStatus.PART:
+        elif availability == CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.coverage_availability:
             return statuses_schema.get_status_by_availability(self.coverage_availability)
 
 

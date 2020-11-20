@@ -135,16 +135,32 @@ def update_country_weekly_status(country: Country):
         connectivity_available=Count(
             'connectivity', filter=Q(connectivity__in=[True, False]),
         ),
+        coverage_availability=Count(
+            'connectivity', filter=Q(coverage_availability__in=[True, False]),
+        ),
+        coverage_type=Count(
+            'connectivity', filter=Q(
+                coverage_type__in=[type_[0] for type_ in SchoolWeeklyStatus.COVERAGE_TYPES if type_[0] != 'unknown']),
+        ),
         connectivity_speed=Avg('connectivity_speed', filter=Q(connectivity_speed__gt=0)),
         connectivity_latency=Avg('connectivity_latency', filter=Q(connectivity_latency__gt=0)),
     )
 
     if schools_stats['connectivity_available']:
-        country_status.connectivity_availability = country_status.PART
+        country_status.connectivity_availability = country_status.CONNECTIVITY_TYPES_AVAILABILITY.connectivity
+    else:
+        country_status.connectivity_availability = country_status.CONNECTIVITY_TYPES_AVAILABILITY.no_connectivity
     if schools_stats['connectivity_moderate'] or schools_stats['connectivity_good'] or schools_stats['connectivity_no']:
-        country_status.connectivity_availability = country_status.FULL
-    if country_status.schools_total == schools_stats['connectivity_unknown']:
-        country_status.connectivity_availability = country_status.NO
+        country_status.connectivity_availability = country_status.CONNECTIVITY_TYPES_AVAILABILITY.static_speed
+        if country.daily_status.exists():
+            country_status.connectivity_availability = country_status.CONNECTIVITY_TYPES_AVAILABILITY.realtime_speed
+
+    if schools_stats['coverage_availability']:
+        country_status.coverage_availability = CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.coverage_availability
+    else:
+        country_status.coverage_availability = CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.no_coverage
+    if schools_stats['coverage_type']:
+        country_status.coverage_availability = CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.coverage_type
 
     country_status.connectivity_speed = schools_stats['connectivity_speed']
     country_status.connectivity_latency = schools_stats['connectivity_latency']

@@ -65,7 +65,7 @@ class ListSchoolSerializer(BaseSchoolSerializer):
         return obj.last_weekly_status.get_connectivity_status(availability)
 
     def get_coverage_status(self, obj):
-        availability = obj.country.last_weekly_status.connectivity_availability
+        availability = obj.country.last_weekly_status.coverage_availability
         if not availability or not obj.last_weekly_status:
             return None
         return obj.last_weekly_status.get_coverage_status(availability)

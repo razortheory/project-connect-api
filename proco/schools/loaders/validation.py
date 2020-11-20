@@ -196,11 +196,8 @@ def validate_row(country: Country, data: dict):
             return None, None, errors, warnings
         history_data['num_computers'] = clean_number(data['num_computers'])
         history_data['computer_lab'] = True
-    # todo: хотим ли мы выставлять None если значений нет?
     if 'connectivity' in data:
         history_data['connectivity'] = data['connectivity'].lower() in ['true', 'yes', '1']
-    else:
-        history_data['connectivity'] = None
     if 'type_connectivity' in data:
         if len(data['type_connectivity']) > (
             field_max_length := SchoolWeeklyStatus._meta.get_field('connectivity_type').max_length
@@ -221,11 +218,8 @@ def validate_row(country: Country, data: dict):
             errors.append(_('Bad data provided for connectivity_speed'))
             return None, None, errors, warnings
         history_data['connectivity'] = True
-    # todo: аналогично с верхним
     if 'coverage_availability' in data:
         history_data['coverage_availability'] = data['coverage_availability'].lower() in ['true', 'yes', '1']
-    else:
-        history_data['coverage_availability'] = None
     if 'coverage_type' in data:
         if len(data['coverage_type']) > (
             field_max_length := SchoolWeeklyStatus._meta.get_field('coverage_type').max_length
