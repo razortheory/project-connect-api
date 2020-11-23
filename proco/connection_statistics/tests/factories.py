@@ -66,7 +66,7 @@ class SchoolWeeklyStatusFactory(django_factory.DjangoModelFactory):
     year = fuzzy.FuzzyInteger(1900, 2200)
     week = fuzzy.FuzzyInteger(1, 53)
 
-    connectivity_type = fuzzy.FuzzyChoice(dict(SchoolWeeklyStatus.CONNECTIVITY_TYPES).keys())
+    connectivity_type = fuzzy.FuzzyText(length=64)
     connectivity_speed = fuzzy.FuzzyInteger(1, 1000000)
     connectivity_latency = fuzzy.FuzzyInteger(1, 100)
 
