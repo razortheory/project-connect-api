@@ -1,7 +1,9 @@
+import copy
 import logging
 from datetime import date
 from typing import Iterable, List, Tuple
 
+from django.contrib.gis.geos import Point
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
 
@@ -116,21 +118,22 @@ def map_schools_by_name(country: Country, rows: List[dict]):
 def map_schools_by_geopoint(country: Country, rows: List[dict]):
     # search by geopoint
     schools_with_geopoint = {
-        data['school_data']['geopoint'].wkt: data
+        data['school_data']['geopoint']: data
         for data in rows
         if 'school' not in data
     }
     if schools_with_geopoint:
-        geopoints = list(schools_with_geopoint.keys())
+        # to store the hash of the keys of the original dictionary
+        copy_schools_with_geopoint = copy.deepcopy(schools_with_geopoint)
+        geopoints = list(copy_schools_with_geopoint.keys())
 
         for i in range(0, len(geopoints), 500):
             schools_by_geopoint = School.objects.filter(
                 country=country,
                 geopoint__in=geopoints[i:min(i + 500, len(geopoints))],
             )
-
             for school in schools_by_geopoint:
-                schools_with_geopoint[school.geopoint.wkt]['school'] = school
+                schools_with_geopoint[Point(school.geopoint.x, y=school.geopoint.y)]['school'] = school
 
 
 def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
