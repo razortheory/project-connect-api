@@ -41,10 +41,13 @@ class ListCountrySerializer(BaseCountrySerializer):
     integration_status = serializers.SerializerMethodField()
     schools_with_data_percentage = serializers.SerializerMethodField()
     schools_total = serializers.SerializerMethodField()
+    connectivity_availability = serializers.SerializerMethodField()
+    coverage_availability = serializers.SerializerMethodField()
 
     class Meta(BaseCountrySerializer.Meta):
         fields = BaseCountrySerializer.Meta.fields + (
             'integration_status', 'date_of_join', 'schools_with_data_percentage', 'schools_total',
+            'connectivity_availability', 'coverage_availability',
         )
 
     def get_integration_status(self, instance):
@@ -56,6 +59,12 @@ class ListCountrySerializer(BaseCountrySerializer):
     def get_schools_with_data_percentage(self, instance):
         return (instance.last_weekly_status.schools_with_data_percentage
                 if instance.last_weekly_status.schools_with_data_percentage else None)
+
+    def get_connectivity_availability(self, instance):
+        return instance.last_weekly_status.connectivity_availability
+
+    def get_coverage_availability(self, instance):
+        return instance.last_weekly_status.coverage_availability
 
 
 class DetailCountrySerializer(BaseCountrySerializer):
