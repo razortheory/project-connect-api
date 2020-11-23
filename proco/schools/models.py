@@ -71,6 +71,7 @@ class FileImport(TimeStampedModel):
     uploaded_file = models.FileField(upload_to=get_imported_file_path)
     status = models.CharField(max_length=21, choices=STATUSES, default=STATUSES.pending)
     errors = models.TextField(blank=True)
+    statistic = models.TextField(blank=True)
 
     def __str__(self):
         return self.uploaded_file.name
