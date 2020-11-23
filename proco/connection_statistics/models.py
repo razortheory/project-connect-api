@@ -49,10 +49,19 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     date = models.DateField()
     schools_total = models.PositiveIntegerField(blank=True, default=0)
     schools_connected = models.PositiveIntegerField(blank=True, default=0)
-    schools_connectivity_unknown = models.PositiveIntegerField(blank=True, default=0)
-    schools_connectivity_no = models.PositiveIntegerField(blank=True, default=0)
-    schools_connectivity_moderate = models.PositiveIntegerField(blank=True, default=0)
+
+    # connectivity pie chart
     schools_connectivity_good = models.PositiveIntegerField(blank=True, default=0)
+    schools_connectivity_moderate = models.PositiveIntegerField(blank=True, default=0)
+    schools_connectivity_no = models.PositiveIntegerField(blank=True, default=0)
+    schools_connectivity_unknown = models.PositiveIntegerField(blank=True, default=0)
+
+    # coverage pie chart
+    schools_coverage_good = models.PositiveIntegerField(blank=True, default=0)
+    schools_coverage_moderate = models.PositiveIntegerField(blank=True, default=0)
+    schools_coverage_no = models.PositiveIntegerField(blank=True, default=0)
+    schools_coverage_unknown = models.PositiveIntegerField(blank=True, default=0)
+
     integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
     avg_distance_school = models.FloatField(blank=True, default=None, null=True)
     schools_with_data_percentage = models.DecimalField(
@@ -78,22 +87,18 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
-    CONNECTIVITY_TYPES = Choices(
-        ('unknown', _('Unknown')),
-        ('no', _('No')),
-        ('2g', _('2G')),
-        ('3g', _('3G')),
-        ('4g', _('4G')),
-        ('fiber', _('Fiber')),
-        ('cable', _('Cable')),
-        ('dsl', _('DSL')),
-    )
+    # unable to use choives as should be (COVERAGE_TYPES.4g), because digit goes first
+    COVERAGE_UNKNOWN = 'unknown'
+    COVERAGE_NO = 'no'
+    COVERAGE_2G = '2g'
+    COVERAGE_3G = '3g'
+    COVERAGE_4G = '4g'
     COVERAGE_TYPES = Choices(
-        ('unknown', _('Unknown')),
-        ('no', _('No')),
-        ('2g', _('2G')),
-        ('3g', _('3G')),
-        ('4g', _('4G')),
+        (COVERAGE_UNKNOWN, _('Unknown')),
+        (COVERAGE_NO, _('No')),
+        (COVERAGE_2G, _('2G')),
+        (COVERAGE_3G, _('3G')),
+        (COVERAGE_4G, _('4G')),
     )
 
     school = models.ForeignKey(School, related_name='weekly_status', on_delete=models.CASCADE)

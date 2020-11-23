@@ -1,4 +1,10 @@
 class ColorMapSchema:
+    # we map both connectivity and coverage to four base colors
+    GOOD = 'good'           # green
+    MODERATE = 'moderate'   # yellow
+    NO = 'no'               # red
+    UNKNOWN = 'unknown'     # blue
+
     STATUS_BY_AVAILABILITY = {
         True: 'good',
         False: 'no',
