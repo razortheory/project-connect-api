@@ -196,7 +196,10 @@ class AggregateConnectivityDataTestCase(TestCase):
     def test_aggregate_country_daily_status_to_country_weekly_status(self):
         CountryDailyStatusFactory(country=self.country, date=datetime.now().date())
         SchoolWeeklyStatusFactory(
-            school__country=self.country, connectivity_speed=4000000, year=get_current_year(), week=get_current_week(),
+            school__country=self.country,
+            connectivity=True, connectivity_speed=4000000,
+            coverage_availability=True, coverage_type='unknown',
+            year=get_current_year(), week=get_current_week(),
         )
         SchoolWeeklyStatusFactory(
             school__country=self.country, connectivity_speed=6000000, year=get_current_year(), week=get_current_week(),
@@ -208,6 +211,10 @@ class AggregateConnectivityDataTestCase(TestCase):
 
         country_weekly = CountryWeeklyStatus.objects.filter(country=self.country).last()
         self.assertEqual(country_weekly.integration_status, CountryWeeklyStatus.REALTIME_MAPPED)
+        self.assertEqual(country_weekly.connectivity_availability,
+                         CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.realtime_speed)
+        self.assertEqual(country_weekly.coverage_availability,
+                         CountryWeeklyStatus.COVERAGE_TYPES_AVAILABILITY.coverage_availability)
 
     def test_aggregate_school_daily_status_to_school_weekly_status(self):
         today = datetime.now().date()
@@ -234,9 +241,6 @@ class AggregateConnectivityDataTestCase(TestCase):
         aggregate_school_daily_status_to_school_weekly_status(self.country)
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity, None)
-        self.assertEqual(
-            SchoolWeeklyStatus.objects.last().connectivity_status, SchoolWeeklyStatus.CONNECTIVITY_STATUSES.unknown,
-        )
 
     def test_aggregate_school_daily_status_to_school_weekly_status_connectivity_no(self):
         today = datetime.now().date()
@@ -248,9 +252,6 @@ class AggregateConnectivityDataTestCase(TestCase):
         aggregate_school_daily_status_to_school_weekly_status(self.country)
         self.assertEqual(SchoolWeeklyStatus.objects.count(), 1)
         self.assertEqual(SchoolWeeklyStatus.objects.last().connectivity, False)
-        self.assertEqual(
-            SchoolWeeklyStatus.objects.last().connectivity_status, SchoolWeeklyStatus.CONNECTIVITY_STATUSES.no,
-        )
 
 
 class TestBrazilParser(TestCase):

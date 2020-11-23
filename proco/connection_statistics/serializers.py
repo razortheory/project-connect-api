@@ -40,7 +40,6 @@ class SchoolWeeklyStatusSerializer(serializers.ModelSerializer):
             'computer_lab',
             'num_computers',
             'connectivity',
-            'connectivity_status',
             'connectivity_type',
             'connectivity_speed',
             'connectivity_latency',

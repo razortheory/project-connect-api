@@ -36,7 +36,7 @@ class CountryWeeklyStatusAdmin(CountryNameDisplayAdminMixin, admin.ModelAdmin):
 
 @admin.register(SchoolWeeklyStatus)
 class SchoolWeeklyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
-    list_display = ('get_school_name', 'year', 'week', 'connectivity_status', 'connectivity_type', 'connectivity_speed',
+    list_display = ('get_school_name', 'year', 'week', 'connectivity_speed',
                     'connectivity_latency', 'num_students', 'num_teachers')
     list_filter = ('school__country',)
     list_select_related = ('school',)
