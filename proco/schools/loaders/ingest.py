@@ -35,7 +35,7 @@ def load_data(uploaded_file):
 def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> Tuple[List[str], List[str]]:
     schools_data, errors, warnings = get_validated_rows(country, loaded)
     if errors and not ignore_errors:
-        return warnings, errors
+        return warnings, errors, 0
 
     map_schools_by_external_id(country, schools_data)
     map_schools_by_name(country, schools_data)
@@ -44,7 +44,7 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
     new_errors = remove_too_close_points(country, schools_data)
     errors.extend(new_errors)
     if errors and not ignore_errors:
-        return warnings, errors
+        return warnings, errors, 0
 
     create_new_schools(schools_data)
     update_existing_schools(schools_data)
@@ -52,10 +52,10 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
     new_errors = delete_schools_not_in_bounds(country, schools_data)
     errors.extend(new_errors)
     if errors and not ignore_errors:
-        return warnings, errors
+        return warnings, errors, 0
 
-    update_schools_weekly_statuses(schools_data)
+    processed_rows = update_schools_weekly_statuses(schools_data)
 
     country.invalidate_country_related_cache()
 
-    return warnings, errors
+    return warnings, errors, processed_rows

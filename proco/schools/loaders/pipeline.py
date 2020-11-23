@@ -297,3 +297,5 @@ def update_schools_weekly_statuses(rows: List[dict]):
         School.objects.bulk_update(updated_schools.values(), ['last_weekly_status'], batch_size=1000)
 
         logger.info(f'updated weekly statuses for {len(schools_weekly_status_list)} schools')
+
+    return len(schools_weekly_status_list)
