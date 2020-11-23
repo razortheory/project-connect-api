@@ -126,7 +126,7 @@ def update_country_weekly_status(country: Country):
     if RealTimeConnectivity.objects.filter(school__country=country).exists():
         country_status.connectivity_availability = connectivity_types.realtime_speed
         connectivity_stats = aggregate_connectivity_by_speed(latest_statuses)
-    elif SchoolWeeklyStatus.objects.filter(school__country=country, connectivity_speed__gt=0).exists():
+    elif SchoolWeeklyStatus.objects.filter(school__country=country, connectivity_speed__gte=0).exists():
         country_status.connectivity_availability = connectivity_types.static_speed
         connectivity_stats = aggregate_connectivity_by_speed(latest_statuses)
     elif SchoolWeeklyStatus.objects.filter(school__country=country, connectivity__isnull=False).exists():
