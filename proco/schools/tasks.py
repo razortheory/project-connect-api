@@ -106,7 +106,7 @@ def process_loaded_file(pk: int, force: bool = False):
             transaction.on_commit(update_stats)
     except UnsupportedFileFormatException as e:
         imported_file.status = FileImport.STATUSES.failed
-        imported_file.errors = e.message
+        imported_file.errors = str(e)
         imported_file.save()
         raise
     except Exception:

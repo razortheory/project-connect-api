@@ -20,7 +20,7 @@ logger = logging.getLogger('django.' + __name__)
 
 
 class UnsupportedFileFormatException(Exception):
-    message = 'Unsopported file format'
+    pass
 
 
 def load_data(uploaded_file):
@@ -31,7 +31,7 @@ def load_data(uploaded_file):
     elif uploaded_file.name.endswith('.xlsx'):
         loader = xls_loader
     else:
-        raise UnsupportedFileFormatException
+        raise UnsupportedFileFormatException('Unsopported file format')
 
     return loader.load_file(uploaded_file)
 
