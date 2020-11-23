@@ -31,7 +31,7 @@ def load_data(uploaded_file):
     elif uploaded_file.name.endswith('.xlsx'):
         loader = xls_loader
     else:
-        raise UnsupportedFileFormatException('Unsopported file format')
+        raise UnsupportedFileFormatException('Unsupported file format')
 
     return loader.load_file(uploaded_file)
 
