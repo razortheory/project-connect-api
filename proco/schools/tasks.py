@@ -87,9 +87,9 @@ def process_loaded_file(pk: int, force: bool = False):
             imported_file.statistic += 'Count of processed rows: 0\n'
 
         imported_file.statistic += 'Count of bad rows: {0}\n'.format(len(errors))
-        errors_counter = Counter(map(lambda x: x.split(": ")[1], errors))
+        errors_counter = Counter(map(lambda x: x.split(': ')[1], errors))
         imported_file.statistic += '\n'.join(
-            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), errors_counter.most_common())
+            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), errors_counter.most_common()),
         )
         imported_file.errors = '\n'.join(errors)
         if warnings:
