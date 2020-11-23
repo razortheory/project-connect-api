@@ -11,7 +11,7 @@ from django.db import transaction
 from proco.connection_statistics.utils import update_country_data_source_by_csv_filename, update_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
-from proco.schools.loaders.ingest import load_data, UnsupportedFileFormatException
+from proco.schools.loaders.ingest import UnsupportedFileFormatException, load_data
 from proco.schools.models import FileImport
 from proco.taskapp import app
 
