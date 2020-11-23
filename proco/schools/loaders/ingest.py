@@ -19,6 +19,10 @@ from proco.schools.loaders.pipeline import (
 logger = logging.getLogger('django.' + __name__)
 
 
+class UnsupportedFileFormatException(Exception):
+    pass
+
+
 def load_data(uploaded_file):
     if uploaded_file.name.endswith('.csv'):
         loader = csv_loader
@@ -27,7 +31,7 @@ def load_data(uploaded_file):
     elif uploaded_file.name.endswith('.xlsx'):
         loader = xls_loader
     else:
-        raise NotImplementedError
+        raise UnsupportedFileFormatException('Unsopported file format')
 
     return loader.load_file(uploaded_file)
 
