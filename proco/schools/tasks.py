@@ -11,7 +11,7 @@ from django.db import transaction
 from proco.connection_statistics.utils import update_country_data_source_by_csv_filename, update_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
-from proco.schools.loaders.ingest import load_data
+from proco.schools.loaders.ingest import load_data, UnsupportedFileFormatException
 from proco.schools.models import FileImport
 from proco.taskapp import app
 
@@ -104,6 +104,11 @@ def process_loaded_file(pk: int, force: bool = False):
                 update_country_data_source_by_csv_filename(imported_file)
 
             transaction.on_commit(update_stats)
+    except UnsupportedFileFormatException as e:
+        imported_file.status = FileImport.STATUSES.failed
+        imported_file.errors = e.message
+        imported_file.save()
+        raise
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
