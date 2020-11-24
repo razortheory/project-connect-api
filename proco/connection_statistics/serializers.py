@@ -24,6 +24,8 @@ class CountryWeeklyStatusSerializer(serializers.ModelSerializer):
             'schools_coverage_good',
             'connectivity_speed',
             'integration_status',
+            'connectivity_availability',
+            'coverage_availability',
             'avg_distance_school',
             'created',
             'modified',

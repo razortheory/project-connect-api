@@ -70,7 +70,7 @@ class BrasilSimnetLoader(object):
             school_weekly.computer_lab = bool(int(float(school_data.get('QT_COMP_ALUNO', 0))))
             school_weekly.num_computers = int(float(school_data.get('QT_COMPUTADOR', 0)))
             school_weekly.connectivity_type = school_data.get(
-                'TIPO_TECNOLOGIA', SchoolWeeklyStatus.CONNECTIVITY_TYPES.unknown,
+                'TIPO_TECNOLOGIA', SchoolWeeklyStatus._meta.get_field('connectivity_type').default,
             )
             school_weekly.save()
 
