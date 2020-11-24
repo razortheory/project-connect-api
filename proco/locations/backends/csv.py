@@ -7,9 +7,8 @@ from proco.locations.models import Country
 
 
 class SchoolsCSVWriterBackend:
-    def __init__(self, queryset, serializer_class, country_id):
-        self.queryset = queryset
-        self.serializer_class = serializer_class
+    def __init__(self, serializer, country_id):
+        self.serializer = serializer
         self.filename = self.get_filename(country_id)
 
     def get_filename(self, country_id):
@@ -28,17 +27,12 @@ class SchoolsCSVWriterBackend:
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{self.filename}"'
 
-        serializer = self.serializer_class(
-            self.queryset,
-            many=True,
-        )
-
-        csv_header = self.serializer_class.Meta.fields
+        csv_header = self.serializer.child.__class__.Meta.fields
         labels = [self.remove_underscore(field.title()) for field in csv_header]
         writer = csv.DictWriter(response, fieldnames=csv_header)
         self.writeheader(writer, csv_header, labels)
 
-        for row in serializer.data:
+        for row in self.serializer.data:
             writer.writerow(row)
 
         return response
