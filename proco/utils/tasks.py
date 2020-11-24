@@ -1,8 +1,8 @@
 from django.urls import reverse
 
-from celery import chain
-
 from rest_framework.test import APIClient
+
+from celery import chain
 
 from proco.taskapp import app
 
