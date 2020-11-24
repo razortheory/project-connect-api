@@ -65,10 +65,12 @@ class CSVSchoolsListSerializer(ListSchoolSerializer):
 
 class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
     statistics = serializers.SerializerMethodField()
+    connectivity_status = serializers.SerializerMethodField()
+    coverage_status = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'statistics',
+            'statistics', 'connectivity_status', 'coverage_status',
             'gps_confidence', 'address', 'postal_code',
             'admin_1_name', 'admin_2_name', 'admin_3_name', 'admin_4_name',
             'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type',
@@ -76,3 +78,15 @@ class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
 
     def get_statistics(self, instance):
         return SchoolWeeklyStatusSerializer(instance.last_weekly_status).data
+
+    def get_connectivity_status(self, obj):
+        availability = self.country.last_weekly_status.connectivity_availability
+        if not availability or not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.get_connectivity_status(availability)
+
+    def get_coverage_status(self, obj):
+        availability = self.country.last_weekly_status.coverage_availability
+        if not availability or not obj.last_weekly_status:
+            return None
+        return obj.last_weekly_status.get_coverage_status(availability)
