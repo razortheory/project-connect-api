@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from celery import group
+from celery import chain
 
 from rest_framework.test import APIClient
 
@@ -23,7 +23,7 @@ def update_all_cached_values():
     update_cached_value(reverse('schools:random-schools'))
 
     for country in Country.objects.all():
-        group([
+        chain([
             update_cached_value.s(reverse('locations:countries-detail', kwargs={'pk': country.pk})),
             update_cached_value.s(reverse('schools:schools-list', kwargs={'country_pk': country.pk})),
         ]).delay()
