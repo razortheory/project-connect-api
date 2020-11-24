@@ -11,7 +11,7 @@ from django.db import transaction
 from proco.connection_statistics.utils import update_country_data_source_by_csv_filename, update_country_weekly_status
 from proco.locations.models import Country
 from proco.schools.loaders import ingest
-from proco.schools.loaders.ingest import load_data
+from proco.schools.loaders.ingest import UnsupportedFileFormatException, load_data
 from proco.schools.models import FileImport
 from proco.taskapp import app
 
@@ -69,6 +69,7 @@ def process_loaded_file(pk: int, force: bool = False):
 
     try:
         loaded_data = list(load_data(imported_file.uploaded_file))
+        imported_file.statistic = 'Total count of rows in the file: {0}\n'.format(len(loaded_data))
         imported_file.country = _find_country(loaded_data)
         if not imported_file.country:
             imported_file.status = FileImport.STATUSES.failed
@@ -78,12 +79,18 @@ def process_loaded_file(pk: int, force: bool = False):
 
         try:
             with transaction.atomic():
-                warnings, errors = ingest.save_data(imported_file.country, loaded_data, ignore_errors=force)
+                warnings, errors, processed = ingest.save_data(imported_file.country, loaded_data, ignore_errors=force)
                 if errors and not force:
                     raise FailedImportError
+                imported_file.statistic += 'Count of processed rows: {0}\n'.format(processed)
         except FailedImportError:
-            pass
+            imported_file.statistic += 'Count of processed rows: 0\n'
 
+        imported_file.statistic += 'Count of bad rows: {0}\n'.format(len(errors))
+        errors_counter = Counter(map(lambda x: x.split(': ')[1], errors))
+        imported_file.statistic += '\n'.join(
+            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), errors_counter.most_common()),
+        )
         imported_file.errors = '\n'.join(errors)
         if warnings:
             imported_file.errors += '\nWarnings:\n'
@@ -104,6 +111,11 @@ def process_loaded_file(pk: int, force: bool = False):
                 update_country_data_source_by_csv_filename(imported_file)
 
             transaction.on_commit(update_stats)
+    except UnsupportedFileFormatException as e:
+        imported_file.status = FileImport.STATUSES.failed
+        imported_file.errors = str(e)
+        imported_file.save()
+        raise
     except Exception:
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
