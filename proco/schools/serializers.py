@@ -28,28 +28,13 @@ class SchoolPointSerializer(BaseSchoolSerializer):
         return self.countries_statuses[obj.country_id]
 
 
-class CSVSchoolsListSerializer(BaseSchoolSerializer):
-    connectivity_status = serializers.SerializerMethodField()
-    coverage_status = serializers.SerializerMethodField()
-    geopoint = GeoPointCSVField()
-
-    class Meta(BaseSchoolSerializer.Meta):
-        fields = ('name', 'geopoint', 'connectivity_status')
-
-    def get_connectivity_status(self, obj):
-        availability = obj.country.last_weekly_status.connectivity_availability
-        if not availability or not obj.last_weekly_status:
-            return None
-        return obj.last_weekly_status.get_connectivity_status(availability)
-
-    def get_coverage_status(self, obj):
-        availability = obj.country.last_weekly_status.connectivity_availability
-        if not availability or not obj.last_weekly_status:
-            return None
-        return obj.last_weekly_status.get_coverage_status(availability)
+class CountryToSerializerMixin(object):
+    def __init__(self, *args, **kwargs):
+        self.country = kwargs.pop('country', None)
+        super(CountryToSerializerMixin, self).__init__(*args, **kwargs)
 
 
-class ListSchoolSerializer(BaseSchoolSerializer):
+class ListSchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
     coverage_status = serializers.SerializerMethodField()
 
@@ -59,19 +44,26 @@ class ListSchoolSerializer(BaseSchoolSerializer):
         )
 
     def get_connectivity_status(self, obj):
-        availability = obj.country.last_weekly_status.connectivity_availability
+        availability = self.country.last_weekly_status.connectivity_availability
         if not availability or not obj.last_weekly_status:
             return None
         return obj.last_weekly_status.get_connectivity_status(availability)
 
     def get_coverage_status(self, obj):
-        availability = obj.country.last_weekly_status.coverage_availability
+        availability = self.country.last_weekly_status.coverage_availability
         if not availability or not obj.last_weekly_status:
             return None
         return obj.last_weekly_status.get_coverage_status(availability)
 
 
-class SchoolSerializer(BaseSchoolSerializer):
+class CSVSchoolsListSerializer(ListSchoolSerializer):
+    geopoint = GeoPointCSVField()
+
+    class Meta(BaseSchoolSerializer.Meta):
+        fields = ('name', 'geopoint', 'connectivity_status')
+
+
+class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
     statistics = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):

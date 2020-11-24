@@ -26,13 +26,21 @@ class SchoolsViewSet(
 ):
     LIST_CACHE_KEY_PREFIX = 'SCHOOLS'
 
-    queryset = School.objects.all().select_related('last_weekly_status', 'country__last_weekly_status')
+    queryset = School.objects.all().select_related('last_weekly_status')
     pagination_class = None
     serializer_class = SchoolSerializer
     filter_backends = (
         DjangoFilterBackend,
     )
     related_model = Country
+
+    def get_serializer(self, *args, **kwargs):
+        kwargs['country'] = Country.objects.filter(
+            id=self.kwargs['country_pk'],
+        ).defer('geometry', 'geometry_simplified').select_related(
+            'last_weekly_status',
+        ).first()
+        return super(SchoolsViewSet, self).get_serializer(*args, **kwargs)
 
     def get_list_cache_key(self):
         params = dict(self.request.query_params)
@@ -58,8 +66,8 @@ class SchoolsViewSet(
     def export_csv_schools(self, request, *args, **kwargs):
         country_id = self.kwargs['country_pk']
         queryset = self.get_queryset()
-        serializer_class = self.get_serializer_class()
-        csvwriter = SchoolsCSVWriterBackend(queryset, serializer_class, country_id)
+        serializer = self.get_serializer(queryset, many=True)
+        csvwriter = SchoolsCSVWriterBackend(serializer, country_id)
         response = csvwriter.write()
         return response
 
