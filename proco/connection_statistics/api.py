@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Q
 from django.http import Http404
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -31,8 +32,9 @@ class GlobalStatsAPIView(APIView):
             countries_statuses_aggregated = Country.objects.aggregate_integration_statuses()
             total_schools = schools_qs.count()
             schools_mapped = schools_qs.filter(geopoint__isnull=False).count()
-            schools_without_connectivity = schools_qs.filter(
-                last_weekly_status__connectivity=False,
+            schools_without_connectivity = School.objects.filter(
+                Q(last_weekly_status__connectivity_speed=0)
+                | Q(last_weekly_status__connectivity=False),
             ).count()
             percent_schools_without_connectivity = schools_without_connectivity / total_schools
             last_date_updated = CountryWeeklyStatus.objects.all().order_by('-date').first().date
