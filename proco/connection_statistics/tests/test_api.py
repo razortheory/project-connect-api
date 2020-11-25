@@ -48,8 +48,9 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         SchoolWeeklyStatusFactory(school=cls.school_one, connectivity=True)
         SchoolWeeklyStatusFactory(school=cls.school_two, connectivity=False)
         CountryWeeklyStatusFactory(country=cls.country_one, integration_status=CountryWeeklyStatus.REALTIME_MAPPED,
-                                   year=datetime.now().year + 1)
+                                   year=datetime.now().year + 1, schools_connectivity_no=1)
         cls.cws = CountryWeeklyStatusFactory(integration_status=CountryWeeklyStatus.STATIC_MAPPED,
+                                             schools_connectivity_no=0,
                                              year=datetime.now().year + 2)
 
     def setUp(self):
