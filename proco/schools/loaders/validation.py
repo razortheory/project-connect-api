@@ -222,7 +222,11 @@ def validate_row(country: Country, data: dict):
     if 'coverage_availability' in data:
         history_data['coverage_availability'] = data['coverage_availability'].lower() in ['true', 'yes', '1']
     if 'coverage_type' in data:
-        if len(data['coverage_type']) > (
+        if data['coverage_type'].lower() in ['no service', 'no coverage', 'no']:
+            if 'coverage_availability' not in data:
+                history_data['coverage_availability'] = False
+            history_data['coverage_type'] = SchoolWeeklyStatus.COVERAGE_NO
+        elif len(data['coverage_type']) > (
             field_max_length := SchoolWeeklyStatus._meta.get_field('coverage_type').max_length
         ):
             errors.append(
