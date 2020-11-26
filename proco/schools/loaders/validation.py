@@ -226,22 +226,23 @@ def validate_row(country: Country, data: dict):
             if 'coverage_availability' not in data:
                 history_data['coverage_availability'] = False
             history_data['coverage_type'] = SchoolWeeklyStatus.COVERAGE_NO
-        elif len(data['coverage_type']) > (
-            field_max_length := SchoolWeeklyStatus._meta.get_field('coverage_type').max_length
-        ):
-            errors.append(
-                _('Bad data provided for coverage_type: max length of {0} characters exceeded').format(
-                    field_max_length,
-                ))
-            return None, None, errors, warnings
-        if data['coverage_type'].lower() not in [type_[0] for type_ in SchoolWeeklyStatus.COVERAGE_TYPES]:
-            errors.append(
-                _('Bad data provided for coverage_type: {0} type does not exist').format(
-                    data['coverage_type'],
-                ))
-            return None, None, errors, warnings
-        history_data['coverage_availability'] = True
-        history_data['coverage_type'] = data['coverage_type'].lower()
+        else:
+            if len(data['coverage_type']) > (
+                field_max_length := SchoolWeeklyStatus._meta.get_field('coverage_type').max_length
+            ):
+                errors.append(
+                    _('Bad data provided for coverage_type: max length of {0} characters exceeded').format(
+                        field_max_length,
+                    ))
+                return None, None, errors, warnings
+            if data['coverage_type'].lower() not in [type_[0] for type_ in SchoolWeeklyStatus.COVERAGE_TYPES]:
+                errors.append(
+                    _('Bad data provided for coverage_type: {0} type does not exist').format(
+                        data['coverage_type'],
+                    ))
+                return None, None, errors, warnings
+            history_data['coverage_availability'] = True
+            history_data['coverage_type'] = data['coverage_type'].lower()
     if 'latency_connectivity' in data:
         history_data['connectivity_latency'] = data['latency_connectivity']
 
