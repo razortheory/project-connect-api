@@ -108,13 +108,15 @@ def validate_row(country: Country, data: dict):
     if 'environment' in data:
         environment = data['environment'].lower()
         if environment not in environment_values:
-            errors.append(
-                _('Bad data provided for environment: should be in {0}').format(
-                    ', '.join(environment_values),
-                ),
-            )
-            return None, None, errors, warnings
-        school_data['environment'] = environment
+            school_data['environment'] = School.ENVIRONMENT_STATUSES.urban
+            # errors.append(
+            #     _('Bad data provided for environment: should be in {0}').format(
+            #         ', '.join(environment_values),
+            #     ),
+            # )
+            # return None, None, errors, warnings
+        else:
+            school_data['environment'] = environment
     if 'address' in data:
         if len(data['address']) > address_max_length:
             errors.append(
