@@ -7,20 +7,14 @@ def update_countries_statuses(apps, schema_editor):
     Country = apps.get_model('locations', 'Country')
 
     for country in Country.objects.all():
-        status_change_scheme = {
-            1: 3,
-            2: 4,
-            3: 5,
-        }
-
         if country.data_source and country.data_source.lower() == 'osm':
             country.last_weekly_status.integration_status = 1
             country.last_weekly_status.save(update_fields=('integration_status',))
             continue
 
         if country.last_weekly_status:
-            if new_status := status_change_scheme.get(country.last_weekly_status.integration_status):
-                country.last_weekly_status.integration_status = new_status
+            if country.last_weekly_status.integration_status == 0:
+                country.last_weekly_status.integration_status = 4
                 country.last_weekly_status.save(update_fields=('integration_status',))
 
 
@@ -35,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='countryweeklystatus',
             name='integration_status',
-            field=models.PositiveSmallIntegerField(choices=[(0, 'Default Country Status'), (1, 'School OSM locations mapped'), (2, 'Country Joined Project Connect'), (3, 'School locations mapped'), (4, 'Static connectivity mapped'), (5, 'Real time connectivity mapped')], default=0),
+            field=models.PositiveSmallIntegerField(choices=[(0, 'Country Joined Project Connect'), (1, 'School locations mapped'), (2, 'Static connectivity mapped'), (3, 'Real time connectivity mapped'), (4, 'Default Country Status'), (5, 'School OSM locations mapped')], default=4),
         ),
         migrations.RunPython(update_countries_statuses, migrations.RunPython.noop),
     ]

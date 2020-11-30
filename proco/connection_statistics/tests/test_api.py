@@ -207,7 +207,8 @@ class AggregateConnectivityDataTestCase(TestCase):
         )
 
         country_weekly = CountryWeeklyStatus.objects.filter(country=self.country).last()
-        country_weekly.update_country_status_to_joined_when_country_verified()
+        if not country_weekly.is_verified:
+            country_weekly.update_country_status_to_joined()
 
         update_country_weekly_status(self.country)
         self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 1)

@@ -21,12 +21,12 @@ class ConnectivityStatistics(models.Model):
 
 
 class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
-    COUNTRY_CREATED = 0
-    SCHOOL_OSM_MAPPED = 1
-    JOINED = 2
-    SCHOOL_MAPPED = 3
-    STATIC_MAPPED = 4
-    REALTIME_MAPPED = 5
+    JOINED = 0
+    SCHOOL_MAPPED = 1
+    STATIC_MAPPED = 2
+    REALTIME_MAPPED = 3
+    COUNTRY_CREATED = 4
+    SCHOOL_OSM_MAPPED = 5
 
     INTEGRATION_STATUS_TYPES = Choices(
         (COUNTRY_CREATED, _('Default Country Status')),
@@ -90,12 +90,15 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         self.date = Week(self.year, self.week).monday()
         super().save(**kwargs)
 
-    def update_country_status_to_joined_when_country_verified(self):
-        if self.integration_status in [self.COUNTRY_CREATED, self.SCHOOL_OSM_MAPPED]:
-            self.integration_status = self.JOINED
-            self.save(update_fields=('integration_status',))
-            if self.integration_status == self.SCHOOL_OSM_MAPPED:
-                self.country.schools.all().delete()
+    @property
+    def is_verified(self):
+        return self.integration_status not in [self.COUNTRY_CREATED, self.SCHOOL_OSM_MAPPED]
+
+    def update_country_status_to_joined(self):
+        self.integration_status = self.JOINED
+        self.save(update_fields=('integration_status',))
+        if self.integration_status == self.SCHOOL_OSM_MAPPED:
+            self.country.schools.all().delete()
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
