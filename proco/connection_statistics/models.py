@@ -25,11 +25,16 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     SCHOOL_MAPPED = 1
     STATIC_MAPPED = 2
     REALTIME_MAPPED = 3
+    DEFAULT = 4
+    SCHOOL_OSM_MAPPED = 5
+
     INTEGRATION_STATUS_TYPES = Choices(
         (JOINED, _('Country Joined Project Connect')),
         (SCHOOL_MAPPED, _('School locations mapped')),
         (STATIC_MAPPED, _('Static connectivity mapped')),
         (REALTIME_MAPPED, _('Real time connectivity mapped')),
+        (DEFAULT, _('Default Country Status')),
+        (SCHOOL_OSM_MAPPED, _('School OSM locations mapped')),
     )
     CONNECTIVITY_TYPES_AVAILABILITY = Choices(
         ('no_connectivity', _('No data')),
@@ -62,7 +67,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_coverage_no = models.PositiveIntegerField(blank=True, default=0)
     schools_coverage_unknown = models.PositiveIntegerField(blank=True, default=0)
 
-    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
+    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=DEFAULT)
     avg_distance_school = models.FloatField(blank=True, default=None, null=True)
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
@@ -84,6 +89,13 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     def save(self, **kwargs):
         self.date = Week(self.year, self.week).monday()
         super().save(**kwargs)
+
+    def verification_status(self):
+        if self.integration_status in [self.DEFAULT, self.SCHOOL_OSM_MAPPED]:
+            self.integration_status = self.JOINED
+            self.save(update_fields=('integration_status',))
+            if self.integration_status == self.SCHOOL_OSM_MAPPED:
+                self.country.schools.all().delete()
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):

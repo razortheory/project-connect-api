@@ -206,6 +206,9 @@ class AggregateConnectivityDataTestCase(TestCase):
             school__country=self.country, connectivity_speed=6000000, year=get_current_year(), week=get_current_week(),
         )
 
+        country_weekly = CountryWeeklyStatus.objects.filter(country=self.country).last()
+        country_weekly.verification_status()
+
         update_country_weekly_status(self.country)
         self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).count(), 1)
         self.assertEqual(CountryWeeklyStatus.objects.filter(country=self.country).last().connectivity_speed, 5000000)
