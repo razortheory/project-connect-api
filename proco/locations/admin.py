@@ -16,7 +16,7 @@ class CountryAdmin(GeoModelAdmin):
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
     raw_id_fields = ('last_weekly_status',)
-    actions = ('country_verification',)
+    actions = ('update_country_status_to_joined',)
 
     def flag_preview(self, obj):
         if not obj.flag:
@@ -29,7 +29,7 @@ class CountryAdmin(GeoModelAdmin):
         return super().get_queryset(request).defer('geometry', 'geometry_simplified')
 
     @transaction.atomic
-    def country_verification(self, request, queryset):
+    def update_country_status_to_joined(self, request, queryset):
         countries_available = request.user.countries_available.values('id')
         qs_not_available = queryset.exclude(id__in=countries_available)
         if qs_not_available.exists():
@@ -43,6 +43,8 @@ class CountryAdmin(GeoModelAdmin):
                       f'{", ".join(queryset.values_list("name", flat=True))}'
             level = messages.INFO
         self.message_user(request, message, level=level)
+
+    update_country_status_to_joined.short_description = 'Verify country'
 
 
 @admin.register(Location)
