@@ -21,20 +21,20 @@ class ConnectivityStatistics(models.Model):
 
 
 class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
-    JOINED = 0
-    SCHOOL_MAPPED = 1
-    STATIC_MAPPED = 2
-    REALTIME_MAPPED = 3
-    DEFAULT = 4
-    SCHOOL_OSM_MAPPED = 5
+    COUNTRY_CREATED = 0
+    SCHOOL_OSM_MAPPED = 1
+    JOINED = 2
+    SCHOOL_MAPPED = 3
+    STATIC_MAPPED = 4
+    REALTIME_MAPPED = 5
 
     INTEGRATION_STATUS_TYPES = Choices(
+        (COUNTRY_CREATED, _('Default Country Status')),
+        (SCHOOL_OSM_MAPPED, _('School OSM locations mapped')),
         (JOINED, _('Country Joined Project Connect')),
         (SCHOOL_MAPPED, _('School locations mapped')),
         (STATIC_MAPPED, _('Static connectivity mapped')),
         (REALTIME_MAPPED, _('Real time connectivity mapped')),
-        (DEFAULT, _('Default Country Status')),
-        (SCHOOL_OSM_MAPPED, _('School OSM locations mapped')),
     )
     CONNECTIVITY_TYPES_AVAILABILITY = Choices(
         ('no_connectivity', _('No data')),
@@ -67,7 +67,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_coverage_no = models.PositiveIntegerField(blank=True, default=0)
     schools_coverage_unknown = models.PositiveIntegerField(blank=True, default=0)
 
-    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=DEFAULT)
+    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=COUNTRY_CREATED)
     avg_distance_school = models.FloatField(blank=True, default=None, null=True)
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
@@ -90,8 +90,8 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         self.date = Week(self.year, self.week).monday()
         super().save(**kwargs)
 
-    def verification_status(self):
-        if self.integration_status in [self.DEFAULT, self.SCHOOL_OSM_MAPPED]:
+    def update_country_status_to_joined_when_country_verified(self):
+        if self.integration_status in [self.COUNTRY_CREATED, self.SCHOOL_OSM_MAPPED]:
             self.integration_status = self.JOINED
             self.save(update_fields=('integration_status',))
             if self.integration_status == self.SCHOOL_OSM_MAPPED:

@@ -179,7 +179,7 @@ def update_country_weekly_status(country: Country):
         country_status.schools_with_data_percentage = 0
 
     # move country status as far as we can
-    if country_status.integration_status == CountryWeeklyStatus.DEFAULT and country_status.schools_total:
+    if country_status.integration_status == CountryWeeklyStatus.COUNTRY_CREATED and country_status.schools_total:
         country_status.integration_status = CountryWeeklyStatus.SCHOOL_OSM_MAPPED
 
     if country_status.integration_status == CountryWeeklyStatus.JOINED and country_status.schools_total:

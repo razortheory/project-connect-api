@@ -38,7 +38,7 @@ class CountryAdmin(GeoModelAdmin):
             level = messages.ERROR
         else:
             for obj in queryset:
-                obj.last_weekly_status.verification_status()
+                obj.last_weekly_status.update_country_status_to_joined_when_country_verified()
             message = f'Country statuses have been successfully changed: ' \
                       f'{", ".join(queryset.values_list("name", flat=True))}'
             level = messages.INFO
