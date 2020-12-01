@@ -56,13 +56,13 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
 
         if 'external_id' in school_data:
             if school_data['external_id'].lower() in csv_external_ids:
-                warnings.append(_('Bad data provided for school identifier: duplicate entry'))
+                warnings.append(_(f'Row {row_index}: Bad data provided for school identifier: duplicate entry'))
                 continue
             csv_external_ids.append(school_data['external_id'].lower())
 
         if 'name' in school_data:
             if school_data['name'].lower() in csv_names:
-                warnings.append(_('Bad data provided for school name: duplicate entry'))
+                warnings.append(_(f'Row {row_index}: Bad data provided for school name: duplicate entry'))
                 continue
             csv_names.append(school_data['name'].lower())
 

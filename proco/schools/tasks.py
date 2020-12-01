@@ -91,6 +91,12 @@ def process_loaded_file(pk: int, force: bool = False):
         imported_file.statistic += '\n'.join(
             map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), errors_counter.most_common()),
         )
+        warnings_counter = Counter(map(lambda x: x.split(': ')[1], warnings))
+        if errors_counter:
+            imported_file.statistic += '\n'
+        imported_file.statistic += '\n'.join(
+            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), warnings_counter.most_common()),
+        )
         imported_file.errors = '\n'.join(errors)
         if warnings:
             imported_file.errors += '\nWarnings:\n'
