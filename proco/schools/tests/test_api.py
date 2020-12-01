@@ -56,6 +56,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertIn('connectivity_status', response.data[0])
             self.assertIn('coverage_status', response.data[0])
+            self.assertIn('is_verified', response.data[0])
 
     def test_schools_list_with_part_availability(self):
         connectivity_availability = CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.connectivity
