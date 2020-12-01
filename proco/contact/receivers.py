@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
 
 from constance import config
 from templated_email import send_templated_mail
