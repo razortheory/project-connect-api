@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     'admin_reorder',
     'django_filters',
     'django_mptt_admin',
+    'constance',
 ]
 
 LOCAL_APPS = [
@@ -56,6 +57,7 @@ LOCAL_APPS = [
     'proco.schools',
     'proco.locations',
     'proco.connection_statistics',
+    'proco.contact',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -240,6 +242,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 # --------------
 
 ADMIN_REORDER = (
+    'constance',
     {
         'app': 'custom_auth',
         'label': 'Authentication and authorization',
@@ -267,8 +270,20 @@ ADMIN_REORDER = (
     },
     'locations',
     'schools',
+    'contact',
 )
 
 RANDOM_SCHOOLS_DEFAULT_AMOUNT = env('RANDOM_SCHOOLS_DEFAULT_AMOUNT', default=20000)
 
 CONTACT_MANAGERS = env.list('CONTACT_MANAGERS', default=['test@test.test'])
+
+
+CONSTANCE_ADDITIONAL_FIELDS = {
+    'email_input': ['django.forms.fields.CharField', {
+        'required': False,
+        'widget': 'django.forms.EmailInput',
+    }],
+}
+CONSTANCE_CONFIG = {
+    'CONTACT_EMAIL': ('', 'Email to receive contact messages', 'email_input'),
+}
