@@ -1,0 +1,12 @@
+{% block subject %}{{full_name}}: {{purpose}}{% endblock %}
+
+{% block html %}
+<p>
+    Message from: {{full_name}}.<br />
+    Organisation: {{organisation}}.<br />
+    Purpose: {{purpose}}.<br />
+</p>
+<p>
+    Message text: {{message}}
+</p>
+{% endblock %}
