@@ -25,7 +25,12 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     SCHOOL_MAPPED = 1
     STATIC_MAPPED = 2
     REALTIME_MAPPED = 3
+    COUNTRY_CREATED = 4
+    SCHOOL_OSM_MAPPED = 5
+
     INTEGRATION_STATUS_TYPES = Choices(
+        (COUNTRY_CREATED, _('Default Country Status')),
+        (SCHOOL_OSM_MAPPED, _('School OSM locations mapped')),
         (JOINED, _('Country Joined Project Connect')),
         (SCHOOL_MAPPED, _('School locations mapped')),
         (STATIC_MAPPED, _('Static connectivity mapped')),
@@ -62,7 +67,7 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     schools_coverage_no = models.PositiveIntegerField(blank=True, default=0)
     schools_coverage_unknown = models.PositiveIntegerField(blank=True, default=0)
 
-    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=JOINED)
+    integration_status = models.PositiveSmallIntegerField(choices=INTEGRATION_STATUS_TYPES, default=COUNTRY_CREATED)
     avg_distance_school = models.FloatField(blank=True, default=None, null=True)
     schools_with_data_percentage = models.DecimalField(
         decimal_places=5, max_digits=6, default=0, validators=[MaxValueValidator(1), MinValueValidator(0)],
@@ -84,6 +89,16 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
     def save(self, **kwargs):
         self.date = Week(self.year, self.week).monday()
         super().save(**kwargs)
+
+    @property
+    def is_verified(self):
+        return self.integration_status not in [self.COUNTRY_CREATED, self.SCHOOL_OSM_MAPPED]
+
+    def update_country_status_to_joined(self):
+        self.integration_status = self.JOINED
+        self.save(update_fields=('integration_status',))
+        if self.integration_status == self.SCHOOL_OSM_MAPPED:
+            self.country.schools.all().delete()
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):

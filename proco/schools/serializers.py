@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.connection_statistics.serializers import SchoolWeeklyStatusSerializer
 from proco.locations.fields import GeoPointCSVField
 from proco.schools.models import School
@@ -37,10 +38,11 @@ class CountryToSerializerMixin(object):
 class ListSchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
     connectivity_status = serializers.SerializerMethodField()
     coverage_status = serializers.SerializerMethodField()
+    is_verified = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
-            'connectivity_status', 'coverage_status',
+            'connectivity_status', 'coverage_status', 'is_verified',
         )
 
     def get_connectivity_status(self, obj):
@@ -55,6 +57,13 @@ class ListSchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
             return None
         return obj.last_weekly_status.get_coverage_status(availability)
 
+    def get_is_verified(self, obj):
+        if not self.country.last_weekly_status:
+            return None
+        return self.country.last_weekly_status.integration_status not in [
+            CountryWeeklyStatus.COUNTRY_CREATED, CountryWeeklyStatus.SCHOOL_OSM_MAPPED,
+        ]
+
 
 class CSVSchoolsListSerializer(ListSchoolSerializer):
     geopoint = GeoPointCSVField()
@@ -67,13 +76,14 @@ class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
     statistics = serializers.SerializerMethodField()
     connectivity_status = serializers.SerializerMethodField()
     coverage_status = serializers.SerializerMethodField()
+    is_verified = serializers.SerializerMethodField()
 
     class Meta(BaseSchoolSerializer.Meta):
         fields = BaseSchoolSerializer.Meta.fields + (
             'statistics', 'connectivity_status', 'coverage_status',
             'gps_confidence', 'address', 'postal_code',
             'admin_1_name', 'admin_2_name', 'admin_3_name', 'admin_4_name',
-            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type',
+            'timezone', 'altitude', 'email', 'education_level', 'environment', 'school_type', 'is_verified',
         )
 
     def get_statistics(self, instance):
@@ -90,3 +100,10 @@ class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
         if not availability or not obj.last_weekly_status:
             return None
         return obj.last_weekly_status.get_coverage_status(availability)
+
+    def get_is_verified(self, obj):
+        if not self.country.last_weekly_status:
+            return None
+        return self.country.last_weekly_status.integration_status not in [
+            CountryWeeklyStatus.COUNTRY_CREATED, CountryWeeklyStatus.SCHOOL_OSM_MAPPED,
+        ]

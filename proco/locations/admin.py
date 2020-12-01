@@ -1,5 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.gis.admin import GeoModelAdmin
+from django.db import transaction
 from django.utils.safestring import mark_safe
 
 from proco.locations.filters import CountryFilterList
@@ -15,6 +16,7 @@ class CountryAdmin(GeoModelAdmin):
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
     raw_id_fields = ('last_weekly_status',)
+    actions = ('update_country_status_to_joined',)
 
     def flag_preview(self, obj):
         if not obj.flag:
@@ -25,6 +27,25 @@ class CountryAdmin(GeoModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).defer('geometry', 'geometry_simplified')
+
+    @transaction.atomic
+    def update_country_status_to_joined(self, request, queryset):
+        countries_available = request.user.countries_available.values('id')
+        qs_not_available = queryset.exclude(id__in=countries_available)
+        if qs_not_available.exists():
+            message = f'You do not have access to change countries: ' \
+                      f'{", ".join(qs_not_available.values_list("name", flat=True))}'
+            level = messages.ERROR
+        else:
+            for obj in queryset:
+                if not obj.last_weekly_status.is_verified:
+                    obj.last_weekly_status.update_country_status_to_joined()
+            message = f'Country statuses have been successfully changed: ' \
+                      f'{", ".join(queryset.values_list("name", flat=True))}'
+            level = messages.INFO
+        self.message_user(request, message, level=level)
+
+    update_country_status_to_joined.short_description = 'Verify country'
 
 
 @admin.register(Location)
