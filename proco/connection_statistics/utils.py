@@ -111,12 +111,15 @@ def aggregate_school_daily_status_to_school_weekly_status(country) -> bool:
 
 
 def update_country_weekly_status(country: Country):
+    last_weekly_status_country = country.last_weekly_status
     country_status, created = CountryWeeklyStatus.objects.get_or_create(
         country=country, year=get_current_year(), week=get_current_week(),
     )
     if created:
         country.last_weekly_status = country_status
         country.save()
+        country.last_weekly_status.integration_status = last_weekly_status_country.integration_status
+        country.last_weekly_status.save(update_fields=('integration_status',))
 
     # calculate pie charts. first we need to understand which case is applicable for country
     latest_statuses = SchoolWeeklyStatus.objects.filter(school__country=country, _school__isnull=False)
