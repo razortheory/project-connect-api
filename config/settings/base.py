@@ -278,6 +278,7 @@ RANDOM_SCHOOLS_DEFAULT_AMOUNT = env('RANDOM_SCHOOLS_DEFAULT_AMOUNT', default=200
 CONTACT_MANAGERS = env.list('CONTACT_MANAGERS', default=['test@test.test'])
 
 
+CONSTANCE_REDIS_CONNECTION = env('REDIS_URL', default='redis://localhost:6379/0')
 CONSTANCE_ADDITIONAL_FIELDS = {
     'email_input': ['django.forms.fields.CharField', {
         'required': False,
