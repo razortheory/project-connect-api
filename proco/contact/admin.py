@@ -4,7 +4,7 @@ from proco.contact.models import ContactMessage
 
 
 class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'purpose', 'organisation', 'created', 'message')
+    list_display = ('full_name', 'purpose', 'organization', 'created', 'message')
 
     def has_add_permission(self, request):
         return False

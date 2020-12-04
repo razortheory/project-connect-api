@@ -6,4 +6,4 @@ from proco.contact.models import ContactMessage
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactMessage
-        fields = ('full_name', 'organisation', 'purpose', 'message')
+        fields = ('full_name', 'organization', 'purpose', 'message')

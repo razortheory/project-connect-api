@@ -5,7 +5,7 @@ from model_utils.models import TimeStampedModel
 
 class ContactMessage(TimeStampedModel, models.Model):
     full_name = models.CharField(max_length=256)
-    organisation = models.CharField(max_length=256)
+    organization = models.CharField(max_length=256)
     purpose = models.CharField(max_length=256)
     message = models.TextField()
 
