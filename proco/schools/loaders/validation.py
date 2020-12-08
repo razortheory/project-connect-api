@@ -244,8 +244,15 @@ def validate_row(country: Country, data: dict):
             history_data['coverage_availability'] = True
             history_data['coverage_type'] = data['coverage_type'].lower()
     if 'latency_connectivity' in data:
+        try:
+            data['connectivity_latency'] = int(data['latency_connectivity'])
+        except ValueError:
+            errors.append(_('Bad data provided for latency_connectivity'))
+            return None, None, errors, warnings
+        if data['connectivity_latency'] < 0:
+            errors.append(_('Bad data provided for latency_connectivity'))
+            return None, None, errors, warnings
         history_data['connectivity_latency'] = data['latency_connectivity']
-
     if 'water' in data:
         history_data['running_water'] = data['water'].lower() in ['true', 'yes', '1']
 

@@ -23,6 +23,7 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
     warnings = []
     csv_external_ids = []
     csv_names = []
+    csv_geopoints = []
     rows = []
 
     for i, data in enumerate(loaded):
@@ -65,6 +66,12 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
                 warnings.append(_(f'Row {row_index}: Bad data provided for school name: duplicate entry'))
                 continue
             csv_names.append(school_data['name'].lower())
+
+        if 'geopoint' in school_data:
+            if school_data['geopoint'] in csv_geopoints:
+                warnings.append(_(f'Row {row_index}: Bad data provided for geopoints: duplicate entry'))
+                continue
+            csv_geopoints.append(school_data['geopoint'])
 
         rows.append({
             'row_index': row_index,
