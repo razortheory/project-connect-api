@@ -54,7 +54,8 @@ class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
         return qs.prefetch_related('country').defer('location')
 
     def import_csv(self, request):
-        if request.method == 'POST':
+        user = request.user
+        if user.is_authenticated and user.has_perm('schools.add_fileimport') and request.method == 'POST':
             form = ImportSchoolsCSVForm(data=request.POST, files=request.FILES)
             if form.is_valid():
                 cleaned_data = form.clean()
@@ -87,6 +88,9 @@ class FileImportAdmin(ImportFormMixin, admin.ModelAdmin):
     raw_id_fields = ('country',)
 
     def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False
 
     def get_queryset(self, request):
