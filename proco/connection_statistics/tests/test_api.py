@@ -75,7 +75,7 @@ class GlobalStatisticsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.data, correct_response)
 
     def test_global_stats_queries(self):
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:global-stat'),
