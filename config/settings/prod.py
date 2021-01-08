@@ -127,6 +127,7 @@ SENTRY_ENABLED = True if SENTRY_DSN else False
 if SENTRY_ENABLED:
     sentry_sdk.init(
         SENTRY_DSN,
+        traces_sample_rate=0.2,
         integrations=[DjangoIntegration(), CeleryIntegration()],
     )
 
