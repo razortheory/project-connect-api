@@ -122,7 +122,7 @@ def process_loaded_file(pk: int, force: bool = False):
         imported_file.errors = str(e)
         imported_file.save()
         raise
-    except Exception:
+    except Exception:  # noqa: B902
         imported_file.status = FileImport.STATUSES.failed
         imported_file.errors = traceback.format_exc()
         imported_file.save()
