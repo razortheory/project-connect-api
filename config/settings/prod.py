@@ -4,6 +4,7 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from config.settings.base import *  # noqa: F403
+from config.utils import get_git_hash
 
 environ.Env.read_env()
 
@@ -128,6 +129,7 @@ if SENTRY_ENABLED:
     sentry_sdk.init(
         SENTRY_DSN,
         traces_sample_rate=0.2,
+        release=get_git_hash(),
         integrations=[DjangoIntegration(), CeleryIntegration()],
     )
 

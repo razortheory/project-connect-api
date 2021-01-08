@@ -64,6 +64,7 @@ isoweek = "*"
 geopy = "*"
 scipy = "*"
 django-constance = "*"
+gitpython = "*"
 
 [requires]
 python_version = "3.8"
