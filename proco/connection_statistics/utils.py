@@ -129,21 +129,20 @@ def update_country_weekly_status(country: Country):
     if RealTimeConnectivity.objects.filter(school__country=country).exists():
         country_status.connectivity_availability = connectivity_types.realtime_speed
         connectivity_stats = aggregate_connectivity_by_speed(latest_statuses)
-    elif SchoolWeeklyStatus.objects.filter(school__country=country, connectivity_speed__gte=0).exists():
+    elif latest_statuses.filter(connectivity_speed__gte=0).exists():
         country_status.connectivity_availability = connectivity_types.static_speed
         connectivity_stats = aggregate_connectivity_by_speed(latest_statuses)
-    elif SchoolWeeklyStatus.objects.filter(school__country=country, connectivity__isnull=False).exists():
+    elif latest_statuses.filter(connectivity__isnull=False).exists():
         country_status.connectivity_availability = connectivity_types.connectivity
         connectivity_stats = aggregate_connectivity_by_availability(latest_statuses)
     else:
         country_status.connectivity_availability = connectivity_types.no_connectivity
         connectivity_stats = aggregate_connectivity_default(latest_statuses)
 
-    if SchoolWeeklyStatus.objects.filter(school__country=country)\
-            .exclude(coverage_type=SchoolWeeklyStatus.COVERAGE_TYPES.unknown).exists():
+    if latest_statuses.exclude(coverage_type=SchoolWeeklyStatus.COVERAGE_TYPES.unknown).exists():
         country_status.coverage_availability = coverage_types.coverage_type
         coverage_stats = aggregate_coverage_by_types(latest_statuses)
-    elif SchoolWeeklyStatus.objects.filter(school__country=country, coverage_availability__isnull=False).exists():
+    elif latest_statuses.filter(coverage_availability__isnull=False).exists():
         country_status.coverage_availability = coverage_types.coverage_availability
         coverage_stats = aggregate_coverage_by_availability(latest_statuses)
     else:
