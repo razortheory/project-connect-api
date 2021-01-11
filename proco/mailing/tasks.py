@@ -1,6 +1,6 @@
-from celery.task import task
+from proco.taskapp import app
 
 
-@task(ignore_result=True)
+@app.task(ignore_result=True)
 def send_email(backend, *args, **kwargs):
     backend.send(*args, **kwargs)

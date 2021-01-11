@@ -365,7 +365,7 @@
         },
         "drf-secure-token": {
             "git": "https://github.com/razortheory/drf-secure-token.git",
-            "ref": "1b57cba554f07f84f331acf82cc9f5fb16829a31"
+            "ref": "a902ff066634bb9ef69f0939923e4e9d4e295aec"
         },
         "factory-boy": {
             "hashes": [
