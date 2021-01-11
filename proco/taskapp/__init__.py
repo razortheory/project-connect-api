@@ -4,6 +4,7 @@ from django.conf import settings
 
 from celery import Celery
 from celery.schedules import crontab
+from drf_secure_token.tasks import DELETE_OLD_TOKENS
 
 if not settings.configured:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
@@ -30,5 +31,6 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=3, minute=0),
         'args': (),
     },
+    'drf_secure_token.tasks.delete_old_tokens': DELETE_OLD_TOKENS,
 }
 app.conf.timezone = 'UTC'

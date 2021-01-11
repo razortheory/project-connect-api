@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cb65a654f3212091fd8e635986d52f6743811615c675e4779c517165d1f155fd"
+            "sha256": "8babf99b1d58ed3795beec5aad29fdf26ef3e37ab801702bc76f0a4db0ffd65e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -364,12 +364,8 @@
             "version": "==0.92.5"
         },
         "drf-secure-token": {
-            "hashes": [
-                "sha256:60c6d0a1568dfd7a6159fbe84b5104c9626609f6a9996088cba7060d39c65161",
-                "sha256:906901e1db8411851e21dd7ee9c273f0d96752d56b2ecad9bd179a347ca9b4bb"
-            ],
-            "index": "pypi",
-            "version": "==1.0.4"
+            "git": "https://github.com/razortheory/drf-secure-token.git",
+            "ref": "1b57cba554f07f84f331acf82cc9f5fb16829a31"
         },
         "factory-boy": {
             "hashes": [
