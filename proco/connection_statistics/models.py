@@ -95,10 +95,10 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
         return self.integration_status not in [self.COUNTRY_CREATED, self.SCHOOL_OSM_MAPPED]
 
     def update_country_status_to_joined(self):
-        self.integration_status = self.JOINED
-        self.save(update_fields=('integration_status',))
         if self.integration_status == self.SCHOOL_OSM_MAPPED:
             self.country.schools.all().delete()
+        self.integration_status = self.JOINED
+        self.save(update_fields=('integration_status',))
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):

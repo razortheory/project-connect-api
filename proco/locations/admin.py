@@ -40,6 +40,7 @@ class CountryAdmin(GeoModelAdmin):
             for obj in queryset:
                 if not obj.last_weekly_status.is_verified:
                     obj.last_weekly_status.update_country_status_to_joined()
+                    obj.invalidate_country_related_cache()
             message = f'Country statuses have been successfully changed: ' \
                       f'{", ".join(queryset.values_list("name", flat=True))}'
             level = messages.INFO
