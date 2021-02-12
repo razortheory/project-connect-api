@@ -58,7 +58,7 @@ def _find_country(loaded: List[dict]) -> [Country]:
         return countries_counter.most_common()[0][0]
 
 
-@app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
+@app.task(soft_time_limit=4 * 60 * 60, time_limit=4 * 60 * 60)
 def process_loaded_file(pk: int, force: bool = False):
     imported_file = FileImport.objects.filter(pk=pk).first()
     if not imported_file:
