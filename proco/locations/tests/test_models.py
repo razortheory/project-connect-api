@@ -1,7 +1,9 @@
 from django.contrib.gis.geos import GEOSGeometry
 from django.test import TestCase
 
+from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.locations.tests.factories import CountryFactory
+from proco.schools.tests.factories import SchoolFactory
 
 
 class TestCountryModel(TestCase):
@@ -23,3 +25,16 @@ class TestCountryModel(TestCase):
 
         self.assertIsNone(country.geometry)
         self.assertIsNone(country.geometry_simplified)
+
+    def test_clear_data_function(self):
+        country = CountryFactory()
+        country.last_weekly_status.update_country_status_to_joined()
+        [SchoolFactory(country=country) for _ in range(3)]
+
+        self.assertEqual(country.schools.count(), 3)
+        self.assertEqual(country.last_weekly_status.integration_status, CountryWeeklyStatus.JOINED)
+
+        country._clear_data_country()
+
+        self.assertEqual(country.schools.count(), 0)
+        self.assertEqual(country.last_weekly_status.integration_status, CountryWeeklyStatus.COUNTRY_CREATED)

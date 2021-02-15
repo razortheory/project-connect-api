@@ -14,12 +14,9 @@ def create_country_weekly_status(instance, created=False, **kwargs):
 @receiver(post_save, sender=CountryWeeklyStatus)
 def set_date_of_join(instance, created=False, **kwargs):
     if created:
-        if instance.country.date_of_join is None:
-            instance.country.date_of_join = instance.date
-            instance.country.save()
-
         country = instance.country
-        country_last_status = country.last_weekly_status
+        country_last_status = CountryWeeklyStatus.objects.filter(pk=country.last_weekly_status_id).first()
+
         if not country_last_status or country_last_status.date < instance.date:
             country.last_weekly_status = instance
             country.save()

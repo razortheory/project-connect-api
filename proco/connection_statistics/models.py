@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from isoweek import Week
@@ -99,6 +100,8 @@ class CountryWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model
             self.country.schools.all().delete()
         self.integration_status = self.JOINED
         self.save(update_fields=('integration_status',))
+        self.country.date_of_join = timezone.now().date()
+        self.country.save(update_fields=('date_of_join',))
 
 
 class SchoolWeeklyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
