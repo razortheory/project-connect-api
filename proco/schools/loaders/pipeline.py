@@ -21,9 +21,9 @@ logger = logging.getLogger('django.' + __name__)
 def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[dict], List[str], List[str]]:
     errors = []
     warnings = []
-    csv_external_ids = []
-    csv_names = []
-    csv_geopoints = []
+    csv_external_ids = set()
+    csv_names = set()
+    csv_geopoints = set()
     rows = []
 
     for i, data in enumerate(loaded):
@@ -59,19 +59,19 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
             if school_data['external_id'].lower() in csv_external_ids:
                 warnings.append(_(f'Row {row_index}: Bad data provided for school identifier: duplicate entry'))
                 continue
-            csv_external_ids.append(school_data['external_id'].lower())
+            csv_external_ids.add(school_data['external_id'].lower())
 
         if 'name' in school_data:
             if school_data['name'].lower() in csv_names:
                 warnings.append(_(f'Row {row_index}: Bad data provided for school name: duplicate entry'))
                 continue
-            csv_names.append(school_data['name'].lower())
+            csv_names.add(school_data['name'].lower())
 
         if 'geopoint' in school_data:
             if school_data['geopoint'] in csv_geopoints:
                 warnings.append(_(f'Row {row_index}: Bad data provided for geopoints: duplicate entry'))
                 continue
-            csv_geopoints.append(school_data['geopoint'])
+            csv_geopoints.add(school_data['geopoint'])
 
         rows.append({
             'row_index': row_index,
@@ -151,14 +151,14 @@ def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
     # solutions: don't allow point to be removed. pros: we can skip bad geopoint if school exists
 
     errors = []
-    school_points = {'all': []}
+    school_points = {'all': set()}
 
     for school in School.objects.filter(country=country).values('education_level', 'geopoint'):
         if school['education_level'] not in school_points:
-            school_points[school['education_level']] = []
+            school_points[school['education_level']] = set()
         cartesian_coord = cartesian(school['geopoint'].y, school['geopoint'].x)
-        school_points[school['education_level']].append(cartesian_coord)
-        school_points['all'].append(cartesian_coord)
+        school_points[school['education_level']].add(cartesian_coord)
+        school_points['all'].add(cartesian_coord)
 
     # add all points to generate final kdtree
     for data in [d for d in rows if 'school' not in d]:
@@ -167,9 +167,9 @@ def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
         education_level = data['school_data'].get('education_level')
         if education_level:
             if education_level not in school_points:
-                school_points[education_level] = []
-            school_points[education_level].append(cartesian_coord)
-        school_points['all'].append(cartesian_coord)
+                school_points[education_level] = set()
+            school_points[education_level].add(cartesian_coord)
+        school_points['all'].add(cartesian_coord)
 
     for key in school_points.keys():
         school_points[key] = KDTree(school_points[key])
