@@ -115,6 +115,15 @@ class Country(GeometryMixin, TimeStampedModel):
             kmeans = MiniBatchKMeans(n_clusters=5000, batch_size=250, random_state=0).fit(schools_point)
             return self._calculate_batch_avg_distance_school(kmeans.cluster_centers_)
 
+    def _clear_data_country(self):
+        from proco.connection_statistics.models import CountryWeeklyStatus
+        self.schools.all().delete()
+        self.daily_status.all().delete()
+        self.weekly_status.all().delete()
+        first_weekly_status = CountryWeeklyStatus.objects.create(country=self)
+        self.last_weekly_status = first_weekly_status
+        self.save(update_fields=('last_weekly_status',))
+
 
 class Location(GeometryMixin, TimeStampedModel, MPTTModel):
     name = models.CharField(max_length=255)

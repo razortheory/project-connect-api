@@ -16,7 +16,7 @@ class CountryAdmin(GeoModelAdmin):
     search_fields = ('name',)
     exclude = ('geometry_simplified',)
     raw_id_fields = ('last_weekly_status',)
-    actions = ('update_country_status_to_joined',)
+    actions = ('update_country_status_to_joined', 'clearing_all_data')
 
     def flag_preview(self, obj):
         if not obj.flag:
@@ -47,6 +47,25 @@ class CountryAdmin(GeoModelAdmin):
         self.message_user(request, message, level=level)
 
     update_country_status_to_joined.short_description = 'Verify country'
+
+    @transaction.atomic
+    def clearing_all_data(self, request, queryset):
+        countries_available = request.user.countries_available.values('id')
+        qs_not_available = queryset.exclude(id__in=countries_available)
+        if qs_not_available.exists() and not request.user.is_superuser:
+            message = f'You do not have access to change countries: ' \
+                      f'{", ".join(qs_not_available.values_list("name", flat=True))}'
+            level = messages.ERROR
+        else:
+            for obj in queryset:
+                obj._clear_data_country()
+                obj.invalidate_country_related_cache()
+            message = f'Country data have been successfully cleaned: ' \
+                      f'{", ".join(queryset.values_list("name", flat=True))}'
+            level = messages.INFO
+        self.message_user(request, message, level=level)
+
+    clearing_all_data.short_description = 'Clear country'
 
 
 @admin.register(Location)
