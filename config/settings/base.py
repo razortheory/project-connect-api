@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'django_mptt_admin',
     'constance',
+    'unicef_restlib',
 ]
 
 LOCAL_APPS = [
@@ -87,7 +88,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'unicef_restlib.pagination.DynamicPageNumberPagination',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'drf_secure_token.authentication.SecureTokenAuthentication',
     ],

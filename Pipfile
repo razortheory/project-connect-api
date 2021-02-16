@@ -65,6 +65,7 @@ geopy = "*"
 scipy = "*"
 django-constance = "*"
 gitpython = "*"
+unicef-restlib = "*"
 
 [requires]
 python_version = "3.8"
