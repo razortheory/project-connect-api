@@ -23,10 +23,9 @@ def aggregate_country_data(_prev_result, country_id, *args):
     country.invalidate_country_related_cache()
 
 
-@app.task(soft_time_limit=60 * 60, time_limit=60 * 60)
+@app.task(soft_time_limit=4 * 60 * 60, time_limit=4 * 60 * 60)
 def update_brasil_schools():
     brasil_statistic_loader.update_schools()
-
     brasil_statistic_loader.country.invalidate_country_related_cache()
 
 
