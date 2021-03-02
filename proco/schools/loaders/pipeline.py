@@ -21,9 +21,8 @@ logger = logging.getLogger('django.' + __name__)
 def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[dict], List[str], List[str]]:
     errors = []
     warnings = []
-    csv_external_ids = set()
-    csv_names = set()
-    csv_geopoints = set()
+    csv_external_ids = {}
+    csv_geopoints = {}
     rows = []
 
     for i, data in enumerate(loaded):
@@ -56,22 +55,22 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
             continue
 
         if 'external_id' in school_data:
-            if school_data['external_id'].lower() in csv_external_ids:
-                warnings.append(_(f'Row {row_index}: Bad data provided for school identifier: duplicate entry'))
+            external_id = school_data['external_id'].lower()
+            if external_id in csv_external_ids:
+                warnings.append(_(
+                    f'Row {row_index}: Bad data provided for school identifier:'
+                    f' duplicate entry with row {csv_external_ids[external_id]}',
+                ))
                 continue
-            csv_external_ids.add(school_data['external_id'].lower())
+            csv_external_ids[external_id] = row_index
 
-        if 'name' in school_data:
-            if school_data['name'].lower() in csv_names:
-                warnings.append(_(f'Row {row_index}: Bad data provided for school name: duplicate entry'))
-                continue
-            csv_names.add(school_data['name'].lower())
-
-        if 'geopoint' in school_data:
-            if school_data['geopoint'] in csv_geopoints:
-                warnings.append(_(f'Row {row_index}: Bad data provided for geopoints: duplicate entry'))
-                continue
-            csv_geopoints.add(school_data['geopoint'])
+        if school_data['geopoint'] in csv_geopoints:
+            warnings.append(_(
+                f'Row {row_index}: Bad data provided for geopoint:'
+                f' duplicate entry with row {csv_geopoints[school_data["geopoint"]]}',
+            ))
+            continue
+        csv_geopoints[school_data['geopoint']] = row_index
 
         rows.append({
             'row_index': row_index,
@@ -100,28 +99,6 @@ def map_schools_by_external_id(country: Country, rows: List[dict]):
                 schools_with_external_id[school.external_id]['school'] = school
 
 
-def map_schools_by_name(country: Country, rows: List[dict]):
-    # search by name
-    schools_with_name = {}
-    for data in rows:
-        if 'school' not in data:
-            if data['school_data'].get('name'):
-                schools_with_name.update({data['school_data']['name'].lower(): data})
-            else:
-                data['school_data']['name'] = School._meta.get_field('name').default
-                continue
-
-    if schools_with_name:
-        names = list(schools_with_name.keys())
-        for i in range(0, len(names), 500):
-            schools_by_name = School.objects.filter(
-                country=country,
-                name_lower__in=names[i:min(i + 500, len(names))],
-            )
-            for school in schools_by_name:
-                schools_with_name[school.name_lower]['school'] = school
-
-
 def map_schools_by_geopoint(country: Country, rows: List[dict]):
     # search by geopoint
     schools_with_geopoint = {
@@ -141,6 +118,27 @@ def map_schools_by_geopoint(country: Country, rows: List[dict]):
             )
             for school in schools_by_geopoint:
                 schools_with_geopoint[Point(school.geopoint.x, y=school.geopoint.y)]['school'] = school
+
+
+def remove_mapped_twice_schools(rows: List[dict]) -> Tuple[List[dict], List[str]]:
+    warnings = []
+    schools = set()
+    unique_rows = []
+    for data in rows:
+        if 'school' not in data:
+            unique_rows.append(data)
+            continue
+
+        if data['school'].id in schools:
+            warnings.append(_(
+                f'Row {data["row_index"]}: Duplicated data for school {data["school"]}.'
+                f' Please check external_id and geopoint',
+            ))
+            continue
+        else:
+            unique_rows.append(data)
+
+    return unique_rows, warnings
 
 
 def remove_too_close_points(country: Country, rows: List[dict]) -> List[str]:
