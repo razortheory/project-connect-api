@@ -39,7 +39,8 @@ class CountryAdmin(GeoModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('verify/', self.update_country_status_to_joined, name='update_country_status_to_joined'),
+            path('mark-as-joined/', self.update_country_status_to_joined, name='update_country_status_to_joined'),
+            path('delete-schools-and-statistics/', self.clearing_all_data, name='delete-schools-and-statistics'),
         ]
         return custom_urls + urls
 
@@ -85,7 +86,7 @@ class CountryAdmin(GeoModelAdmin):
     update_country_status_to_joined.short_description = 'Mark country data source as verified (non-OSM)'
 
     @transaction.atomic
-    def clearing_all_data(self, request, queryset):
+    def clearing_all_data(self, request, queryset=None):
         access, qs_not_available = self.check_access(request, queryset)
         if not access:
             message = f'You do not have access to change countries: ' \

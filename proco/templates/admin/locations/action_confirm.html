@@ -44,10 +44,13 @@
       The status of the country will return to its original position and it will be necessary to re-mark as joined.
     </p>
     {% endif %}
+    {% if action == 'mark_as_joined' %}
     <form method="post" action="{% url 'admin:update_country_status_to_joined' %}">{% csrf_token %}
+    {% else %}
+    <form method="post" action="{% url 'admin:delete-schools-and-statistics' %}">{% csrf_token %}
+    {% endif %}
     <div>
     <input type="hidden" name="post" value="{{ objects }}">
-
     <input type="submit" value="Yes, I’m sure">
     <a href="{% url 'admin:locations_country_changelist' %}" class="button cancel-link">No, take me back</a>
     </div>
