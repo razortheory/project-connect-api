@@ -1,6 +1,9 @@
 from django.contrib import admin, messages
 from django.contrib.gis.admin import GeoModelAdmin
 from django.db import transaction
+from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
 from proco.locations.filters import CountryFilterList
@@ -28,44 +31,88 @@ class CountryAdmin(GeoModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).defer('geometry', 'geometry_simplified')
 
-    @transaction.atomic
-    def update_country_status_to_joined(self, request, queryset):
-        countries_available = request.user.countries_available.values('id')
-        qs_not_available = queryset.exclude(id__in=countries_available)
-        if qs_not_available.exists():
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('mark-as-joined/', self.update_country_status_to_joined, name='update_country_status_to_joined'),
+            path('delete-schools-and-statistics/', self.clearing_all_data, name='delete-schools-and-statistics'),
+        ]
+        return custom_urls + urls
+
+    @staticmethod
+    def check_access(request, queryset):
+        access = True if request.user.is_superuser else False
+        if not access:
+            countries_available = request.user.countries_available.values('id')
+            qs_not_available = queryset.exclude(id__in=countries_available)
+            result = (False, qs_not_available) if not qs_not_available.exists() else (True, None)
+        else:
+            result = True, None
+        return result
+
+    def update_country_status_to_joined(self, request, queryset=None):
+        access, qs_not_available = self.check_access(request, queryset)
+
+        if not access:
             message = f'You do not have access to change countries: ' \
                       f'{", ".join(qs_not_available.values_list("name", flat=True))}'
             level = messages.ERROR
+            self.message_user(request, message, level=level)
+            return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
+
         else:
-            for obj in queryset:
-                if not obj.last_weekly_status.is_verified:
-                    obj.last_weekly_status.update_country_status_to_joined()
+            if request.method == 'POST' and 'post' in request.POST:
+                objects = request.POST.get('post')
+                queryset = Country.objects.filter(id__in=objects.split(','))
+                for obj in queryset:
+                    if not obj.last_weekly_status.is_verified:
+                        obj.last_weekly_status.update_country_status_to_joined()
+                        obj.invalidate_country_related_cache()
+                message = 'Country statuses have been successfully changed!'
+                level = messages.INFO
+                self.message_user(request, message, level=level)
+                return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
+
+            else:
+                objects = ','.join(str(i) for i in queryset.values_list('id', flat=True))
+                context = {'opts': self.model._meta, 'objects': objects, 'action': 'mark_as_joined'}
+                return TemplateResponse(request, 'admin/locations/action_confirm.html', context)
+
+    update_country_status_to_joined.short_description = 'Mark country data source as verified (non-OSM)'
+
+    @transaction.atomic
+    def clearing_all_data(self, request, queryset=None):
+        access, qs_not_available = self.check_access(request, queryset)
+        if not access:
+            message = f'You do not have access to change countries: ' \
+                      f'{", ".join(qs_not_available.values_list("name", flat=True))}'
+            level = messages.ERROR
+            self.message_user(request, message, level=level)
+            return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
+
+        else:
+            if request.method == 'POST' and 'post' in request.POST:
+                objects = request.POST.get('post')
+                queryset = Country.objects.filter(id__in=objects.split(','))
+                for obj in queryset:
+                    obj._clear_data_country()
                     obj.invalidate_country_related_cache()
-            message = f'Country statuses have been successfully changed: ' \
-                      f'{", ".join(queryset.values_list("name", flat=True))}'
-            level = messages.INFO
-        self.message_user(request, message, level=level)
+                message = 'Country data have been successfully cleaned!'
+                level = messages.INFO
+                self.message_user(request, message, level=level)
+                return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
 
-    update_country_status_to_joined.short_description = 'Verify country'
+            else:
+                objects = ','.join(str(i) for i in queryset.values_list('id', flat=True))
+                context = {'opts': self.model._meta, 'objects': objects, 'action': 'delete_schools_and_statistics'}
+                return TemplateResponse(request, 'admin/locations/action_confirm.html', context)
 
-    @transaction.atomic
-    def clearing_all_data(self, request, queryset):
-        countries_available = request.user.countries_available.values('id')
-        qs_not_available = queryset.exclude(id__in=countries_available)
-        if qs_not_available.exists() and not request.user.is_superuser:
-            message = f'You do not have access to change countries: ' \
-                      f'{", ".join(qs_not_available.values_list("name", flat=True))}'
-            level = messages.ERROR
-        else:
-            for obj in queryset:
-                obj._clear_data_country()
-                obj.invalidate_country_related_cache()
-            message = f'Country data have been successfully cleaned: ' \
-                      f'{", ".join(queryset.values_list("name", flat=True))}'
-            level = messages.INFO
-        self.message_user(request, message, level=level)
-
-    clearing_all_data.short_description = 'Clear country'
+    clearing_all_data.short_description = 'Delete school points & saved statistics'
 
 
 @admin.register(Location)
