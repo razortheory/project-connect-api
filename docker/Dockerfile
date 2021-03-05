@@ -46,5 +46,3 @@ RUN pipenv install --ignore-pipfile --dev
 ADD . /code/
 # cleanup env files if any
 RUN find . -type f -name '.env' -delete
-
-EXPOSE 8000
