@@ -47,9 +47,9 @@ class ApplicationUser(AbstractBaseUser, PermissionsMixin):
 
     countries_available = models.ManyToManyField(
         Country,
-        verbose_name=_('countries_available'),
+        verbose_name=_('Сountries Available'),
         blank=True,
-        help_text=_('The countries with which the user is associated to create permissions.'),
+        help_text=_('Countries to which the user has access and the ability to manage them.'),
         related_name='countries_available',
     )
 

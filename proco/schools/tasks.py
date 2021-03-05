@@ -77,6 +77,8 @@ def process_loaded_file(pk: int, force: bool = False):
             imported_file.save()
             return
 
+        warnings, errors, processed = [], [], 0
+
         try:
             with transaction.atomic():
                 warnings, errors, processed = ingest.save_data(imported_file.country, loaded_data, ignore_errors=force)
