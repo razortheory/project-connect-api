@@ -16,7 +16,7 @@ class SoftCacheManager(object):
                 (value['expired_at'] and value['expired_at'] < timezone.now().timestamp())
                 or value.get('invalidated', True)
             ) and value.get('request_path', None):
-                update_cached_value.delay(value['request_path'])
+                update_cached_value.delay(url=value['request_path'])
             return value['value']
 
     def _invalidate(self, key):

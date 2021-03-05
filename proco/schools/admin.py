@@ -97,4 +97,4 @@ class FileImportAdmin(ImportFormMixin, admin.ModelAdmin):
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
             qs = qs.filter(uploaded_by=request.user)
-        return qs
+        return qs.defer('country__geometry')
