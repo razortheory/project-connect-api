@@ -6,6 +6,8 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
+from proco.background.models import BackgroundTask
+from proco.background.tasks import reset_countries_data, validate_countries
 from proco.locations.filters import CountryFilterList
 from proco.locations.models import Country, Location
 from proco.utils.admin import CountryNameDisplayAdminMixin
@@ -68,16 +70,12 @@ class CountryAdmin(GeoModelAdmin):
         else:
             if request.method == 'POST' and 'post' in request.POST:
                 objects = request.POST.get('post')
-                queryset = Country.objects.filter(id__in=objects.split(','))
-                for obj in queryset:
-                    if not obj.last_weekly_status.is_verified:
-                        obj.last_weekly_status.update_country_status_to_joined()
-                        obj.invalidate_country_related_cache()
-                message = 'Country statuses have been successfully changed!'
+                task = validate_countries.apply_async((objects.split(','),), countdown=2)
+                BackgroundTask.objects.get_or_create(task_id=task.id)
+                message = 'Countries validation started. Please wait.'
                 level = messages.INFO
                 self.message_user(request, message, level=level)
-                return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
-
+                return HttpResponseRedirect(reverse('admin:background_backgroundtask_change', args=[task.id]))
             else:
                 objects = ','.join(str(i) for i in queryset.values_list('id', flat=True))
                 context = {'opts': self.model._meta, 'objects': objects, 'action': 'mark_as_joined'}
@@ -98,15 +96,12 @@ class CountryAdmin(GeoModelAdmin):
         else:
             if request.method == 'POST' and 'post' in request.POST:
                 objects = request.POST.get('post')
-                queryset = Country.objects.filter(id__in=objects.split(','))
-                for obj in queryset:
-                    obj._clear_data_country()
-                    obj.invalidate_country_related_cache()
-                message = 'Country data have been successfully cleaned!'
+                task = reset_countries_data.apply_async((objects.split(','),), countdown=2)
+                BackgroundTask.objects.get_or_create(task_id=task.id)
+                message = 'Country data clearing started. Please wait.'
                 level = messages.INFO
                 self.message_user(request, message, level=level)
-                return HttpResponseRedirect(reverse('admin:locations_country_changelist'))
-
+                return HttpResponseRedirect(reverse('admin:background_backgroundtask_change', args=[task.id]))
             else:
                 objects = ','.join(str(i) for i in queryset.values_list('id', flat=True))
                 context = {'opts': self.model._meta, 'objects': objects, 'action': 'delete_schools_and_statistics'}
