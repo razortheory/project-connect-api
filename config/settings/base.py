@@ -59,6 +59,7 @@ LOCAL_APPS = [
     'proco.locations',
     'proco.connection_statistics',
     'proco.contact',
+    'proco.background',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -272,6 +273,7 @@ ADMIN_REORDER = (
     },
     'locations',
     'schools',
+    'background',
     'contact',
 )
 
