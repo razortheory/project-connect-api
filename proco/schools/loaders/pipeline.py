@@ -234,8 +234,8 @@ def update_existing_schools(rows: List[dict]):
     logger.info(f'{len(all_schools_to_update)} schools will be updated')
     fields_combinations = {tuple(sorted(data['school_data'].keys())) for data in all_schools_to_update}
 
-    schools_to_update = []
     for fields_combination in fields_combinations:
+        schools_to_update = []
         for data in all_schools_to_update:
             if tuple(sorted(data['school_data'].keys())) == fields_combination:
                 for field in fields_combination:
