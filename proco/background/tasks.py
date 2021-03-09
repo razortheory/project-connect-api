@@ -9,7 +9,7 @@ from proco.locations.models import Country
 from proco.taskapp import app
 
 
-@app.task(soft_time_limit=10 * 60, time_limit=10 * 60)
+@app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def reset_countries_data(ids: List):
     task = BackgroundTask.objects.get_or_create(task_id=current_task.request.id)[0]
 
