@@ -14,6 +14,7 @@ from proco.schools.loaders import ingest
 from proco.schools.loaders.ingest import UnsupportedFileFormatException, load_data
 from proco.schools.models import FileImport
 from proco.taskapp import app
+from proco.utils.tasks import update_country_related_cache
 
 
 class FailedImportError(Exception):
@@ -88,16 +89,10 @@ def process_loaded_file(pk: int, force: bool = False):
         except FailedImportError:
             imported_file.statistic += 'Count of processed rows: 0\n'
 
-        imported_file.statistic += 'Count of bad rows: {0}\n'.format(len(errors))
-        errors_counter = Counter(map(lambda x: x.split(': ')[1], errors))
+        imported_file.statistic += 'Count of bad rows: {0}\n'.format(len(errors + warnings))
+        bad_rows_counter = Counter(map(lambda x: x.split(': ')[1], errors + warnings))
         imported_file.statistic += '\n'.join(
-            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), errors_counter.most_common()),
-        )
-        warnings_counter = Counter(map(lambda x: x.split(': ')[1], warnings))
-        if errors_counter:
-            imported_file.statistic += '\n'
-        imported_file.statistic += '\n'.join(
-            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), warnings_counter.most_common()),
+            map(lambda x: 'Total {0} schools: {1}'.format(x[1], x[0]), bad_rows_counter.most_common()),
         )
         imported_file.errors = '\n'.join(errors)
         if warnings:
@@ -117,6 +112,8 @@ def process_loaded_file(pk: int, force: bool = False):
             def update_stats():
                 update_country_weekly_status(imported_file.country)
                 update_country_data_source_by_csv_filename(imported_file)
+                imported_file.country.invalidate_country_related_cache()
+                update_country_related_cache.delay(imported_file.country.pk)
 
             transaction.on_commit(update_stats)
     except UnsupportedFileFormatException as e:

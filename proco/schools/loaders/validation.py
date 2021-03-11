@@ -35,13 +35,14 @@ def validate_row(country: Country, data: dict):
     }
     history_data = {}
 
-    if 'school_id' in data:
-        if len(data['school_id']) > external_id_max_length:
+    if 'school_id' in data or 'id' in data or 'external_id' in data:
+        external_id = data.get('school_id', data.get('id', data.get('external_id')))
+        if len(external_id) > external_id_max_length:
             errors.append(_(
                 'Bad data provided for school identifier: max length of {0} characters exceeded',
             ).format(external_id_max_length))
             return None, None, errors, warnings
-        school_data['external_id'] = data['school_id'].lower()
+        school_data['external_id'] = external_id.lower()
 
     try:
         school_data['geopoint'] = Point(x=float(data['lon']), y=float(data['lat']))
@@ -53,14 +54,15 @@ def validate_row(country: Country, data: dict):
         errors.append(_('Bad data provided for geopoint'))
         return None, None, errors, warnings
 
-    if 'educ_level' in data:
-        if len(data['educ_level']) > education_level_max_length:
+    if 'educ_level' in data or 'education_level' in data:
+        edication_level = data.get('educ_level', data.get('education_level'))
+        if len(edication_level) > education_level_max_length:
             errors.append(
                 _('Bad data provided for name: max length of {0} characters exceeded').format(
                     education_level_max_length,
                 ))
             return None, None, errors, warnings
-        school_data['education_level'] = data['educ_level']
+        school_data['education_level'] = edication_level
 
     if 'name' in data:
         if len(data['name']) > name_max_length:

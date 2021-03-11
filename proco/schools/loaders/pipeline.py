@@ -1,4 +1,3 @@
-import copy
 import logging
 from datetime import date
 from typing import Iterable, List, Tuple
@@ -23,6 +22,7 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
     warnings = []
     csv_external_ids = {}
     csv_geopoints = {}
+    csv_geopoints_by_type = {}
     rows = []
 
     for i, data in enumerate(loaded):
@@ -64,12 +64,27 @@ def get_validated_rows(country: Country, loaded: Iterable[dict]) -> Tuple[List[d
                 continue
             csv_external_ids[external_id] = row_index
 
-        if school_data['geopoint'] in csv_geopoints:
-            warnings.append(_(
-                f'Row {row_index}: Bad data provided for geopoint:'
-                f' duplicate entry with row {csv_geopoints[school_data["geopoint"]]}',
-            ))
-            continue
+        if 'education_level' in school_data:
+            education_level = school_data['education_level']
+            if education_level not in csv_geopoints_by_type:
+                csv_geopoints_by_type[education_level] = {}
+            else:
+                if school_data['geopoint'] in csv_geopoints_by_type[education_level]:
+                    warnings.append(_(
+                        f'Row {row_index}: Bad data provided for geopoint:'
+                        f' duplicate entry with row {csv_geopoints[school_data["geopoint"]]}',
+                    ))
+                    continue
+
+            csv_geopoints_by_type[education_level][school_data['geopoint']] = row_index
+        else:
+            if school_data['geopoint'] in csv_geopoints:
+                warnings.append(_(
+                    f'Row {row_index}: Bad data provided for geopoint:'
+                    f' duplicate entry with row {csv_geopoints[school_data["geopoint"]]}',
+                ))
+                continue
+
         csv_geopoints[school_data['geopoint']] = row_index
 
         rows.append({
@@ -88,41 +103,118 @@ def map_schools_by_external_id(country: Country, rows: List[dict]):
         for data in rows
         if 'external_id' in data['school_data']
     }
-    if schools_with_external_id:
-        external_ids = list(schools_with_external_id.keys())
-        for i in range(0, len(external_ids), 500):
-            schools_by_external_id = School.objects.filter(
+    if not schools_with_external_id:
+        return
+
+    schools_mapped = 0
+    external_ids = list(schools_with_external_id.keys())
+    for i in range(0, len(external_ids), 1000):
+        schools_by_external_id = School.objects.filter(
+            country=country,
+            external_id__in=external_ids[i:min(i + 1000, len(external_ids))],
+        ).select_related('last_weekly_status')
+        for school in schools_by_external_id:
+            schools_with_external_id[school.external_id]['school'] = school
+        schools_mapped += len(schools_by_external_id)
+
+    logger.info(f'{schools_mapped} mapped by external_id')
+
+
+def map_schools_by_geopoint_and_education_level(country: Country, rows: List[dict]):
+    education_levels = set(
+        data['school_data']['education_level']
+        for data in rows
+        if 'education_level' in data['school_data']
+    )
+
+    for level in education_levels:
+        schools_with_geopoint = {
+            data['school_data']['geopoint'].wkt: data
+            for data in rows
+            if 'school' not in data and 'education_level' in data['school_data'] and data['school_data']['education_level'] == level
+        }
+        if not schools_with_geopoint:
+            continue
+
+        geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+        schools_mapped = 0
+
+        for i in range(0, len(geopoints), 1000):
+            schools_by_geopoint = School.objects.filter(
                 country=country,
-                external_id__in=external_ids[i:min(i + 500, len(external_ids))],
-            )
-            for school in schools_by_external_id:
-                schools_with_external_id[school.external_id]['school'] = school
+                education_level=level,
+                geopoint__in=geopoints[i:min(i + 1000, len(geopoints))],
+            ).select_related('last_weekly_status')
+            for school in schools_by_geopoint:
+                schools_with_geopoint[Point(x=school.geopoint.x, y=school.geopoint.y).wkt]['school'] = school
+            schools_mapped += len(schools_by_geopoint)
+
+        logger.info(f'{schools_mapped} mapped by {len(geopoints)} geopoint with edication level {level}')
+
+
+def map_schools_by_geopoint_and_empty_education_level(country: Country, rows: List[dict]):
+    # if education level provided in file but not for particular schools, we can try to find them with this information
+    education_level_provided = any('education_level' in data['school_data'] for data in rows)
+    if not education_level_provided:
+        return
+
+    schools_with_geopoint = {
+        data['school_data']['geopoint'].wkt: data
+        for data in rows
+        if 'school' not in data and 'education_level' not in data['school_data']
+    }
+    if not schools_with_geopoint:
+        return
+
+    geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+    schools_mapped = 0
+
+    for i in range(0, len(geopoints), 1000):
+        schools_by_geopoint = School.objects.filter(
+            country=country,
+            education_level='',
+            geopoint__in=geopoints[i:min(i + 1000, len(geopoints))],
+        ).select_related('last_weekly_status')
+        for school in schools_by_geopoint:
+            schools_with_geopoint[Point(x=school.geopoint.x, y=school.geopoint.y).wkt]['school'] = school
+        schools_mapped += len(schools_by_geopoint)
+
+    logger.info(f'{schools_mapped} mapped by {len(geopoints)} geopoints with empty edication level')
 
 
 def map_schools_by_geopoint(country: Country, rows: List[dict]):
+    education_level_provided = any('education_level' in data['school_data'] for data in rows)
+    if education_level_provided:
+        logger.info('education level provided, regular geopoint skipped')
+        return
+
     # search by geopoint
     schools_with_geopoint = {
-        data['school_data']['geopoint']: data
+        data['school_data']['geopoint'].wkt: data
         for data in rows
         if 'school' not in data
     }
-    if schools_with_geopoint:
-        # to store the hash of the keys of the original dictionary
-        copy_schools_with_geopoint = copy.deepcopy(schools_with_geopoint)
-        geopoints = list(copy_schools_with_geopoint.keys())
+    if not schools_with_geopoint:
+        return
 
-        for i in range(0, len(geopoints), 500):
-            schools_by_geopoint = School.objects.filter(
-                country=country,
-                geopoint__in=geopoints[i:min(i + 500, len(geopoints))],
-            )
-            for school in schools_by_geopoint:
-                schools_with_geopoint[Point(school.geopoint.x, y=school.geopoint.y)]['school'] = school
+    geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+    schools_mapped = 0
+
+    for i in range(0, len(geopoints), 1000):
+        schools_by_geopoint = School.objects.filter(
+            country=country,
+            geopoint__in=geopoints[i:min(i + 1000, len(geopoints))],
+        ).select_related('last_weekly_status')
+        for school in schools_by_geopoint:
+            schools_with_geopoint[Point(x=school.geopoint.x, y=school.geopoint.y).wkt]['school'] = school
+        schools_mapped += len(schools_by_geopoint)
+
+    logger.info(f'{schools_mapped} mapped by {len(geopoints)} geopoint')
 
 
 def remove_mapped_twice_schools(rows: List[dict]) -> Tuple[List[dict], List[str]]:
     warnings = []
-    schools = set()
+    schools = {}
     unique_rows = []
     for data in rows:
         if 'school' not in data:
@@ -131,11 +223,13 @@ def remove_mapped_twice_schools(rows: List[dict]) -> Tuple[List[dict], List[str]
 
         if data['school'].id in schools:
             warnings.append(_(
-                f'Row {data["row_index"]}: Duplicated data for school {data["school"]}.'
+                f'Row {data["row_index"]}: Duplicated data: school was'
+                f' already mapped in row {schools[data["school"].id]}.'
                 f' Please check external_id and geopoint',
             ))
             continue
         else:
+            schools[data['school'].id] = data['row_index']
             unique_rows.append(data)
 
     return unique_rows, warnings
@@ -263,6 +357,8 @@ def delete_schools_not_in_bounds(country: Country, rows: List[dict]) -> List[str
     for bad_row in bad_rows:
         rows.remove(bad_row)
 
+    logger.info(f'{len(bad_rows)} schools are outside boundaries')
+
     return errors
 
 
@@ -276,7 +372,7 @@ def update_schools_weekly_statuses(rows: List[dict]):
         school = data['school']
         history_data = data['history_data']
 
-        status = SchoolWeeklyStatus.objects.filter(school=school).last()
+        status = school.last_weekly_status
         if status:
             status.id = None
             for k, v in history_data.items():
@@ -293,7 +389,11 @@ def update_schools_weekly_statuses(rows: List[dict]):
 
     # re-create weekly statuses with new data
     if schools_weekly_status_list:
-        SchoolWeeklyStatus.objects.filter(school_id__in=updated_schools.keys(), year=year, week=week_number).delete()
+        # use protected method here to bypass models layer. we don't want to set null in every school separately
+        School.objects.filter(id__in=updated_schools.keys()).update(last_weekly_status=None)
+        SchoolWeeklyStatus.objects.filter(
+            school_id__in=updated_schools.keys(), year=year, week=week_number
+        )._raw_delete(SchoolWeeklyStatus.objects.db)
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list, batch_size=1000)
 
         # set last weekly id to correct one; signals don't work when batch performed

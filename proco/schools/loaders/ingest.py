@@ -10,6 +10,8 @@ from proco.schools.loaders.pipeline import (  # remove_too_close_points,
     get_validated_rows,
     map_schools_by_external_id,
     map_schools_by_geopoint,
+    map_schools_by_geopoint_and_education_level,
+    map_schools_by_geopoint_and_empty_education_level,
     remove_mapped_twice_schools,
     update_existing_schools,
     update_schools_weekly_statuses,
@@ -41,6 +43,8 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
         return warnings, errors, 0
 
     map_schools_by_external_id(country, schools_data)
+    map_schools_by_geopoint_and_education_level(country, schools_data)
+    map_schools_by_geopoint_and_empty_education_level(country, schools_data)
     map_schools_by_geopoint(country, schools_data)
     schools_data, new_warnings = remove_mapped_twice_schools(schools_data)
     warnings.extend(new_warnings)
@@ -59,7 +63,5 @@ def save_data(country: Country, loaded: Iterable[dict], ignore_errors=False) -> 
         return warnings, errors, 0
 
     processed_rows = update_schools_weekly_statuses(schools_data)
-
-    country.invalidate_country_related_cache()
 
     return warnings, errors, processed_rows
