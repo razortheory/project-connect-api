@@ -17,10 +17,10 @@ def update_cached_value(*args, url='', **kwargs):
 def update_all_cached_values():
     from proco.locations.models import Country
 
-    update_cached_value(url=reverse('connection_statistics:global-stat'))
-    update_cached_value(url=reverse('locations:countries-boundary'))
-    update_cached_value(url=reverse('locations:countries-list'))
-    update_cached_value(url=reverse('schools:random-schools'))
+    update_cached_value.delay(url=reverse('connection_statistics:global-stat'))
+    update_cached_value.delay(url=reverse('locations:countries-boundary'))
+    update_cached_value.delay(url=reverse('locations:countries-list'))
+    update_cached_value.delay(url=reverse('schools:random-schools'))
 
     for country in Country.objects.all():
         chain([

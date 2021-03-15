@@ -24,5 +24,5 @@ class CustomAdminSite(admin.AdminSite):
         cache_manager.invalidate()
         update_all_cached_values.delay()
 
-        messages.success(request, 'The cache has been invalidated successfully.')
+        messages.success(request, 'Cache invalidation started. Maps will be updated in a few minutes.')
         return redirect('admin:index')
