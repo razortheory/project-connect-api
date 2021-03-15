@@ -35,9 +35,9 @@ jobs:
           docker tag proco_backend rttest/project-connect-api:prod
           docker push rttest/project-connect-api:prod
 
-      - name: Trigger redeploy
-        if: github.ref == 'refs/heads/master'
-        run: curl ${{ secrets.DEPLOY_URL }}?key=${{ secrets.DEPLOY_API_KEY }}
+#      - name: Trigger redeploy
+#        if: github.ref == 'refs/heads/master'
+#        run: curl ${{ secrets.DEPLOY_URL }}?key=${{ secrets.DEPLOY_API_KEY }}
 
       - name: Deploy celeryd app
         if: github.ref == 'refs/heads/master'
