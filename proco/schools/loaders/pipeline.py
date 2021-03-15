@@ -121,22 +121,24 @@ def map_schools_by_external_id(country: Country, rows: List[dict]):
 
 
 def map_schools_by_geopoint_and_education_level(country: Country, rows: List[dict]):
-    education_levels = set(
+    education_levels = {
         data['school_data']['education_level']
         for data in rows
         if 'education_level' in data['school_data']
-    )
+    }
 
     for level in education_levels:
         schools_with_geopoint = {
             data['school_data']['geopoint'].wkt: data
             for data in rows
-            if 'school' not in data and 'education_level' in data['school_data'] and data['school_data']['education_level'] == level
+            if 'school' not in data
+               and 'education_level' in data['school_data']
+               and data['school_data']['education_level'] == level
         }
         if not schools_with_geopoint:
             continue
 
-        geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+        geopoints = [data['school_data']['geopoint'] for data in schools_with_geopoint.values()]
         schools_mapped = 0
 
         for i in range(0, len(geopoints), 1000):
@@ -166,7 +168,7 @@ def map_schools_by_geopoint_and_empty_education_level(country: Country, rows: Li
     if not schools_with_geopoint:
         return
 
-    geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+    geopoints = [data['school_data']['geopoint'] for data in schools_with_geopoint.values()]
     schools_mapped = 0
 
     for i in range(0, len(geopoints), 1000):
@@ -197,7 +199,7 @@ def map_schools_by_geopoint(country: Country, rows: List[dict]):
     if not schools_with_geopoint:
         return
 
-    geopoints = list(data['school_data']['geopoint'] for data in schools_with_geopoint.values())
+    geopoints = [data['school_data']['geopoint'] for data in schools_with_geopoint.values()]
     schools_mapped = 0
 
     for i in range(0, len(geopoints), 1000):
@@ -392,7 +394,7 @@ def update_schools_weekly_statuses(rows: List[dict]):
         # use protected method here to bypass models layer. we don't want to set null in every school separately
         School.objects.filter(id__in=updated_schools.keys()).update(last_weekly_status=None)
         SchoolWeeklyStatus.objects.filter(
-            school_id__in=updated_schools.keys(), year=year, week=week_number
+            school_id__in=updated_schools.keys(), year=year, week=week_number,
         )._raw_delete(SchoolWeeklyStatus.objects.db)
         SchoolWeeklyStatus.objects.bulk_create(schools_weekly_status_list, batch_size=1000)
 

@@ -33,5 +33,5 @@ def update_all_cached_values():
 def update_country_related_cache(country_pk):
     update_cached_value.delay(url=reverse('connection_statistics:global-stat'))
     update_cached_value.delay(url=reverse('locations:countries-list'))
-    update_cached_value.delay(url=reverse('locations:countries-detail', kwargs={'pk': country_pk})),
-    update_cached_value.delay(url=reverse('schools:schools-list', kwargs={'country_pk': country_pk})),
+    update_cached_value.delay(url=reverse('locations:countries-detail', kwargs={'pk': country_pk}))
+    update_cached_value.delay(url=reverse('schools:schools-list', kwargs={'country_pk': country_pk}))
