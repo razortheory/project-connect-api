@@ -38,3 +38,7 @@ jobs:
       - name: Trigger redeploy
         if: github.ref == 'refs/heads/master'
         run: curl ${{ secrets.DEPLOY_URL }}?key=${{ secrets.DEPLOY_API_KEY }}
+
+      - name: Deploy celeryd app
+        if: github.ref == 'refs/heads/master'
+        run: curl  -H '' -d '' -X POST "$DEPLOY_CELERYD_URL"
