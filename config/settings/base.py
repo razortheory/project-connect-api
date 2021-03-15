@@ -159,7 +159,10 @@ CACHES = {
         'TIMEOUT': 4 * 60 * 60,  # four hours
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'CONNECTION_POOL_KWARGS': {'retry_on_timeout': True},
+            'CONNECTION_POOL_KWARGS': {
+                'retry_on_timeout': True,
+                'socket_timeout': 5,
+            },
         },
     },
 }
