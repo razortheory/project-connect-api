@@ -41,4 +41,4 @@ jobs:
 
       - name: Deploy celeryd app
         if: github.ref == 'refs/heads/master'
-        run: curl  -H '' -d '' -X POST '${{ secrets.DEPLOY_API_KEY }}'
+        run: curl  -H '' -d '' -X POST 'https://$proco-celeryd:${{ secrets.DEPLOY_CELERYD_SECRET }}@proco-celeryd.scm.azurewebsites.net/docker/hook'
