@@ -27,7 +27,7 @@ def reset_countries_data(ids: List):
     task.save()
 
 
-@app.task
+@app.task(soft_time_limit=30 * 60, time_limit=30 * 60)
 def validate_countries(ids: List):
     task = BackgroundTask.objects.get_or_create(task_id=current_task.request.id)[0]
 
