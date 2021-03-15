@@ -39,5 +39,5 @@ def finalize_setup(sender, **kwargs):
     })
 
     app.conf.redis_backend_use_ssl = {
-        'ssl_cert_reqs': 'CERT_NONE'
+        'ssl_cert_reqs': 'CERT_NONE',
     }
