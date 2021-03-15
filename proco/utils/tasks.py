@@ -7,13 +7,13 @@ from celery import chain
 from proco.taskapp import app
 
 
-@app.task
+@app.task(soft_time_limit=10 * 60, time_limit=11 * 60)
 def update_cached_value(*args, url='', **kwargs):
     client = APIClient()
     client.get(url, {'cache': False}, format='json')
 
 
-@app.task
+@app.task(soft_time_limit=5 * 60, time_limit=5 * 60)
 def update_all_cached_values():
     from proco.locations.models import Country
 
@@ -27,3 +27,11 @@ def update_all_cached_values():
             update_cached_value.s(url=reverse('locations:countries-detail', kwargs={'pk': country.pk})),
             update_cached_value.s(url=reverse('schools:schools-list', kwargs={'country_pk': country.pk})),
         ]).delay()
+
+
+@app.task
+def update_country_related_cache(country_pk):
+    update_cached_value.delay(url=reverse('connection_statistics:global-stat'))
+    update_cached_value.delay(url=reverse('locations:countries-list'))
+    update_cached_value.delay(url=reverse('locations:countries-detail', kwargs={'pk': country_pk}))
+    update_cached_value.delay(url=reverse('schools:schools-list', kwargs={'country_pk': country_pk}))
