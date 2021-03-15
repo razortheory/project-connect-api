@@ -41,4 +41,4 @@ jobs:
 
       - name: Deploy celeryd app
         if: github.ref == 'refs/heads/master'
-        run: curl  -H '' -d '' -X POST "$DEPLOY_CELERYD_URL"
+        run: curl  -H '' -d '' -X POST "${{ secrets.DEPLOY_API_KEY }}"
