@@ -177,7 +177,7 @@ class AggregateConnectivityDataTestCase(TestCase):
 
     def test_aggregate_real_time_data_to_school_daily_status(self):
         aggregate_real_time_data_to_school_daily_status(self.country)
-        self.assertEqual(SchoolDailyStatus.objects.count(), 1)
+        self.assertEqual(SchoolDailyStatus.objects.count(approx=False), 1)
         self.assertEqual(SchoolDailyStatus.objects.first().connectivity_speed, 5000000)
 
     def test_aggregate_real_time_data_to_country_daily_status(self):
