@@ -207,7 +207,7 @@ def update_country_weekly_status(country: Country):
 
 
 def update_country_data_source_by_csv_filename(imported_file):
-    match = re.search(r'-(\D+)(?:-\d+)*-[^-]+\.\w+$', imported_file.filename)
+    match = re.search(r'-(\D+)(?:-\d+)*-[^-]+\.\w+$', imported_file.filename)  # noqa: DUO138
     if match:
         source = match.group(1)
     else:
