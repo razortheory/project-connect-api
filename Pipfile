@@ -66,6 +66,7 @@ scipy = "*"
 django-constance = "*"
 gitpython = "*"
 unicef-restlib = "*"
+flask = "*"
 
 [requires]
 python_version = "3.8"

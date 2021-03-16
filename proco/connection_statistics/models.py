@@ -11,6 +11,7 @@ from proco.locations.models import Country
 from proco.schools.constants import statuses_schema
 from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
+from proco.utils.models import ApproxQuerySet
 
 
 class ConnectivityStatistics(models.Model):
@@ -188,6 +189,8 @@ class SchoolDailyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
     school = models.ForeignKey(School, related_name='daily_status', on_delete=models.CASCADE)
     date = models.DateField()
 
+    objects = ApproxQuerySet.as_manager()
+
     class Meta:
         verbose_name = _('School Daily Connectivity Summary')
         verbose_name_plural = _('School Daily Connectivity Summary')
@@ -201,6 +204,8 @@ class SchoolDailyStatus(ConnectivityStatistics, TimeStampedModel, models.Model):
 
 class RealTimeConnectivity(ConnectivityStatistics, TimeStampedModel, models.Model):
     school = models.ForeignKey(School, related_name='realtime_status', on_delete=models.CASCADE)
+
+    objects = ApproxQuerySet.as_manager()
 
     class Meta:
         verbose_name = _('Real Time Connectivity Data')

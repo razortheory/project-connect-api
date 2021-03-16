@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.gis.admin import GeoModelAdmin
 from django.db import transaction
+from django.db.models import Prefetch
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
@@ -120,10 +121,9 @@ class LocationAdmin(CountryNameDisplayAdminMixin, GeoModelAdmin):
     search_fields = ('name', 'country__name')
     exclude = ('geometry_simplified',)
     raw_id_fields = ('parent', 'country')
+    ordering = ('id',)
 
     def get_queryset(self, request):
-        return Location._base_manager.defer(
-            'geometry', 'geometry_simplified',
-        ).order_by(
-            Location.objects.tree_id_attr, Location.objects.left_attr,
-        ).prefetch_related('country')
+        return super().get_queryset(request).prefetch_related(
+            Prefetch('country', Country.objects.defer('geometry', 'geometry_simplified')),
+        )

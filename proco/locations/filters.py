@@ -12,4 +12,8 @@ class CountryFilterList(SimpleListFilter):
         return Country.objects.defer('geometry', 'geometry_simplified').values_list('id', 'name')
 
     def queryset(self, request, queryset):
-        return queryset.filter(country_id=self.value()) if self.value() else queryset
+        return queryset.filter(**{self.parameter_name: self.value()}) if self.value() else queryset
+
+
+class SchoolCountryFilterList(CountryFilterList):
+    parameter_name = 'school__country_id'
