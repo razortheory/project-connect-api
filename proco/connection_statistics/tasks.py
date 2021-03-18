@@ -11,7 +11,7 @@ from proco.schools.loaders.brasil_loader import brasil_statistic_loader
 from proco.taskapp import app
 
 
-@app.task(soft_time_limit=60 * 60, time_limit=60 * 60)
+@app.task(soft_time_limit=4 * 60 * 60, time_limit=4 * 60 * 60)
 def aggregate_country_data(_prev_result, country_id, *args):
     country = Country.objects.get(id=country_id)
     aggregate_real_time_data_to_school_daily_status(country)
