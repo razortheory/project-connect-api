@@ -211,9 +211,9 @@ def validate_row(country: Country, data: dict):
                 ))
             return None, None, errors, warnings
         history_data['connectivity_type'] = data['type_connectivity']
-    if 'speed_connectivity' in data:
+    if 'speed_connectivity' in data or 'connectivity_speed' in data or 'speed' in data:
         try:
-            speed = float(data['speed_connectivity'])
+            speed = float(data.get('speed_connectivity', data.get('connectivity_speed', data['speed'])))
             if 600 > speed > 500:
                 speed = 0.5
             history_data['connectivity_speed'] = speed * (10 ** 6)  # mbps to bps
