@@ -15,5 +15,6 @@ class ApproxQuerySet(models.QuerySet):
             return super().count()
 
     def __len__(self):
-        self._fetch_all()
-        return self.count()
+        if not self.query.where:
+            return self.count()
+        return super().__len__()
