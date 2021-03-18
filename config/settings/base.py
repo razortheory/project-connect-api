@@ -156,7 +156,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': env('REDIS_URL', default='redis://localhost:6379/0'),
-        'TIMEOUT': 4 * 60 * 60,  # four hours
+        'TIMEOUT': 365 * 24 * 60 * 60,  # one year
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'CONNECTION_POOL_KWARGS': {
