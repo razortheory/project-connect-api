@@ -84,7 +84,6 @@ class SchoolDailyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
     list_filter = (SchoolCountryFilterList,)
     ordering = ('-id',)
     raw_id_fields = ('school',)
-    date_hierarchy = 'date'
     show_full_result_count = False
 
     def get_queryset(self, request):
@@ -96,10 +95,9 @@ class SchoolDailyStatusAdmin(SchoolNameDisplayAdminMixin, admin.ModelAdmin):
 
 @admin.register(RealTimeConnectivity)
 class RealTimeConnectivityAdmin(admin.ModelAdmin):
-    list_display = ('school_id', 'created', 'connectivity_speed', 'connectivity_latency')
+    list_display = ('id', 'created', 'connectivity_speed', 'connectivity_latency')
     ordering = ('-id',)
-    readonly_fields = ('created', 'modified')
-    raw_id_fields = ('school',)
+    readonly_fields = ('school', 'created', 'modified')
     show_full_result_count = False
 
     def has_add_permission(self, request):

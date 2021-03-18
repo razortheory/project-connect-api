@@ -2,6 +2,7 @@ from django.db import connections, models
 
 
 class ApproxQuerySet(models.QuerySet):
+    # calculate queryset size approximately based on pg statistics
     def count(self, approx=True):
         if approx and not self.query.where:
             cursor = connections[self.db].cursor()
@@ -12,3 +13,7 @@ class ApproxQuerySet(models.QuerySet):
             return cursor.fetchall()[0][0]
         else:
             return super().count()
+
+    def __len__(self):
+        self._fetch_all()
+        return self.count()
