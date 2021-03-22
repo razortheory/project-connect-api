@@ -107,6 +107,12 @@ if CELERY_ENABLED:
     CELERY_BROKER_URL = env('CELERY_BROKER_URL')
     CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND_URL')
 
+    if CELERY_BROKER_URL.startswith('rediss://') or CELERY_RESULT_BACKEND.startswith('rediss://'):
+        import ssl
+        CELERY_REDIS_BACKEND_USE_SSL = {
+            'ssl_cert_reqs': ssl.CERT_NONE,
+        }
+
     CELERY_TASK_DEFAULT_QUEUE = 'proco-celery-queue'
     CELERY_TASK_DEFAULT_EXCHANGE = 'proco-exchange'
     CELERY_TASK_DEFAULT_ROUTING_KEY = 'celery.proco'

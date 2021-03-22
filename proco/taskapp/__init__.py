@@ -37,7 +37,3 @@ def finalize_setup(sender, **kwargs):
         },
         'drf_secure_token.tasks.delete_old_tokens': DELETE_OLD_TOKENS,
     })
-
-    app.conf.redis_backend_use_ssl = {
-        'ssl_cert_reqs': 'CERT_NONE',
-    }
