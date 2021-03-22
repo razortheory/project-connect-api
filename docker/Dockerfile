@@ -30,6 +30,17 @@ RUN pip install --upgrade \
     wheel \
     pipenv
 
+# ssh
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update \
+	&& apt-get install -y --no-install-recommends openssh-server \
+	&& echo "$SSH_PASSWD" | chpasswd
+
+COPY sshd_config /etc/ssh/
+
+# python app
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH /code
 
@@ -47,4 +58,4 @@ ADD . /code/
 # cleanup env files if any
 RUN find . -type f -name '.env' -delete
 
-EXPOSE 8000
+EXPOSE 8000 2222
