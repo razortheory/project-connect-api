@@ -2,7 +2,9 @@
 set -ex
 
 # export environment variables to make them available in ssh session
-eval $(printenv | awk -F= '{print "export " "\""$1"\"""=""\""$2"\"" }' >> /etc/profile)
+for var in $(compgen -e); do
+    echo "export $var=${!var}" >> /etc/profile
+done
 
 echo "Starting SSH ..."
 service ssh start
