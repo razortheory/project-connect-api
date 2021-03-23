@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -ex
 
+# export environment variables to make them available in ssh session
+eval $(printenv | awk -F= '{print "export " "\""$1"\"""=""\""$2"\"" }' >> /etc/profile)
+
 echo "Starting SSH ..."
 service ssh start
 
