@@ -1,5 +1,9 @@
-from celery import chain, chord, group
+from datetime import timedelta
 
+from celery import chain, chord, group
+from django.utils import timezone
+
+from proco.connection_statistics.models import RealTimeConnectivity
 from proco.connection_statistics.utils import (
     aggregate_real_time_data_to_school_daily_status,
     aggregate_school_daily_status_to_school_weekly_status,
@@ -60,3 +64,8 @@ def update_real_time_data():
             finalize_task.si(),
         ),
     ).delay()
+
+
+@app.task
+def clean_old_realtime_data():
+    RealTimeConnectivity.objects.filter(created__lt=timezone.now() - timedelta(days=30)).delete()

@@ -35,5 +35,15 @@ def finalize_setup(sender, **kwargs):
             'schedule': crontab(hour=3, minute=0),
             'args': (),
         },
+        'proco.utils.tasks.clean_old_realtime_data': {
+            'task': 'proco.utils.tasks.clean_old_realtime_data',
+            'schedule': crontab(hour=5, minute=0),
+            'args': (),
+        },
+        'proco.realtime_unicef.tasks.sync_realtime_data': {
+            'task': 'proco.realtime_unicef.tasks.sync_realtime_data',
+            'schedule': crontab(hour='*', minute='10,40'),
+            'args': (),
+        },
         'drf_secure_token.tasks.delete_old_tokens': DELETE_OLD_TOKENS,
     })

@@ -24,6 +24,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DATABASES = {
     'default': env.db(),
+    'realtime': env.db_url(var='REALTIME_DATABASE_URL')
 }
 
 
