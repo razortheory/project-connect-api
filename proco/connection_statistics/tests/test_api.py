@@ -7,6 +7,7 @@ from unittest.mock import patch
 from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from rest_framework import status
 
@@ -176,13 +177,13 @@ class AggregateConnectivityDataTestCase(TestCase):
         RealTimeConnectivityFactory(school=cls.school, connectivity_speed=6000000)
 
     def test_aggregate_real_time_data_to_school_daily_status(self):
-        aggregate_real_time_data_to_school_daily_status(self.country)
+        aggregate_real_time_data_to_school_daily_status(self.country, timezone.now().date())
         self.assertEqual(SchoolDailyStatus.objects.count(approx=False), 1)
         self.assertEqual(SchoolDailyStatus.objects.first().connectivity_speed, 5000000)
 
     def test_aggregate_real_time_data_to_country_daily_status(self):
-        aggregate_real_time_data_to_school_daily_status(self.country)
-        aggregate_school_daily_to_country_daily(self.country)
+        aggregate_real_time_data_to_school_daily_status(self.country, timezone.now().date())
+        aggregate_school_daily_to_country_daily(self.country, timezone.now().date())
         self.assertEqual(CountryDailyStatus.objects.count(), 1)
         self.assertEqual(CountryDailyStatus.objects.first().connectivity_speed, 5000000)
 
@@ -191,7 +192,7 @@ class AggregateConnectivityDataTestCase(TestCase):
         SchoolDailyStatusFactory(school__country=self.country, connectivity_speed=4000000, date=today)
         SchoolDailyStatusFactory(school__country=self.country, connectivity_speed=6000000, date=today)
 
-        aggregate_school_daily_to_country_daily(self.country)
+        aggregate_school_daily_to_country_daily(self.country, timezone.now().date())
         self.assertEqual(CountryDailyStatus.objects.get(country=self.country, date=today).connectivity_speed, 5000000)
 
     def test_aggregate_country_daily_status_to_country_weekly_status(self):

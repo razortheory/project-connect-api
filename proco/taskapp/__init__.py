@@ -20,10 +20,17 @@ def finalize_setup(sender, **kwargs):
     from drf_secure_token.tasks import DELETE_OLD_TOKENS
 
     app.conf.beat_schedule.update({
-        'proco.connection_statistics.tasks.update_real_time_data': {
+        'proco.connection_statistics.tasks.aggregate_today_data': {
             'task': 'proco.connection_statistics.tasks.update_real_time_data',
-            'schedule': crontab(hour='6,12,18,22', minute=0),
+            'schedule': crontab(hour='4,10,16,20', minute=0),
             'args': (),
+            'kwargs': {'today': True},
+        },
+        'proco.connection_statistics.tasks.aggregate_yesterday_data': {
+            'task': 'proco.connection_statistics.tasks.update_real_time_data',
+            'schedule': crontab(hour=0, minute=1),
+            'args': (),
+            'kwargs': {'today': False},
         },
         'proco.connection_statistics.tasks.update_brasil_schools': {
             'task': 'proco.connection_statistics.tasks.update_brasil_schools',
@@ -40,9 +47,9 @@ def finalize_setup(sender, **kwargs):
             'schedule': crontab(hour=5, minute=0),
             'args': (),
         },
-        'proco.realtime_unicef.tasks.sync_realtime_data': {
-            'task': 'proco.realtime_unicef.tasks.sync_realtime_data',
-            'schedule': crontab(hour='*', minute='10,40'),
+        'proco.utils.tasks.load_data_from_unicef_db': {
+            'task': 'proco.utils.tasks.load_data_from_unicef_db',
+            'schedule': crontab(hour='*', minute='20'),
             'args': (),
         },
         'drf_secure_token.tasks.delete_old_tokens': DELETE_OLD_TOKENS,
