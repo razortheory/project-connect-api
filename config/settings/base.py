@@ -60,6 +60,7 @@ LOCAL_APPS = [
     'proco.connection_statistics',
     'proco.contact',
     'proco.background',
+    'proco.realtime_unicef',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

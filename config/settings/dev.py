@@ -1,3 +1,5 @@
+from django.core.exceptions import ImproperlyConfigured
+
 from config.settings.base import *  # noqa: F403
 
 DEBUG = True
@@ -21,6 +23,11 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': env.db(default='postgis://localhost/proco'),
 }
+
+try:
+    DATABASES['realtime'] = env.db_url(var='REALTIME_DATABASE_URL')
+except ImproperlyConfigured:
+    DATABASES['realtime'] = DATABASES['default']
 
 
 # Email settings

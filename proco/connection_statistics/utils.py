@@ -25,8 +25,7 @@ from proco.schools.models import School
 from proco.utils.dates import get_current_week, get_current_year
 
 
-def aggregate_real_time_data_to_school_daily_status(country):
-    date = timezone.now().date()
+def aggregate_real_time_data_to_school_daily_status(country, date):
     schools = RealTimeConnectivity.objects.filter(
         created__date=date, school__country=country,
     ).order_by('school').values_list('school', flat=True).order_by('school_id').distinct('school_id')
@@ -44,9 +43,7 @@ def aggregate_real_time_data_to_school_daily_status(country):
         school_daily_status.save()
 
 
-def aggregate_school_daily_to_country_daily(country) -> bool:
-    date = timezone.now().date()
-
+def aggregate_school_daily_to_country_daily(country, date) -> bool:
     aggregate = SchoolDailyStatus.objects.filter(
         school__country=country, date=date,
     ).aggregate(
