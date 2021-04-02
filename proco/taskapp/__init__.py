@@ -47,10 +47,5 @@ def finalize_setup(sender, **kwargs):
             'schedule': crontab(hour=5, minute=0),
             'args': (),
         },
-        'proco.utils.tasks.load_data_from_unicef_db': {
-            'task': 'proco.utils.tasks.load_data_from_unicef_db',
-            'schedule': crontab(hour='*', minute='20'),
-            'args': (),
-        },
         'drf_secure_token.tasks.delete_old_tokens': DELETE_OLD_TOKENS,
     })
