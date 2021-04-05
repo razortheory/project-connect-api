@@ -35,8 +35,10 @@ class SchoolsViewSet(
     related_model = Country
 
     def get_serializer(self, *args, **kwargs):
+        country_pointer = self.kwargs['country_pk']
+        filter_ = {'id': country_pointer} if country_pointer.isdigit() else {'code__iexact': country_pointer}
         kwargs['country'] = Country.objects.filter(
-            id=self.kwargs['country_pk'],
+            **filter_,
         ).defer('geometry', 'geometry_simplified').select_related(
             'last_weekly_status',
         ).first()
@@ -52,7 +54,13 @@ class SchoolsViewSet(
         )
 
     def get_queryset(self):
-        return super().get_queryset().filter(country_id=self.kwargs['country_pk'])
+        country_pointer = self.kwargs['country_pk']
+        filter_ = {
+            'country_id': country_pointer,
+        } if country_pointer.isdigit() else {
+            'country__code__iexact': country_pointer,
+        }
+        return super().get_queryset().filter(**filter_)
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
