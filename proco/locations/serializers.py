@@ -32,7 +32,7 @@ class BoundaryListCountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = (
-            'id', 'geometry_simplified',
+            'id', 'code', 'geometry_simplified',
         )
         read_only_fields = fields
 
