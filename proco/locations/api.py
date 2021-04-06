@@ -63,6 +63,6 @@ class CountryBoundaryListAPIView(CachedListMixin, ListAPIView):
 
     queryset = Country.objects.all().annotate(
         geometry_empty=Func(F('geometry'), function='ST_IsEmpty', output_field=BooleanField()),
-    ).filter(geometry_empty=False).only('id', 'geometry_simplified')
+    ).filter(geometry_empty=False).only('id', 'code', 'geometry_simplified')
     serializer_class = BoundaryListCountrySerializer
     pagination_class = None
