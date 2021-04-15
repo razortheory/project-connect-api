@@ -29,6 +29,9 @@ try:
 except ImproperlyConfigured:
     DATABASES['realtime'] = DATABASES['default']
 
+DATABASE_ROUTERS = [
+    'config.db_routers.DBRouter',
+]
 
 # Email settings
 # --------------------------------------------------------------------------

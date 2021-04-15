@@ -26,6 +26,9 @@ DATABASES = {
     'default': env.db(),
     'realtime': env.db_url(var='REALTIME_DATABASE_URL'),
 }
+DATABASE_ROUTERS = [
+    'config.db_routers.DBRouter',
+]
 
 
 # Template
