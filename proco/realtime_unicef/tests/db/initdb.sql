@@ -4,7 +4,7 @@ drop table if exists public.measurements;
 
 -- create tables & relations
 CREATE TABLE public.measurements (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     "timestamp" timestamp with time zone,
     uuid text,
     browser_id text,
@@ -19,14 +19,3 @@ CREATE TABLE public.measurements (
     latency bigint,
     results jsonb
 );
-CREATE SEQUENCE public.measurements_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-ALTER TABLE ONLY public.measurements
-    ALTER COLUMN id
-        SET DEFAULT nextval('public.measurements_id_seq'::regclass);
-ALTER TABLE ONLY public.measurements
-    ADD CONSTRAINT measurements_pkey PRIMARY KEY (id);
