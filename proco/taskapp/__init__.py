@@ -42,8 +42,8 @@ def finalize_setup(sender, **kwargs):
             'schedule': crontab(hour=3, minute=0),
             'args': (),
         },
-        'proco.utils.tasks.clean_old_realtime_data': {
-            'task': 'proco.utils.tasks.clean_old_realtime_data',
+        'proco.connection_statistics.tasks.clean_old_realtime_data': {
+            'task': 'proco.connection_statistics.tasks.clean_old_realtime_data',
             'schedule': crontab(hour=5, minute=0),
             'args': (),
         },
