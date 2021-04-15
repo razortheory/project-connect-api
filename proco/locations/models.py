@@ -60,12 +60,13 @@ class Country(GeometryMixin, TimeStampedModel):
     description = models.TextField(max_length=1000, blank=True, default='')
     data_source = models.TextField(max_length=500, blank=True, default='')
 
-    date_of_join = models.DateField(null=True)
+    date_of_join = models.DateField(null=True, blank=True, default=None)
     date_schools_mapped = models.DateField(null=True, blank=True, default=None)
 
     last_weekly_status = models.ForeignKey(
         'connection_statistics.CountryWeeklyStatus',
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name='_country',
     )

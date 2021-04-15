@@ -40,7 +40,7 @@ class School(TimeStampedModel):
     school_type = models.CharField(blank=True, max_length=64)
 
     last_weekly_status = models.ForeignKey(
-        'connection_statistics.SchoolWeeklyStatus', null=True,
+        'connection_statistics.SchoolWeeklyStatus', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='_school',
     )
 

@@ -20,7 +20,7 @@ class CountryAdmin(GeoModelAdmin):
 
     list_display = ('name', 'code', 'flag_preview')
     search_fields = ('name',)
-    exclude = ('geometry_simplified',)
+    exclude = ('geometry', 'geometry_simplified',)
     raw_id_fields = ('last_weekly_status',)
     actions = ('update_country_status_to_joined', 'clearing_all_data')
 
