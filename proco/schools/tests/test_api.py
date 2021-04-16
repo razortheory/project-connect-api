@@ -50,7 +50,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         with self.assertNumQueries(2):
             response = self.forced_auth_req(
                 'get',
-                reverse('schools:schools-list', args=[self.country.id]),
+                reverse('schools:schools-list', args=[self.country.code.lower()]),
                 user=None,
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -66,7 +66,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.country.last_weekly_status.save()
         response = self.forced_auth_req(
             'get',
-            reverse('schools:schools-list', args=[self.country.id]),
+            reverse('schools:schools-list', args=[self.country.code.lower()]),
             user=None,
         )
 
@@ -89,7 +89,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.country.last_weekly_status.save()
         response = self.forced_auth_req(
             'get',
-            reverse('schools:schools-list', args=[self.country.id]),
+            reverse('schools:schools-list', args=[self.country.code.lower()]),
             user=None,
         )
 
@@ -106,7 +106,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
     def test_authorization_user(self):
         response = self.forced_auth_req(
             'get',
-            reverse('schools:schools-list', args=[self.country.id]),
+            reverse('schools:schools-list', args=[self.country.code.lower()]),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -114,7 +114,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         with self.assertNumQueries(2):
             response = self.forced_auth_req(
                 'get',
-                reverse('schools:schools-detail', args=[self.country.id, self.school_one.id]),
+                reverse('schools:schools-detail', args=[self.country.code.lower(), self.school_one.id]),
                 user=None,
             )
         self.assertEqual(response.status_code, status.HTTP_200_OK)

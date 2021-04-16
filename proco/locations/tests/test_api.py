@@ -14,6 +14,9 @@ from proco.utils.tests import TestAPIViewSetMixin
 class CountryApiTestCase(TestAPIViewSetMixin, TestCase):
     base_view = 'locations:countries'
 
+    def get_detail_args(self, instance):
+        return self.get_list_args() + [instance.code.lower()]
+
     @classmethod
     def setUpTestData(cls):
         cls.country_one = CountryFactory()
