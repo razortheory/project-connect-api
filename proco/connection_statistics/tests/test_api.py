@@ -95,7 +95,7 @@ class CountryWeekStatsApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_country_weekly_stats_queries(self):
         code = self.stat_one.country.code.lower()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-weekly-stat', kwargs={
@@ -138,10 +138,11 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.data['count'], 1)
 
     def test_country_weekly_stats_queries(self):
-        with self.assertNumQueries(2):
+        code = self.country_one.code.lower()
+        with self.assertNumQueries(3):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-daily-stat', kwargs={
-                    'country_code': self.country_one.code.lower(),
+                    'country_code': code,
                 }),
             )
