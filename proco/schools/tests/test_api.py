@@ -120,3 +120,19 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.school_one.id)
         self.assertIn('statistics', response.data)
+
+    def test_update_keys(self):
+        # todo: move me to proper place
+        from proco.locations.models import Country
+        from proco.utils.tasks import update_cached_value
+        for country in Country.objects.all():
+            update_cached_value(url=reverse('locations:countries-detail', kwargs={'pk': country.code.lower()}))
+            update_cached_value(url=reverse('schools:schools-list', kwargs={'country_code': country.code.lower()}))
+
+        self.assertListEqual(
+            list(sorted(cache.keys('*'))),  # noqa: C413
+            list(sorted([  # noqa: C413
+                f'SOFT_CACHE_COUNTRY_INFO_pk_{self.country.code.lower()}',
+                f'SOFT_CACHE_SCHOOLS_{self.country.code.lower()}_',
+            ])),
+        )

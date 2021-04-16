@@ -1,12 +1,11 @@
 from django.urls import include, path
 
-from rest_framework_nested import routers
+from rest_framework.routers import SimpleRouter
 
-from proco.locations.api_urls import router as location_router
 from proco.schools import api
 
-country_schools = routers.NestedSimpleRouter(location_router, r'countries', lookup='country')
-country_schools.register(r'schools', api.SchoolsViewSet, basename='schools')
+country_schools = SimpleRouter()
+country_schools.register(r'countries/(?P<country_code>\w+)/schools', api.SchoolsViewSet, basename='schools')
 
 app_name = 'schools'
 

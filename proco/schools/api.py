@@ -45,7 +45,7 @@ class SchoolsViewSet(
         params.pop(self.CACHE_KEY, None)
         return '{0}_{1}_{2}'.format(
             getattr(self.__class__, 'LIST_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
-            self.kwargs['country_pk'].lower(),
+            self.kwargs['country_code'].lower(),
             '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(params.items()))),
         )
 
@@ -55,7 +55,7 @@ class SchoolsViewSet(
                 Country.objects.defer(
                     'geometry', 'geometry_simplified',
                 ).select_related('last_weekly_status').annotate(code_lower=Lower('code')),
-                code_lower=self.kwargs.get('country_pk'),
+                code_lower=self.kwargs.get('country_code'),
             )
         return self._country
 
@@ -74,7 +74,7 @@ class SchoolsViewSet(
     def export_csv_schools(self, request, *args, **kwargs):
         country = get_object_or_404(
             self.get_queryset().annotate(code_lower=Lower('code')),
-            code_lower=self.kwargs.get('country_pk'),
+            code_lower=self.kwargs.get('country_code'),
         )
         serializer = self.get_serializer(self.get_queryset(), many=True)
         csvwriter = SchoolsCSVWriterBackend(serializer, country)
