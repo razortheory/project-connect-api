@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models.functions.text import Lower
 from django.shortcuts import get_object_or_404
 
 from rest_framework import mixins, viewsets
@@ -51,8 +52,10 @@ class SchoolsViewSet(
     def get_country(self):
         if not hasattr(self, '_country'):
             self._country = get_object_or_404(
-                Country.objects.defer('geometry', 'geometry_simplified').select_related('last_weekly_status'),
-                code__lower=self.kwargs.get('country_pk'),
+                Country.objects.defer(
+                    'geometry', 'geometry_simplified',
+                ).select_related('last_weekly_status').annotate(code_lower=Lower('code')),
+                code_lower=self.kwargs.get('country_pk'),
             )
         return self._country
 
@@ -69,7 +72,10 @@ class SchoolsViewSet(
 
     @action(methods=['get'], detail=False, url_path='export-csv-schools', url_name='export_csv_schools')
     def export_csv_schools(self, request, *args, **kwargs):
-        country = get_object_or_404(self.get_queryset(), code__lower=self.kwargs.get('country_pk'))
+        country = get_object_or_404(
+            self.get_queryset().annotate(code_lower=Lower('code')),
+            code_lower=self.kwargs.get('country_pk'),
+        )
         serializer = self.get_serializer(self.get_queryset(), many=True)
         csvwriter = SchoolsCSVWriterBackend(serializer, country)
         response = csvwriter.write()

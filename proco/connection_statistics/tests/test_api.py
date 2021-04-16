@@ -78,7 +78,7 @@ class CountryWeekStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         response = self.forced_auth_req(
             'get',
             reverse('connection_statistics:country-weekly-stat', kwargs={
-                'country_id': self.stat_one.country_id,
+                'country_code': self.stat_one.country.code.lower(),
                 'year': self.stat_one.year,
                 'week': self.stat_one.week,
             }),
@@ -98,7 +98,7 @@ class CountryWeekStatsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-weekly-stat', kwargs={
-                    'country_id': self.stat_one.country_id,
+                    'country_code': self.stat_one.country.code.lower(),
                     'year': self.stat_one.year,
                     'week': self.stat_one.week,
                 }),
@@ -121,7 +121,7 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         response = self.forced_auth_req(
             'get',
             reverse('connection_statistics:country-daily-stat', kwargs={
-                'country_id': self.country_one.id,
+                'country_code': self.country_one.code.lower(),
             }),
         )
 
@@ -131,7 +131,7 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
         response = self.forced_auth_req(
             'get',
             reverse('connection_statistics:country-daily-stat', kwargs={
-                'country_id': self.country_two.id,
+                'country_code': self.country_two.code.lower(),
             }),
         )
         self.assertEqual(response.data['count'], 1)
@@ -141,6 +141,6 @@ class CountryDailyStatsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.forced_auth_req(
                 'get',
                 reverse('connection_statistics:country-daily-stat', kwargs={
-                    'country_id': self.country_one.id,
+                    'country_code': self.country_one.code.lower(),
                 }),
             )

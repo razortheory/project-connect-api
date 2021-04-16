@@ -1,4 +1,5 @@
 from django.db.models import BooleanField, F, Func
+from django.db.models.functions.text import Lower
 from django.shortcuts import get_object_or_404
 
 from rest_framework import mixins, viewsets
@@ -46,7 +47,7 @@ class CountryViewSet(
         return serializer_class
 
     def get_object(self):
-        return get_object_or_404(self.queryset, code__lower=self.kwargs.get('pk'))
+        return get_object_or_404(self.queryset.annotate(code_lower=Lower('code')), code_lower=self.kwargs.get('pk'))
 
     def get_queryset(self):
         qs = super().get_queryset()

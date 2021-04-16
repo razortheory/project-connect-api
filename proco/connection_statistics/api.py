@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db.models import Sum
+from django.db.models.functions.text import Lower
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
@@ -73,7 +74,10 @@ class CountryWeekStatsAPIView(RetrieveAPIView):
     def get_object(self, *args, **kwargs):
         week = self.kwargs['week']
         year = self.kwargs['year']
-        country = get_object_or_404(Country.objects, code__lower=self.kwargs.get('country_code'))
+        country = get_object_or_404(
+            Country.objects.annotate(code_lower=Lower('code')),
+            code_lower=self.kwargs.get('country_code'),
+        )
         date = datetime.strptime(f'{year}-W{week}-1', '%Y-W%W-%w')
         instance = CountryWeeklyStatus.objects.filter(country=country, date__lte=date).last()
 
@@ -98,7 +102,10 @@ class CountryDailyStatsListAPIView(ListAPIView):
 
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
-        country = get_object_or_404(Country.objects, code__lower=self.kwargs.get('country_code'))
+        country = get_object_or_404(
+            Country.objects.annotate(code_lower=Lower('code')),
+            code_lower=self.kwargs.get('country_code'),
+        )
         return queryset.filter(country=country)
 
 
