@@ -27,7 +27,7 @@ class ColorMapSchema:
     def get_connectivity_status_by_connectivity_speed(self, speed):
         if connectivity_status := self.STATUS_BY_CONNECTIVITY_SPEED.get(speed):
             return connectivity_status
-        elif speed > self.CONNECTIVITY_SPEED_FOR_GOOD_CONNECTIVITY_STATUS:
+        elif speed >= self.CONNECTIVITY_SPEED_FOR_GOOD_CONNECTIVITY_STATUS:
             connectivity_status = 'good'
         else:
             connectivity_status = 'moderate'
