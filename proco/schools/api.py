@@ -35,13 +35,7 @@ class SchoolsViewSet(
     related_model = Country
 
     def get_serializer(self, *args, **kwargs):
-        country_pointer = self.kwargs['country_pk']
-        filter_ = {'id': country_pointer} if country_pointer.isdigit() else {'code__iexact': country_pointer}
-        kwargs['country'] = Country.objects.filter(
-            **filter_,
-        ).defer('geometry', 'geometry_simplified').select_related(
-            'last_weekly_status',
-        ).first()
+        kwargs['country'] = self.get_country()
         return super(SchoolsViewSet, self).get_serializer(*args, **kwargs)
 
     def get_list_cache_key(self):
@@ -49,18 +43,20 @@ class SchoolsViewSet(
         params.pop(self.CACHE_KEY, None)
         return '{0}_{1}_{2}'.format(
             getattr(self.__class__, 'LIST_CACHE_KEY_PREFIX', self.__class__.__name__) or self.__class__.__name__,
-            self.kwargs['country_pk'],
+            self.kwargs['country_pk'].lower(),
             '_'.join(map(lambda x: '{0}_{1}'.format(x[0], x[1]), sorted(params.items()))),
         )
 
+    def get_country(self):
+        if not hasattr(self, '_country'):
+            self._country = get_object_or_404(
+                Country.objects.defer('geometry', 'geometry_simplified').select_related('last_weekly_status'),
+                code__lower=self.kwargs.get('country_pk')
+            )
+        return self._country
+
     def get_queryset(self):
-        country_pointer = self.kwargs['country_pk']
-        filter_ = {
-            'country_id': country_pointer,
-        } if country_pointer.isdigit() else {
-            'country__code__iexact': country_pointer,
-        }
-        return super().get_queryset().filter(**filter_)
+        return super().get_queryset().filter(country=self.get_country())
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
@@ -72,10 +68,9 @@ class SchoolsViewSet(
 
     @action(methods=['get'], detail=False, url_path='export-csv-schools', url_name='export_csv_schools')
     def export_csv_schools(self, request, *args, **kwargs):
-        country_id = self.kwargs['country_pk']
-        queryset = self.get_queryset()
+        country = get_object_or_404(self.get_queryset(), code__lower=self.kwargs.get('country_pk'))
         serializer = self.get_serializer(queryset, many=True)
-        csvwriter = SchoolsCSVWriterBackend(serializer, country_id)
+        csvwriter = SchoolsCSVWriterBackend(serializer, country)
         response = csvwriter.write()
         return response
 

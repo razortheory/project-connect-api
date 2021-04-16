@@ -113,7 +113,7 @@ def process_loaded_file(pk: int, force: bool = False):
                 update_country_weekly_status(imported_file.country)
                 update_country_data_source_by_csv_filename(imported_file)
                 imported_file.country.invalidate_country_related_cache()
-                update_country_related_cache.delay(imported_file.country.pk)
+                update_country_related_cache.delay(imported_file.country.code)
 
             transaction.on_commit(update_stats)
     except UnsupportedFileFormatException as e:

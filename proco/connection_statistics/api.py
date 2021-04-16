@@ -72,10 +72,9 @@ class CountryWeekStatsAPIView(RetrieveAPIView):
     def get_object(self, *args, **kwargs):
         week = self.kwargs['week']
         year = self.kwargs['year']
-        country = self.kwargs.get('country_id')
-        country_filter = {'country_id': country} if country.isdigit() else {'country__code__iexact': country}
+        country = get_object_or_404(Country.objects, code__lower=self.kwargs.get('country_code'))
         date = datetime.strptime(f'{year}-W{week}-1', '%Y-W%W-%w')
-        instance = CountryWeeklyStatus.objects.filter(**country_filter, date__lte=date).last()
+        instance = CountryWeeklyStatus.objects.filter(country=country, date__lte=date).last()
 
         if not instance:
             raise Http404
@@ -98,9 +97,8 @@ class CountryDailyStatsListAPIView(ListAPIView):
 
     def get_queryset(self):
         queryset = super(CountryDailyStatsListAPIView, self).get_queryset()
-        country = self.kwargs.get('country_id')
-        country_filter = {'country_id': country} if country.isdigit() else {'country__code__iexact': country}
-        return queryset.filter(**country_filter)
+        country = get_object_or_404(Country.objects, code__lower=self.kwargs.get('country_code'))
+        return queryset.filter(country=country)
 
 
 class SchoolDailyStatsListAPIView(ListAPIView):

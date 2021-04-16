@@ -85,8 +85,8 @@ class Country(GeometryMixin, TimeStampedModel):
         cache_manager.invalidate((
             'GLOBAL_STATS',
             'COUNTRIES_LIST*',
-            'COUNTRY_INFO_pk_{0}'.format(self.pk),
-            'SCHOOLS_{0}_*'.format(self.pk),
+            'COUNTRY_INFO_pk_{0}'.format(self.code.lower()),
+            'SCHOOLS_{0}_*'.format(self.code.lower()),
         ))
 
     def save(self, *args, **kwargs):

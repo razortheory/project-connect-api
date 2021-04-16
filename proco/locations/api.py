@@ -46,10 +46,7 @@ class CountryViewSet(
         return serializer_class
 
     def get_object(self):
-        country_pointer = self.kwargs.get('pk')
-        if not country_pointer.isdigit():
-            return get_object_or_404(self.queryset, code__iexact=country_pointer)
-        return super().get_object()
+        return get_object_or_404(self.queryset, code__lower=self.kwargs.get('pk'))
 
     def get_queryset(self):
         qs = super().get_queryset()

@@ -7,14 +7,13 @@ from proco.locations.models import Country
 
 
 class SchoolsCSVWriterBackend:
-    def __init__(self, serializer, country_id):
+    def __init__(self, serializer, country):
         self.serializer = serializer
-        self.filename = self.get_filename(country_id)
+        self.filename = self.get_filename(country)
 
-    def get_filename(self, country_id):
-        country_name = Country.objects.get(pk=country_id).name
+    def get_filename(self, country):
         date = datetime.now().date().strftime('%Y-%m-%d')
-        return f'{country_name}_schools_{date}.csv'
+        return f'{country.name}_schools_{date}.csv'
 
     def writeheader(self, writer, header, labels):
         header = dict(zip(header, labels))
