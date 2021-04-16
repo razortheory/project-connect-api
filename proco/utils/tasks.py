@@ -25,7 +25,7 @@ def update_all_cached_values():
     for country in Country.objects.all():
         chain([
             update_cached_value.s(url=reverse('locations:countries-detail', kwargs={'pk': country.code.lower()})),
-            update_cached_value.s(url=reverse('schools:schools-list', kwargs={'country_pk': country..code.lower()})),
+            update_cached_value.s(url=reverse('schools:schools-list', kwargs={'country_pk': country.code.lower()})),
         ]).delay()
 
 
