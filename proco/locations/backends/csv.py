@@ -3,8 +3,6 @@ from datetime import datetime
 
 from django.http import HttpResponse
 
-from proco.locations.models import Country
-
 
 class SchoolsCSVWriterBackend:
     def __init__(self, serializer, country):
