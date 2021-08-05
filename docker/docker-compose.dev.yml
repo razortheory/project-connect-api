@@ -8,6 +8,14 @@ services:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: proco
+    volumes:
+      - "../postgres_data:/postgres_data"
+
+  redis:
+    restart: always
+    image: redis:latest
+    expose:
+      - "6379"
 
   backend:
     container_name: proco_dev_backend
@@ -21,9 +29,11 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
       CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       - db
       - rabbitmq
+      - redis
     volumes:
       - "..:/code"
 
@@ -43,11 +53,13 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
       CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - "..:/code"
     depends_on:
       - db
       - rabbitmq
+      - redis
 
   celery_worker:
     container_name: proco_dev_celeryd
@@ -59,8 +71,10 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
       CELERY_BROKER_URL: amqp://rabbitmq:rabbitmq@rabbitmq/
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - "..:/code"
     depends_on:
       - db
       - rabbitmq
+      - redis
