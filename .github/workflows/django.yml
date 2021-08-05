@@ -34,11 +34,3 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
           docker tag proco_backend rttest/project-connect-api:prod
           docker push rttest/project-connect-api:prod
-
-      - name: Trigger redeploy
-        if: github.ref == 'refs/heads/master'
-        run: curl ${{ secrets.DEPLOY_URL }}?key=${{ secrets.DEPLOY_API_KEY }}
-
-      - name: Deploy celeryd app
-        if: github.ref == 'refs/heads/master'
-        run: curl  -H '' -d '' -X POST 'https://$proco-celeryd:${{ secrets.DEPLOY_CELERYD_SECRET }}@proco-celeryd.scm.azurewebsites.net/docker/hook'
