@@ -14,7 +14,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-dev
-    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "sleep 10 && pipenv run python manage.py migrate && pipenv run python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     environment:
@@ -28,7 +28,7 @@ services:
       - "..:/code"
 
   rabbitmq:
-    image: rabbitmq:alpine
+    image: rabbitmq:3.8-alpine
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
@@ -38,7 +38,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-dev
-    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run celery beat --app=proco.taskapp --loglevel=INFO"
+    command: bash -c "sleep 10 && pipenv run celery --app=proco.taskapp beat --loglevel=INFO"
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
@@ -54,7 +54,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile-dev
-    command: bash -c "sleep 10 && /code/scripts/wait-for-it.sh db:5432 && pipenv run celery worker --app=proco.taskapp --loglevel=INFO --time-limit=300 --concurrency=2 --soft-time-limit=60"
+    command: bash -c "sleep 10 && pipenv run celery --app=proco.taskapp worker --loglevel=INFO --time-limit=300 --concurrency=2 --soft-time-limit=60"
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgis://test:test@db/proco
