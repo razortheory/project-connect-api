@@ -3,7 +3,9 @@ version: '3'
 services:
   db:
     container_name: proco_dev_db
-    image: mdillon/postgis
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-db
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
