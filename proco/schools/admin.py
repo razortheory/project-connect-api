@@ -1,16 +1,14 @@
 from django.contrib import admin, messages
 from django.contrib.admin.options import csrf_protect_m
-from django.contrib.gis.db.models import PointField
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 
 from mapbox_location_field.admin import MapAdmin
-from mapbox_location_field.widgets import MapAdminInput
 
 from proco.locations.filters import CountryFilterList
-from proco.schools.forms import ImportSchoolsCSVForm
+from proco.schools.forms import ImportSchoolsCSVForm, SchoolAdminForm
 from proco.schools.models import FileImport, School
 from proco.schools.tasks import process_loaded_file
 from proco.utils.admin import CountryNameDisplayAdminMixin
@@ -29,9 +27,7 @@ class ImportFormMixin(object):
 
 @admin.register(School)
 class SchoolAdmin(ImportFormMixin, CountryNameDisplayAdminMixin, MapAdmin):
-    formfield_overrides = {
-        PointField: {'widget': MapAdminInput},
-    }
+    form = SchoolAdminForm
     list_display = ('name', 'get_country_name', 'address', 'education_level', 'school_type')
     list_filter = (CountryFilterList, 'education_level', 'environment', 'school_type')
     search_fields = ('name', 'country__name', 'location__name')
