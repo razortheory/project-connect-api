@@ -1,9 +1,12 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.db.models import Sum
 from django.db.models.functions.text import Lower
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
@@ -25,6 +28,7 @@ from proco.schools.models import School
 from proco.utils.cache import cache_manager
 
 
+@method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
 class GlobalStatsAPIView(APIView):
     permission_classes = (AllowAny,)
 

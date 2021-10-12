@@ -297,3 +297,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 CONSTANCE_CONFIG = {
     'CONTACT_EMAIL': ('', 'Email to receive contact messages', 'email_input'),
 }
+
+
+# Cache control headers
+CACHE_CONTROL_MAX_AGE = 24 * 60 * 60

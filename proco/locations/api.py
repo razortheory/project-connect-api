@@ -1,6 +1,9 @@
+from django.conf import settings
 from django.db.models import BooleanField, F, Func
 from django.db.models.functions.text import Lower
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
 
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
@@ -17,6 +20,7 @@ from proco.utils.filters import NullsAlwaysLastOrderingFilter
 from proco.utils.mixins import CachedListMixin, CachedRetrieveMixin
 
 
+@method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
 class CountryViewSet(
     CachedListMixin,
     CachedRetrieveMixin,
@@ -56,6 +60,7 @@ class CountryViewSet(
         return qs
 
 
+@method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
 class CountryBoundaryListAPIView(CachedListMixin, ListAPIView):
     LIST_CACHE_KEY_PREFIX = 'COUNTRY_BOUNDARY'
 
