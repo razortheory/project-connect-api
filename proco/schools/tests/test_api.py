@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from django.test import TestCase
+# from django.test.utils import override_settings
 from django.urls import reverse
 
 from rest_framework import status
@@ -72,6 +73,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertIn('coverage_status', response.data['results'][0])
             self.assertIn('is_verified', response.data['results'][0])
 
+    # @override_settings(SCHOOLS_LIST_PAGE_SIZE=100)  # todo: make it working, so test will be much faster
     def test_schools_v2_list_pagination(self):
         location = LocationFactory(country=self.country)
         School.objects.bulk_create(School(country=self.country, location=location) for _s in range(10000))
@@ -86,8 +88,10 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             return response
 
+        # todo: override_settings for some reason not working and we have here 103 objects in results
         with self.assertNumQueries(3):
             response = call_page(1)
+            # self.assertEqual(len(response.data['results']), 100)  # 100 schools we've created at start
             self.assertEqual(len(response.data['results']), 10000)  # 10k schools we've created at start
 
         with self.assertNumQueries(3):

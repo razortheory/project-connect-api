@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from django.conf import settings
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -10,7 +12,7 @@ class StaticLightPageNumberPaginator(PageNumberPagination):
     so we don't allow custom page size here and removing count from response
     """
     page_size_query_param = None
-    page_size = 10000
+    page_size = 10
 
     def get_paginated_response(self, data):
         return Response(OrderedDict([
@@ -18,3 +20,7 @@ class StaticLightPageNumberPaginator(PageNumberPagination):
             ('previous', self.get_previous_link()),
             ('results', data),
         ]))
+
+
+class SchoolsPaginator(StaticLightPageNumberPaginator):
+    page_size = settings.SCHOOLS_LIST_PAGE_SIZE

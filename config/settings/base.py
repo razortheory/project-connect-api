@@ -301,3 +301,7 @@ CONSTANCE_CONFIG = {
 
 # Cache control headers
 CACHE_CONTROL_MAX_AGE = 24 * 60 * 60
+
+
+# Paginators settings
+SCHOOLS_LIST_PAGE_SIZE = 10000
