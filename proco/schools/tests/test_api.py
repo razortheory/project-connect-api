@@ -6,7 +6,8 @@ from rest_framework import status
 
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.connection_statistics.tests.factories import SchoolWeeklyStatusFactory
-from proco.locations.tests.factories import CountryFactory
+from proco.locations.tests.factories import CountryFactory, LocationFactory
+from proco.schools.models import School
 from proco.schools.tests.factories import SchoolFactory
 from proco.utils.tests import TestAPIViewSetMixin
 
@@ -57,6 +58,50 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertIn('connectivity_status', response.data[0])
             self.assertIn('coverage_status', response.data[0])
             self.assertIn('is_verified', response.data[0])
+
+    def test_schools_v2_list(self):
+        # todo: get rid of COUNT(*) request
+        with self.assertNumQueries(3):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools_v2-list', args=[self.country.code.lower()]),
+                user=None,
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertIn('connectivity_status', response.data['results'][0])
+            self.assertIn('coverage_status', response.data['results'][0])
+            self.assertIn('is_verified', response.data['results'][0])
+
+    def test_schools_v2_list_pagination(self):
+        location = LocationFactory(country=self.country)
+        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(10000))
+
+        def call_page(page_number):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools_v2-list', args=[self.country.code.lower()]),
+                user=None,
+                data={'page': page_number},
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            return response
+
+        with self.assertNumQueries(3):
+            response = call_page(1)
+            self.assertEqual(len(response.data['results']), 10000)  # 10k schools we've created at start
+
+        with self.assertNumQueries(3):
+            response = call_page(2)
+            self.assertEqual(len(response.data['results']), 3)  # + three initial schools
+
+        # check pages are cached
+        with self.assertNumQueries(0):
+            response = call_page(1)
+            self.assertEqual(len(response.data['results']), 10000)
+
+        with self.assertNumQueries(0):
+            response = call_page(2)
+            self.assertEqual(len(response.data['results']), 3)
 
     def test_schools_list_with_part_availability(self):
         connectivity_availability = CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.connectivity

@@ -6,6 +6,7 @@ from proco.schools import api
 
 country_schools = SimpleRouter()
 country_schools.register(r'countries/(?P<country_code>\w+)/schools', api.SchoolsViewSet, basename='schools')
+country_schools.register(r'countries/(?P<country_code>\w+)/v2/schools', api.SchoolsV2ViewSet, basename='schools_v2')
 
 app_name = 'schools'
 

@@ -19,6 +19,7 @@ from proco.schools.serializers import (
     SchoolPointSerializer,
     SchoolSerializer,
 )
+from proco.utils.api_paginators import StaticLightPageNumberPaginator
 from proco.utils.mixins import CachedListMixin
 
 
@@ -83,6 +84,12 @@ class SchoolsViewSet(
         csvwriter = SchoolsCSVWriterBackend(serializer, country)
         response = csvwriter.write()
         return response
+
+
+class SchoolsV2ViewSet(SchoolsViewSet):
+    LIST_CACHE_KEY_PREFIX = 'SCHOOLS_V2'
+
+    pagination_class = StaticLightPageNumberPaginator
 
 
 @method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
