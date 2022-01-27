@@ -3,7 +3,7 @@ from math import ceil
 from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase
-# from django.test.utils import override_settings
+from django.test.utils import override_settings
 from django.urls import reverse
 
 from rest_framework import status
@@ -66,8 +66,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertIn('is_verified', response.data[0])
 
     def test_schools_v2_list(self):
-        # todo: get rid of COUNT(*) request
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = self.forced_auth_req(
                 'get',
                 reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
@@ -78,10 +77,10 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             self.assertIn('coverage_status', response.data['results'][0])
             self.assertIn('is_verified', response.data['results'][0])
 
-    # @override_settings(SCHOOLS_LIST_PAGE_SIZE=100)  # todo: make it working, so test will be much faster
+    @override_settings(SCHOOLS_LIST_PAGE_SIZE=100)
     def test_schools_v2_list_pagination(self):
         location = LocationFactory(country=self.country)
-        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(10000))
+        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(100))
 
         def call_page(page_number):
             response = self.forced_auth_req(
@@ -94,27 +93,27 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             return response
 
         # todo: override_settings for some reason not working and we have here 103 objects in results
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = call_page(1)
-            # self.assertEqual(len(response.data['results']), 100)  # 100 schools we've created at start
-            self.assertEqual(len(response.data['results']), 10000)  # 10k schools we've created at start
+            self.assertEqual(len(response.data['results']), 100)  # 100 schools we've created at start
 
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = call_page(2)
             self.assertEqual(len(response.data['results']), 3)  # + three initial schools
 
         # check pages are cached
         with self.assertNumQueries(0):
             response = call_page(1)
-            self.assertEqual(len(response.data['results']), 10000)
+            self.assertEqual(len(response.data['results']), 100)
 
         with self.assertNumQueries(0):
             response = call_page(2)
             self.assertEqual(len(response.data['results']), 3)
 
+    @override_settings(SCHOOLS_LIST_PAGE_SIZE=100)
     def test_schools_v2_update_page_cache(self):
         location = LocationFactory(country=self.country)
-        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(10000))
+        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(100))
 
         update_cached_value(
             url=reverse('schools:schools-v2-list', kwargs={'country_code': self.country.code.lower()}),
@@ -133,7 +132,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         self.assertEqual(len(response.data['results']), 3)
 
         # but first page not affected
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             response = self.forced_auth_req(
                 'get',
                 reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
@@ -142,14 +141,40 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @override_settings(SCHOOLS_LIST_PAGE_SIZE=10)
     def test_schools_v2_meta(self):
-        response = self.forced_auth_req(
-            'get',
-            reverse('schools:schools-v2-meta', args=[self.country.code.lower()]),
-            user=None,
-        )
+        location = LocationFactory(country=self.country)
+        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(50))
+
+        with self.assertNumQueries(2):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools-v2-meta', args=[self.country.code.lower()]),
+                user=None,
+            )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['pages_count'], 1)
+        self.assertEqual(response.data['pages_count'], 6)  # ceil(53 / 10)
+
+        # second request cached
+        with self.assertNumQueries(0):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools-v2-meta', args=[self.country.code.lower()]),
+                user=None,
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @override_settings(SCHOOLS_LIST_PAGE_SIZE=10)
+    def test_schools_v2_meta_update_cache(self):
+        update_cached_value(url=reverse('schools:schools-v2-meta', kwargs={'country_code': self.country.code.lower()}))
+
+        with self.assertNumQueries(0):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools-v2-meta', args=[self.country.code.lower()]),
+                user=None,
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_schools_list_with_part_availability(self):
         connectivity_availability = CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.connectivity
@@ -219,6 +244,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         for country in Country.objects.all():
             update_cached_value(url=reverse('locations:countries-detail', kwargs={'pk': country.code.lower()}))
             update_cached_value(url=reverse('schools:schools-list', kwargs={'country_code': country.code.lower()}))
+            update_cached_value(url=reverse('schools:schools-v2-meta', kwargs={'country_code': country.code.lower()}))
             schools_page_count = ceil(country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE)
             for page in range(1, schools_page_count + 1):
                 update_cached_value(
@@ -231,6 +257,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
             list(sorted([  # noqa: C413
                 f'SOFT_CACHE_COUNTRY_INFO_pk_{self.country.code.lower()}',
                 f'SOFT_CACHE_SCHOOLS_{self.country.code.lower()}_',
+                f'SOFT_CACHE_SCHOOLS_V2_META_country_code_{self.country.code.lower()}',
             ] + [
                 f"SOFT_CACHE_SCHOOLS_V2_{self.country.code.lower()}_page_['{page}']"
                 for page in range(1, ceil(self.country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE) + 1)

@@ -32,6 +32,7 @@ def update_all_cached_values():
         schools_page_count = ceil(country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE)
         chain([
             update_cached_value.s(url=reverse('locations:countries-detail', kwargs={'pk': country.code.lower()})),
+            update_cached_value.s(url=reverse('schools:schools-v2-meta', kwargs={'pk': country.code.lower()})),
         ] + [
             update_cached_value.s(
                 url=reverse('schools:schools-v2-list', kwargs={'country_code': country.code.lower()}),
@@ -51,6 +52,7 @@ def update_country_related_cache(country_code):
     update_cached_value.delay(url=reverse('locations:countries-list'))
     update_cached_value.delay(url=reverse('schools:random-schools'))
     update_cached_value.delay(url=reverse('locations:countries-detail', kwargs={'pk': country_code.lower()}))
+    update_cached_value.delay(url=reverse('schools:schools-v2-meta', kwargs={'country_code': country_code.lower()}))
 
     country = Country.objects.get(code=country_code)
     for page in range(1, ceil(country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE) + 1):
