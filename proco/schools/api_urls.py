@@ -6,11 +6,16 @@ from proco.schools import api
 
 country_schools = SimpleRouter()
 country_schools.register(r'countries/(?P<country_code>\w+)/schools', api.SchoolsViewSet, basename='schools')
-country_schools.register(r'countries/(?P<country_code>\w+)/v2/schools', api.SchoolsV2ViewSet, basename='schools_v2')
+country_schools.register(r'countries/(?P<country_code>\w+)/v2/schools', api.SchoolsV2ViewSet, basename='schools-v2')
 
 app_name = 'schools'
 
 urlpatterns = [
+    path(
+        r'countries/<str:country_code>/v2/schools/meta/',
+        api.SchoolsV2PaginationMetaAPIView.as_view(),
+        name='schools-v2-meta',
+    ),
     path('', include(country_schools.urls)),
     path('schools/random/', api.RandomSchoolsListAPIView.as_view(), name='random-schools'),
 ]

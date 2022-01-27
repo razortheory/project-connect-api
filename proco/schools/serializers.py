@@ -1,8 +1,13 @@
+from math import ceil
+
+from django.conf import settings
+
 from rest_framework import serializers
 
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.connection_statistics.serializers import SchoolWeeklyStatusSerializer
 from proco.locations.fields import GeoPointCSVField
+from proco.locations.models import Country
 from proco.schools.models import School
 
 
@@ -107,3 +112,14 @@ class SchoolSerializer(CountryToSerializerMixin, BaseSchoolSerializer):
         return self.country.last_weekly_status.integration_status not in [
             CountryWeeklyStatus.COUNTRY_CREATED, CountryWeeklyStatus.SCHOOL_OSM_MAPPED,
         ]
+
+
+class CountrySchoolsV2MetaSerializer(serializers.ModelSerializer):
+    pages_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Country
+        fields = ('pages_count',)
+
+    def get_pages_count(self, obj):
+        return ceil(obj.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE)

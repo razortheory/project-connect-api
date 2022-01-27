@@ -1,3 +1,6 @@
+from math import ceil
+
+from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase
 # from django.test.utils import override_settings
@@ -7,9 +10,11 @@ from rest_framework import status
 
 from proco.connection_statistics.models import CountryWeeklyStatus
 from proco.connection_statistics.tests.factories import SchoolWeeklyStatusFactory
+from proco.locations.models import Country
 from proco.locations.tests.factories import CountryFactory, LocationFactory
 from proco.schools.models import School
 from proco.schools.tests.factories import SchoolFactory
+from proco.utils.tasks import update_cached_value
 from proco.utils.tests import TestAPIViewSetMixin
 
 
@@ -65,7 +70,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         with self.assertNumQueries(3):
             response = self.forced_auth_req(
                 'get',
-                reverse('schools:schools_v2-list', args=[self.country.code.lower()]),
+                reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
                 user=None,
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -81,7 +86,7 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         def call_page(page_number):
             response = self.forced_auth_req(
                 'get',
-                reverse('schools:schools_v2-list', args=[self.country.code.lower()]),
+                reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
                 user=None,
                 data={'page': page_number},
             )
@@ -106,6 +111,45 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
         with self.assertNumQueries(0):
             response = call_page(2)
             self.assertEqual(len(response.data['results']), 3)
+
+    def test_schools_v2_update_page_cache(self):
+        location = LocationFactory(country=self.country)
+        School.objects.bulk_create(School(country=self.country, location=location) for _s in range(10000))
+
+        update_cached_value(
+            url=reverse('schools:schools-v2-list', kwargs={'country_code': self.country.code.lower()}),
+            params={'page': 2},
+        )
+
+        # second page correctly cached
+        with self.assertNumQueries(0):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
+                user=None,
+                data={'page': 2},
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 3)
+
+        # but first page not affected
+        with self.assertNumQueries(3):
+            response = self.forced_auth_req(
+                'get',
+                reverse('schools:schools-v2-list', args=[self.country.code.lower()]),
+                user=None,
+                data={'page': 1},
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_schools_v2_meta(self):
+        response = self.forced_auth_req(
+            'get',
+            reverse('schools:schools-v2-meta', args=[self.country.code.lower()]),
+            user=None,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['pages_count'], 1)
 
     def test_schools_list_with_part_availability(self):
         connectivity_availability = CountryWeeklyStatus.CONNECTIVITY_TYPES_AVAILABILITY.connectivity
@@ -172,16 +216,23 @@ class SchoolsApiTestCase(TestAPIViewSetMixin, TestCase):
 
     def test_update_keys(self):
         # todo: move me to proper place
-        from proco.locations.models import Country
-        from proco.utils.tasks import update_cached_value
         for country in Country.objects.all():
             update_cached_value(url=reverse('locations:countries-detail', kwargs={'pk': country.code.lower()}))
             update_cached_value(url=reverse('schools:schools-list', kwargs={'country_code': country.code.lower()}))
+            schools_page_count = ceil(country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE)
+            for page in range(1, schools_page_count + 1):
+                update_cached_value(
+                    url=reverse('schools:schools-v2-list', kwargs={'country_code': country.code.lower()}),
+                    params={'page': page},
+                )
 
         self.assertListEqual(
             list(sorted(cache.keys('*'))),  # noqa: C413
             list(sorted([  # noqa: C413
                 f'SOFT_CACHE_COUNTRY_INFO_pk_{self.country.code.lower()}',
                 f'SOFT_CACHE_SCHOOLS_{self.country.code.lower()}_',
+            ] + [
+                f"SOFT_CACHE_SCHOOLS_V2_{self.country.code.lower()}_page_['{page}']"
+                for page in range(1, ceil(self.country.schools.count() / settings.SCHOOLS_LIST_PAGE_SIZE) + 1)
             ])),
         )

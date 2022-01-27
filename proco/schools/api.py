@@ -6,7 +6,7 @@ from django.views.decorators.cache import cache_control
 
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -14,13 +14,14 @@ from proco.locations.backends.csv import SchoolsCSVWriterBackend
 from proco.locations.models import Country
 from proco.schools.models import School
 from proco.schools.serializers import (
+    CountrySchoolsV2MetaSerializer,
     CSVSchoolsListSerializer,
     ListSchoolSerializer,
     SchoolPointSerializer,
     SchoolSerializer,
 )
 from proco.utils.api_paginators import SchoolsPaginator
-from proco.utils.mixins import CachedListMixin
+from proco.utils.mixins import CachedListMixin, CachedRetrieveMixin
 
 
 @method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
@@ -108,3 +109,13 @@ class RandomSchoolsListAPIView(CachedListMixin, ListAPIView):
         )
         kwargs['countries_statuses'] = dict(countries_statuses)
         return super(RandomSchoolsListAPIView, self).get_serializer(*args, **kwargs)
+
+
+@method_decorator([cache_control(public=True, max_age=settings.CACHE_CONTROL_MAX_AGE)], name='dispatch')
+class SchoolsV2PaginationMetaAPIView(CachedRetrieveMixin, RetrieveAPIView):
+    RETRIEVE_CACHE_KEY_PREFIX = 'SCHOOLS_V2_META'
+
+    queryset = Country.objects.all()
+    serializer_class = CountrySchoolsV2MetaSerializer
+    lookup_field = 'code__iexact'
+    lookup_url_kwarg = 'country_code'
